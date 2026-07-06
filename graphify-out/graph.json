@@ -1,0 +1,3980 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "settings.json",
+      "file_type": "code",
+      "source_file": ".claude/settings.json",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "claude_settings",
+      "community": 13,
+      "norm_label": "settings.json"
+    },
+    {
+      "label": "hooks",
+      "file_type": "code",
+      "source_file": ".claude/settings.json",
+      "source_location": "L2",
+      "_origin": "ast",
+      "id": "claude_settings_hooks",
+      "community": 13,
+      "norm_label": "hooks"
+    },
+    {
+      "label": "PreToolUse",
+      "file_type": "code",
+      "source_file": ".claude/settings.json",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "claude_settings_hooks_pretooluse",
+      "community": 13,
+      "norm_label": "pretooluse"
+    },
+    {
+      "label": "hooks.json",
+      "file_type": "code",
+      "source_file": ".codex/hooks.json",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_hooks",
+      "community": 14,
+      "norm_label": "hooks.json"
+    },
+    {
+      "label": "hooks",
+      "file_type": "code",
+      "source_file": ".codex/hooks.json",
+      "source_location": "L2",
+      "_origin": "ast",
+      "id": "codex_hooks_hooks",
+      "community": 14,
+      "norm_label": "hooks"
+    },
+    {
+      "label": "PreToolUse",
+      "file_type": "code",
+      "source_file": ".codex/hooks.json",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "codex_hooks_hooks_pretooluse",
+      "community": 14,
+      "norm_label": "pretooluse"
+    },
+    {
+      "label": "active-run.json",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "default_active_run",
+      "community": 0,
+      "norm_label": "active-run.json"
+    },
+    {
+      "label": "schemaVersion",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L2",
+      "_origin": "ast",
+      "id": "default_active_run_schemaversion",
+      "community": 0,
+      "norm_label": "schemaversion"
+    },
+    {
+      "label": "active",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "default_active_run_active",
+      "community": 0,
+      "norm_label": "active"
+    },
+    {
+      "label": "runId",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "default_active_run_runid",
+      "community": 0,
+      "norm_label": "runid"
+    },
+    {
+      "label": "triggeredBy",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "default_active_run_triggeredby",
+      "community": 0,
+      "norm_label": "triggeredby"
+    },
+    {
+      "label": "currentStage",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "default_active_run_currentstage",
+      "community": 0,
+      "norm_label": "currentstage"
+    },
+    {
+      "label": "currentStageKey",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "default_active_run_currentstagekey",
+      "community": 0,
+      "norm_label": "currentstagekey"
+    },
+    {
+      "label": "stageIndex",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "default_active_run_stageindex",
+      "community": 0,
+      "norm_label": "stageindex"
+    },
+    {
+      "label": "stageTotal",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "default_active_run_stagetotal",
+      "community": 0,
+      "norm_label": "stagetotal"
+    },
+    {
+      "label": "percent",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "default_active_run_percent",
+      "community": 0,
+      "norm_label": "percent"
+    },
+    {
+      "label": "completed",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "default_active_run_completed",
+      "community": 0,
+      "norm_label": "completed"
+    },
+    {
+      "label": "next",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "default_active_run_next",
+      "community": 0,
+      "norm_label": "next"
+    },
+    {
+      "label": "blockedOn",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "default_active_run_blockedon",
+      "community": 0,
+      "norm_label": "blockedon"
+    },
+    {
+      "label": "authorityMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "default_active_run_authoritymode",
+      "community": 0,
+      "norm_label": "authoritymode"
+    },
+    {
+      "label": "driverMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "default_active_run_drivermode",
+      "community": 0,
+      "norm_label": "drivermode"
+    },
+    {
+      "label": "hookGateMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "default_active_run_hookgatemode",
+      "community": 0,
+      "norm_label": "hookgatemode"
+    },
+    {
+      "label": "publicReadyAuthority",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "default_active_run_publicreadyauthority",
+      "community": 0,
+      "norm_label": "publicreadyauthority"
+    },
+    {
+      "label": "publicReadyBoundary",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "default_active_run_publicreadyboundary",
+      "community": 0,
+      "norm_label": "publicreadyboundary"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "default_active_run_publicreadyboundary_status",
+      "community": 0,
+      "norm_label": "status"
+    },
+    {
+      "label": "reason",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "default_active_run_publicreadyboundary_reason",
+      "community": 0,
+      "norm_label": "reason"
+    },
+    {
+      "label": "deactivatedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "default_active_run_deactivatedat",
+      "community": 0,
+      "norm_label": "deactivatedat"
+    },
+    {
+      "label": "deactivationReason",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L23",
+      "_origin": "ast",
+      "id": "default_active_run_deactivationreason",
+      "community": 0,
+      "norm_label": "deactivationreason"
+    },
+    {
+      "label": "continuationBoundary",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "default_active_run_continuationboundary",
+      "community": 11,
+      "norm_label": "continuationboundary"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "default_active_run_continuationboundary_status",
+      "community": 11,
+      "norm_label": "status"
+    },
+    {
+      "label": "mode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "default_active_run_continuationboundary_mode",
+      "community": 11,
+      "norm_label": "mode"
+    },
+    {
+      "label": "reason",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "default_active_run_continuationboundary_reason",
+      "community": 11,
+      "norm_label": "reason"
+    },
+    {
+      "label": "startedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "default_active_run_startedat",
+      "community": 0,
+      "norm_label": "startedat"
+    },
+    {
+      "label": "updatedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "default_active_run_updatedat",
+      "community": 0,
+      "norm_label": "updatedat"
+    },
+    {
+      "label": "lastUserVisibleNotice",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "default_active_run_lastuservisiblenotice",
+      "community": 0,
+      "norm_label": "lastuservisiblenotice"
+    },
+    {
+      "label": "surfaceMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "default_active_run_surfacemode",
+      "community": 0,
+      "norm_label": "surfacemode"
+    },
+    {
+      "label": "resolvedOutputLanguage",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "default_active_run_resolvedoutputlanguage",
+      "community": 0,
+      "norm_label": "resolvedoutputlanguage"
+    },
+    {
+      "label": "languageResolution",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "default_active_run_languageresolution",
+      "community": 0,
+      "norm_label": "languageresolution"
+    },
+    {
+      "label": "language",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "default_active_run_languageresolution_language",
+      "community": 0,
+      "norm_label": "language"
+    },
+    {
+      "label": "source",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "default_active_run_languageresolution_source",
+      "community": 0,
+      "norm_label": "source"
+    },
+    {
+      "label": "publicSurface",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "default_active_run_publicsurface",
+      "community": 9,
+      "norm_label": "publicsurface"
+    },
+    {
+      "label": "primaryDisplay",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "default_active_run_publicsurface_primarydisplay",
+      "community": 9,
+      "norm_label": "primarydisplay"
+    },
+    {
+      "label": "nativeEnhancementAllowed",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "default_active_run_publicsurface_nativeenhancementallowed",
+      "community": 9,
+      "norm_label": "nativeenhancementallowed"
+    },
+    {
+      "label": "popupRequired",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L41",
+      "_origin": "ast",
+      "id": "default_active_run_publicsurface_popuprequired",
+      "community": 9,
+      "norm_label": "popuprequired"
+    },
+    {
+      "label": "hiddenInternalFields",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "default_active_run_publicsurface_hiddeninternalfields",
+      "community": 9,
+      "norm_label": "hiddeninternalfields"
+    },
+    {
+      "label": "publicLabels",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "default_active_run_publiclabels",
+      "community": 0,
+      "norm_label": "publiclabels"
+    },
+    {
+      "label": "stagePurpose",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "default_active_run_stagepurpose",
+      "community": 0,
+      "norm_label": "stagepurpose"
+    },
+    {
+      "label": "stagePurposeKey",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "default_active_run_stagepurposekey",
+      "community": 0,
+      "norm_label": "stagepurposekey"
+    },
+    {
+      "label": "post-copy-init.json",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "default_post_copy_init",
+      "community": 7,
+      "norm_label": "post-copy-init.json"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L2",
+      "_origin": "ast",
+      "id": "default_post_copy_init_status",
+      "community": 7,
+      "norm_label": "status"
+    },
+    {
+      "label": "updatedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "default_post_copy_init_updatedat",
+      "community": 7,
+      "norm_label": "updatedat"
+    },
+    {
+      "label": "scriptMtimeMs",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "default_post_copy_init_scriptmtimems",
+      "community": 7,
+      "norm_label": "scriptmtimems"
+    },
+    {
+      "label": "mode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "default_post_copy_init_mode",
+      "community": 7,
+      "norm_label": "mode"
+    },
+    {
+      "label": "startedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "default_post_copy_init_startedat",
+      "community": 7,
+      "norm_label": "startedat"
+    },
+    {
+      "label": "status.json",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status",
+      "community": 1,
+      "norm_label": "status.json"
+    },
+    {
+      "label": "schemaVersion",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L2",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_schemaversion",
+      "community": 1,
+      "norm_label": "schemaversion"
+    },
+    {
+      "label": "active",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_active",
+      "community": 1,
+      "norm_label": "active"
+    },
+    {
+      "label": "runId",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_runid",
+      "community": 1,
+      "norm_label": "runid"
+    },
+    {
+      "label": "triggeredBy",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_triggeredby",
+      "community": 1,
+      "norm_label": "triggeredby"
+    },
+    {
+      "label": "currentStage",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_currentstage",
+      "community": 1,
+      "norm_label": "currentstage"
+    },
+    {
+      "label": "currentStageKey",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_currentstagekey",
+      "community": 1,
+      "norm_label": "currentstagekey"
+    },
+    {
+      "label": "stageIndex",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_stageindex",
+      "community": 1,
+      "norm_label": "stageindex"
+    },
+    {
+      "label": "stageTotal",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_stagetotal",
+      "community": 1,
+      "norm_label": "stagetotal"
+    },
+    {
+      "label": "percent",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_percent",
+      "community": 1,
+      "norm_label": "percent"
+    },
+    {
+      "label": "completed",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_completed",
+      "community": 1,
+      "norm_label": "completed"
+    },
+    {
+      "label": "next",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_next",
+      "community": 1,
+      "norm_label": "next"
+    },
+    {
+      "label": "blockedOn",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_blockedon",
+      "community": 1,
+      "norm_label": "blockedon"
+    },
+    {
+      "label": "authorityMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_authoritymode",
+      "community": 1,
+      "norm_label": "authoritymode"
+    },
+    {
+      "label": "driverMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_drivermode",
+      "community": 1,
+      "norm_label": "drivermode"
+    },
+    {
+      "label": "hookGateMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_hookgatemode",
+      "community": 1,
+      "norm_label": "hookgatemode"
+    },
+    {
+      "label": "publicReadyAuthority",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publicreadyauthority",
+      "community": 1,
+      "norm_label": "publicreadyauthority"
+    },
+    {
+      "label": "publicReadyBoundary",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publicreadyboundary",
+      "community": 1,
+      "norm_label": "publicreadyboundary"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publicreadyboundary_status",
+      "community": 1,
+      "norm_label": "status"
+    },
+    {
+      "label": "reason",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publicreadyboundary_reason",
+      "community": 1,
+      "norm_label": "reason"
+    },
+    {
+      "label": "deactivatedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_deactivatedat",
+      "community": 1,
+      "norm_label": "deactivatedat"
+    },
+    {
+      "label": "deactivationReason",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L23",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_deactivationreason",
+      "community": 1,
+      "norm_label": "deactivationreason"
+    },
+    {
+      "label": "continuationBoundary",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_continuationboundary",
+      "community": 12,
+      "norm_label": "continuationboundary"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_continuationboundary_status",
+      "community": 12,
+      "norm_label": "status"
+    },
+    {
+      "label": "mode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_continuationboundary_mode",
+      "community": 12,
+      "norm_label": "mode"
+    },
+    {
+      "label": "reason",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_continuationboundary_reason",
+      "community": 12,
+      "norm_label": "reason"
+    },
+    {
+      "label": "startedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_startedat",
+      "community": 1,
+      "norm_label": "startedat"
+    },
+    {
+      "label": "updatedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_updatedat",
+      "community": 1,
+      "norm_label": "updatedat"
+    },
+    {
+      "label": "lastUserVisibleNotice",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_lastuservisiblenotice",
+      "community": 1,
+      "norm_label": "lastuservisiblenotice"
+    },
+    {
+      "label": "surfaceMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_surfacemode",
+      "community": 1,
+      "norm_label": "surfacemode"
+    },
+    {
+      "label": "resolvedOutputLanguage",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_resolvedoutputlanguage",
+      "community": 1,
+      "norm_label": "resolvedoutputlanguage"
+    },
+    {
+      "label": "languageResolution",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_languageresolution",
+      "community": 1,
+      "norm_label": "languageresolution"
+    },
+    {
+      "label": "language",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_languageresolution_language",
+      "community": 1,
+      "norm_label": "language"
+    },
+    {
+      "label": "source",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_languageresolution_source",
+      "community": 1,
+      "norm_label": "source"
+    },
+    {
+      "label": "publicSurface",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publicsurface",
+      "community": 10,
+      "norm_label": "publicsurface"
+    },
+    {
+      "label": "primaryDisplay",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publicsurface_primarydisplay",
+      "community": 10,
+      "norm_label": "primarydisplay"
+    },
+    {
+      "label": "nativeEnhancementAllowed",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publicsurface_nativeenhancementallowed",
+      "community": 10,
+      "norm_label": "nativeenhancementallowed"
+    },
+    {
+      "label": "popupRequired",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L41",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publicsurface_popuprequired",
+      "community": 10,
+      "norm_label": "popuprequired"
+    },
+    {
+      "label": "hiddenInternalFields",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publicsurface_hiddeninternalfields",
+      "community": 10,
+      "norm_label": "hiddeninternalfields"
+    },
+    {
+      "label": "publicLabels",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_publiclabels",
+      "community": 1,
+      "norm_label": "publiclabels"
+    },
+    {
+      "label": "stagePurpose",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_stagepurpose",
+      "community": 1,
+      "norm_label": "stagepurpose"
+    },
+    {
+      "label": "stagePurposeKey",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "meta_2026_07_06t09_05_53_455z_status_stagepurposekey",
+      "community": 1,
+      "norm_label": "stagepurposekey"
+    },
+    {
+      "label": "spine-state.json",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "spine_spine_state",
+      "community": 4,
+      "norm_label": "spine-state.json"
+    },
+    {
+      "label": "active",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L2",
+      "_origin": "ast",
+      "id": "spine_spine_state_active",
+      "community": 4,
+      "norm_label": "active"
+    },
+    {
+      "label": "version",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "spine_spine_state_version",
+      "community": 4,
+      "norm_label": "version"
+    },
+    {
+      "label": "runId",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "spine_spine_state_runid",
+      "community": 4,
+      "norm_label": "runid"
+    },
+    {
+      "label": "triggeredAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "spine_spine_state_triggeredat",
+      "community": 4,
+      "norm_label": "triggeredat"
+    },
+    {
+      "label": "stageRuntimeControl",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "spine_spine_state_stageruntimecontrol",
+      "community": 6,
+      "norm_label": "stageruntimecontrol"
+    },
+    {
+      "label": "activationMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "spine_spine_state_stageruntimecontrol_activationmode",
+      "community": 6,
+      "norm_label": "activationmode"
+    },
+    {
+      "label": "driverMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "spine_spine_state_stageruntimecontrol_drivermode",
+      "community": 6,
+      "norm_label": "drivermode"
+    },
+    {
+      "label": "hookGateMode",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "spine_spine_state_stageruntimecontrol_hookgatemode",
+      "community": 6,
+      "norm_label": "hookgatemode"
+    },
+    {
+      "label": "promptFingerprint",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "spine_spine_state_stageruntimecontrol_promptfingerprint",
+      "community": 6,
+      "norm_label": "promptfingerprint"
+    },
+    {
+      "label": "userLanguage",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "spine_spine_state_stageruntimecontrol_userlanguage",
+      "community": 6,
+      "norm_label": "userlanguage"
+    },
+    {
+      "label": "factGatePolicy",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "spine_spine_state_stageruntimecontrol_factgatepolicy",
+      "community": 6,
+      "norm_label": "factgatepolicy"
+    },
+    {
+      "label": "executionLeasePolicy",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "spine_spine_state_stageruntimecontrol_executionleasepolicy",
+      "community": 6,
+      "norm_label": "executionleasepolicy"
+    },
+    {
+      "label": "createdAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "spine_spine_state_stageruntimecontrol_createdat",
+      "community": 6,
+      "norm_label": "createdat"
+    },
+    {
+      "label": "currentStage",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "spine_spine_state_currentstage",
+      "community": 4,
+      "norm_label": "currentstage"
+    },
+    {
+      "label": "stages",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "spine_spine_state_stages",
+      "community": 3,
+      "norm_label": "stages"
+    },
+    {
+      "label": "critical",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "spine_spine_state_stages_critical",
+      "community": 3,
+      "norm_label": "critical"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "spine_spine_state_critical_status",
+      "community": 3,
+      "norm_label": "status"
+    },
+    {
+      "label": "completedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "spine_spine_state_critical_completedat",
+      "community": 3,
+      "norm_label": "completedat"
+    },
+    {
+      "label": "fetch",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "spine_spine_state_stages_fetch",
+      "community": 3,
+      "norm_label": "fetch"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L23",
+      "_origin": "ast",
+      "id": "spine_spine_state_fetch_status",
+      "community": 3,
+      "norm_label": "status"
+    },
+    {
+      "label": "completedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "spine_spine_state_fetch_completedat",
+      "community": 3,
+      "norm_label": "completedat"
+    },
+    {
+      "label": "thinking",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "spine_spine_state_stages_thinking",
+      "community": 3,
+      "norm_label": "thinking"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "spine_spine_state_thinking_status",
+      "community": 3,
+      "norm_label": "status"
+    },
+    {
+      "label": "completedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "spine_spine_state_thinking_completedat",
+      "community": 3,
+      "norm_label": "completedat"
+    },
+    {
+      "label": "execution",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "spine_spine_state_stages_execution",
+      "community": 3,
+      "norm_label": "execution"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "spine_spine_state_execution_status",
+      "community": 3,
+      "norm_label": "status"
+    },
+    {
+      "label": "completedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "spine_spine_state_execution_completedat",
+      "community": 3,
+      "norm_label": "completedat"
+    },
+    {
+      "label": "review",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "spine_spine_state_stages_review",
+      "community": 3,
+      "norm_label": "review"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "spine_spine_state_review_status",
+      "community": 3,
+      "norm_label": "status"
+    },
+    {
+      "label": "completedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "spine_spine_state_review_completedat",
+      "community": 3,
+      "norm_label": "completedat"
+    },
+    {
+      "label": "meta_review",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "spine_spine_state_stages_meta_review",
+      "community": 3,
+      "norm_label": "meta_review"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "spine_spine_state_meta_review_status",
+      "community": 3,
+      "norm_label": "status"
+    },
+    {
+      "label": "completedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "spine_spine_state_meta_review_completedat",
+      "community": 3,
+      "norm_label": "completedat"
+    },
+    {
+      "label": "verification",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "spine_spine_state_stages_verification",
+      "community": 3,
+      "norm_label": "verification"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "spine_spine_state_verification_status",
+      "community": 3,
+      "norm_label": "status"
+    },
+    {
+      "label": "completedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L44",
+      "_origin": "ast",
+      "id": "spine_spine_state_verification_completedat",
+      "community": 3,
+      "norm_label": "completedat"
+    },
+    {
+      "label": "evolution",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L46",
+      "_origin": "ast",
+      "id": "spine_spine_state_stages_evolution",
+      "community": 3,
+      "norm_label": "evolution"
+    },
+    {
+      "label": "status",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "spine_spine_state_evolution_status",
+      "community": 3,
+      "norm_label": "status"
+    },
+    {
+      "label": "completedAt",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "spine_spine_state_evolution_completedat",
+      "community": 3,
+      "norm_label": "completedat"
+    },
+    {
+      "label": "taskClassification",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "spine_spine_state_taskclassification",
+      "community": 4,
+      "norm_label": "taskclassification"
+    },
+    {
+      "label": "triggerReason",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "spine_spine_state_triggerreason",
+      "community": 4,
+      "norm_label": "triggerreason"
+    },
+    {
+      "label": "dispatchedAgents",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L53",
+      "_origin": "ast",
+      "id": "spine_spine_state_dispatchedagents",
+      "community": 4,
+      "norm_label": "dispatchedagents"
+    },
+    {
+      "label": "dispatchChain",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L54",
+      "_origin": "ast",
+      "id": "spine_spine_state_dispatchchain",
+      "community": 4,
+      "norm_label": "dispatchchain"
+    },
+    {
+      "label": "controlState",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L55",
+      "_origin": "ast",
+      "id": "spine_spine_state_controlstate",
+      "community": 4,
+      "norm_label": "controlstate"
+    },
+    {
+      "label": "gateState",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L56",
+      "_origin": "ast",
+      "id": "spine_spine_state_gatestate",
+      "community": 4,
+      "norm_label": "gatestate"
+    },
+    {
+      "label": "surfaceState",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L57",
+      "_origin": "ast",
+      "id": "spine_spine_state_surfacestate",
+      "community": 4,
+      "norm_label": "surfacestate"
+    },
+    {
+      "label": "choiceSurfaceState",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L58",
+      "_origin": "ast",
+      "id": "spine_spine_state_choicesurfacestate",
+      "community": 4,
+      "norm_label": "choicesurfacestate"
+    },
+    {
+      "label": "queryBypass",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L59",
+      "_origin": "ast",
+      "id": "spine_spine_state_querybypass",
+      "community": 4,
+      "norm_label": "querybypass"
+    },
+    {
+      "label": "latestUserInputLanguage",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L60",
+      "_origin": "ast",
+      "id": "spine_spine_state_latestuserinputlanguage",
+      "community": 4,
+      "norm_label": "latestuserinputlanguage"
+    },
+    {
+      "label": "executionStarted",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L61",
+      "_origin": "ast",
+      "id": "spine_spine_state_executionstarted",
+      "community": 4,
+      "norm_label": "executionstarted"
+    },
+    {
+      "label": "criticalFetchLoopCount",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L62",
+      "_origin": "ast",
+      "id": "spine_spine_state_criticalfetchloopcount",
+      "community": 4,
+      "norm_label": "criticalfetchloopcount"
+    },
+    {
+      "label": "criticalFetchLoopMax",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L63",
+      "_origin": "ast",
+      "id": "spine_spine_state_criticalfetchloopmax",
+      "community": 4,
+      "norm_label": "criticalfetchloopmax"
+    },
+    {
+      "label": "intentCard",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L64",
+      "_origin": "ast",
+      "id": "spine_spine_state_intentcard",
+      "community": 4,
+      "norm_label": "intentcard"
+    },
+    {
+      "label": "intentConfirmationState",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L65",
+      "_origin": "ast",
+      "id": "spine_spine_state_intentconfirmationstate",
+      "community": 4,
+      "norm_label": "intentconfirmationstate"
+    },
+    {
+      "label": "intentConfirmationTimestamp",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L66",
+      "_origin": "ast",
+      "id": "spine_spine_state_intentconfirmationtimestamp",
+      "community": 4,
+      "norm_label": "intentconfirmationtimestamp"
+    },
+    {
+      "label": "intentCorrectionPayload",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L67",
+      "_origin": "ast",
+      "id": "spine_spine_state_intentcorrectionpayload",
+      "community": 4,
+      "norm_label": "intentcorrectionpayload"
+    },
+    {
+      "label": "skippedHooks",
+      "file_type": "code",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L68",
+      "_origin": "ast",
+      "id": "spine_spine_state_skippedhooks",
+      "community": 4,
+      "norm_label": "skippedhooks"
+    },
+    {
+      "label": "AGENTS.md",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "agents",
+      "community": 15,
+      "norm_label": "agents.md"
+    },
+    {
+      "label": "graphify",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "agents_graphify",
+      "community": 15,
+      "norm_label": "graphify"
+    },
+    {
+      "label": "CLAUDE.md",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "claude",
+      "community": 16,
+      "norm_label": "claude.md"
+    },
+    {
+      "label": "graphify",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "claude_graphify",
+      "community": 16,
+      "norm_label": "graphify"
+    },
+    {
+      "label": "PLAN.md",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "analysis_plan",
+      "community": 2,
+      "norm_label": "plan.md"
+    },
+    {
+      "label": "video-use \u4ed3\u5e93\u5206\u6790\u65b9\u6848 v2\uff08\u57fa\u4e8e repomix + repo-analyzer \u6846\u67b6\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "community": 2,
+      "norm_label": "video-use \u4ed3\u5e93\u5206\u6790\u65b9\u6848 v2(\u57fa\u4e8e repomix + repo-analyzer \u6846\u67b6)"
+    },
+    {
+      "label": "0. \u73af\u5883\u4e0e\u76ee\u5f55\u7ea6\u5b9a",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "analysis_plan_0_\u73af\u5883\u4e0e\u76ee\u5f55\u7ea6\u5b9a",
+      "community": 2,
+      "norm_label": "0. \u73af\u5883\u4e0e\u76ee\u5f55\u7ea6\u5b9a"
+    },
+    {
+      "label": "1. \u9636\u6bb5\u96f6\uff1a\u514b\u9686 + \u5143\u6570\u636e\u91c7\u96c6",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "analysis_plan_1_\u9636\u6bb5\u96f6_\u514b\u9686_\u5143\u6570\u636e\u91c7\u96c6",
+      "community": 2,
+      "norm_label": "1. \u9636\u6bb5\u96f6:\u514b\u9686 + \u5143\u6570\u636e\u91c7\u96c6"
+    },
+    {
+      "label": "2. \u9636\u6bb5\u4e00\uff1a\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\uff08\u538b\u7f29 repomix\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L53",
+      "_origin": "ast",
+      "id": "analysis_plan_2_\u9636\u6bb5\u4e00_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21_\u538b\u7f29_repomix",
+      "community": 5,
+      "norm_label": "2. \u9636\u6bb5\u4e00:\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21(\u538b\u7f29 repomix)"
+    },
+    {
+      "label": "2.1 \u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\u7684\u673a\u5236\u4e0e\u539f\u7406",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L95",
+      "_origin": "ast",
+      "id": "analysis_plan_2_1_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\u7684\u673a\u5236\u4e0e\u539f\u7406",
+      "community": 5,
+      "norm_label": "2.1 \u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\u7684\u673a\u5236\u4e0e\u539f\u7406"
+    },
+    {
+      "label": "2.1.1 \u673a\u5236\uff1arepomix `--compress` \u5185\u90e8\u505a\u4e86\u4ec0\u4e48",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L99",
+      "_origin": "ast",
+      "id": "analysis_plan_2_1_1_\u673a\u5236_repomix_compress_\u5185\u90e8\u505a\u4e86\u4ec0\u4e48",
+      "community": 5,
+      "norm_label": "2.1.1 \u673a\u5236:repomix `--compress` \u5185\u90e8\u505a\u4e86\u4ec0\u4e48"
+    },
+    {
+      "label": "2.1.2 \u539f\u7406\uff1a\u4e3a\u4ec0\u4e48\"\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\"\u80fd\u6210\u7acb",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L110",
+      "_origin": "ast",
+      "id": "analysis_plan_2_1_2_\u539f\u7406_\u4e3a\u4ec0\u4e48_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21_\u80fd\u6210\u7acb",
+      "community": 5,
+      "norm_label": "2.1.2 \u539f\u7406:\u4e3a\u4ec0\u4e48\"\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\"\u80fd\u6210\u7acb"
+    },
+    {
+      "label": "2.1.3 \u4e0e overview.md 14 \u9879\u7684\u5bf9\u5e94\u5173\u7cfb",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L127",
+      "_origin": "ast",
+      "id": "analysis_plan_2_1_3_\u4e0e_overview_md_14_\u9879\u7684\u5bf9\u5e94\u5173\u7cfb",
+      "community": 5,
+      "norm_label": "2.1.3 \u4e0e overview.md 14 \u9879\u7684\u5bf9\u5e94\u5173\u7cfb"
+    },
+    {
+      "label": "2.1.4 \u5931\u6548\u8fb9\u754c\uff1a\u4ec0\u4e48\u573a\u666f\u4e0b\u538b\u7f29\u673a\u5236\u4e0d\u591f\u7528",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L148",
+      "_origin": "ast",
+      "id": "analysis_plan_2_1_4_\u5931\u6548\u8fb9\u754c_\u4ec0\u4e48\u573a\u666f\u4e0b\u538b\u7f29\u673a\u5236\u4e0d\u591f\u7528",
+      "community": 5,
+      "norm_label": "2.1.4 \u5931\u6548\u8fb9\u754c:\u4ec0\u4e48\u573a\u666f\u4e0b\u538b\u7f29\u673a\u5236\u4e0d\u591f\u7528"
+    },
+    {
+      "label": "2.2 \u5e76\u884c\u5b50\u4ee3\u7406\u63d0\u53d6\u7b56\u7565",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L161",
+      "_origin": "ast",
+      "id": "analysis_plan_2_2_\u5e76\u884c\u5b50\u4ee3\u7406\u63d0\u53d6\u7b56\u7565",
+      "community": 5,
+      "norm_label": "2.2 \u5e76\u884c\u5b50\u4ee3\u7406\u63d0\u53d6\u7b56\u7565"
+    },
+    {
+      "label": "2.2.1 \u5206\u7ec4\u7b56\u7565\uff08\u6309\"\u4fe1\u606f\u6e90\"\u5207\uff0c\u4e0d\u662f\u6309\"\u9879\u53f7\"\u5207\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L165",
+      "_origin": "ast",
+      "id": "analysis_plan_2_2_1_\u5206\u7ec4\u7b56\u7565_\u6309_\u4fe1\u606f\u6e90_\u5207_\u4e0d\u662f\u6309_\u9879\u53f7_\u5207",
+      "community": 5,
+      "norm_label": "2.2.1 \u5206\u7ec4\u7b56\u7565(\u6309\"\u4fe1\u606f\u6e90\"\u5207,\u4e0d\u662f\u6309\"\u9879\u53f7\"\u5207)"
+    },
+    {
+      "label": "2.2.2 Subagent Prompt \u6a21\u677f",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L177",
+      "_origin": "ast",
+      "id": "analysis_plan_2_2_2_subagent_prompt_\u6a21\u677f",
+      "community": 5,
+      "norm_label": "2.2.2 subagent prompt \u6a21\u677f"
+    },
+    {
+      "label": "2.2.3 \u6267\u884c\u6d41\u7a0b",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L203",
+      "_origin": "ast",
+      "id": "analysis_plan_2_2_3_\u6267\u884c\u6d41\u7a0b",
+      "community": 5,
+      "norm_label": "2.2.3 \u6267\u884c\u6d41\u7a0b"
+    },
+    {
+      "label": "2.2.4 \u51b2\u7a81\u4e0e\u53bb\u91cd\u89c4\u5219",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L221",
+      "_origin": "ast",
+      "id": "analysis_plan_2_2_4_\u51b2\u7a81\u4e0e\u53bb\u91cd\u89c4\u5219",
+      "community": 5,
+      "norm_label": "2.2.4 \u51b2\u7a81\u4e0e\u53bb\u91cd\u89c4\u5219"
+    },
+    {
+      "label": "2.2.5 \u4f55\u65f6\u56de\u9000\u5230\u4e32\u884c",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L231",
+      "_origin": "ast",
+      "id": "analysis_plan_2_2_5_\u4f55\u65f6\u56de\u9000\u5230\u4e32\u884c",
+      "community": 5,
+      "norm_label": "2.2.5 \u4f55\u65f6\u56de\u9000\u5230\u4e32\u884c"
+    },
+    {
+      "label": "3. \u9636\u6bb5\u4e8c\uff1a12 \u7ef4\u7cbe\u7ec6\u5207\u7247\uff08\u4e0d\u538b\u7f29 + XML\uff0c**\u5e76\u884c\u6267\u884c**\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L264",
+      "_origin": "ast",
+      "id": "analysis_plan_3_\u9636\u6bb5\u4e8c_12_\u7ef4\u7cbe\u7ec6\u5207\u7247_\u4e0d\u538b\u7f29_xml_\u5e76\u884c\u6267\u884c",
+      "community": 8,
+      "norm_label": "3. \u9636\u6bb5\u4e8c:12 \u7ef4\u7cbe\u7ec6\u5207\u7247(\u4e0d\u538b\u7f29 + xml,**\u5e76\u884c\u6267\u884c**)"
+    },
+    {
+      "label": "3.0 \u5171\u4eab\u8d44\u6e90",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L266",
+      "_origin": "ast",
+      "id": "analysis_plan_3_0_\u5171\u4eab\u8d44\u6e90",
+      "community": 8,
+      "norm_label": "3.0 \u5171\u4eab\u8d44\u6e90"
+    },
+    {
+      "label": "3.1 \u5207\u7247\u6e05\u5355",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L293",
+      "_origin": "ast",
+      "id": "analysis_plan_3_1_\u5207\u7247\u6e05\u5355",
+      "community": 8,
+      "norm_label": "3.1 \u5207\u7247\u6e05\u5355"
+    },
+    {
+      "label": "3.2 \u7ef4\u5ea6 12 \u7684 git log \u805a\u5408\u811a\u672c",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L314",
+      "_origin": "ast",
+      "id": "analysis_plan_3_2_\u7ef4\u5ea6_12_\u7684_git_log_\u805a\u5408\u811a\u672c",
+      "community": 8,
+      "norm_label": "3.2 \u7ef4\u5ea6 12 \u7684 git log \u805a\u5408\u811a\u672c"
+    },
+    {
+      "label": "3.3 \u5e76\u884c\u8c03\u5ea6",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L331",
+      "_origin": "ast",
+      "id": "analysis_plan_3_3_\u5e76\u884c\u8c03\u5ea6",
+      "community": 8,
+      "norm_label": "3.3 \u5e76\u884c\u8c03\u5ea6"
+    },
+    {
+      "label": "4. \u9636\u6bb5\u4e09\uff1a\u9879\u76ee\u7279\u5f81\u8bc6\u522b + \u81ea\u9002\u5e94\u63d0\u95ee \u3010\u6838\u5fc3\u6d41\u7a0b\u3011",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L344",
+      "_origin": "ast",
+      "id": "analysis_plan_4_\u9636\u6bb5\u4e09_\u9879\u76ee\u7279\u5f81\u8bc6\u522b_\u81ea\u9002\u5e94\u63d0\u95ee_\u6838\u5fc3\u6d41\u7a0b",
+      "community": 2,
+      "norm_label": "4. \u9636\u6bb5\u4e09:\u9879\u76ee\u7279\u5f81\u8bc6\u522b + \u81ea\u9002\u5e94\u63d0\u95ee \u3010\u6838\u5fc3\u6d41\u7a0b\u3011"
+    },
+    {
+      "label": "4.1 \u8bc6\u522b\u9879",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L348",
+      "_origin": "ast",
+      "id": "analysis_plan_4_1_\u8bc6\u522b\u9879",
+      "community": 2,
+      "norm_label": "4.1 \u8bc6\u522b\u9879"
+    },
+    {
+      "label": "4.2 \u81ea\u9002\u5e94\u63d0\u95ee\uff08AskUserQuestion\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L358",
+      "_origin": "ast",
+      "id": "analysis_plan_4_2_\u81ea\u9002\u5e94\u63d0\u95ee_askuserquestion",
+      "community": 2,
+      "norm_label": "4.2 \u81ea\u9002\u5e94\u63d0\u95ee(askuserquestion)"
+    },
+    {
+      "label": "5. \u9636\u6bb5\u4e09\u00b7\u534a\uff1a\u5916\u90e8\u8c03\u7814\uff08\u53ef\u9009\u5c42\uff0c\u9ed8\u8ba4 OFF\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L372",
+      "_origin": "ast",
+      "id": "analysis_plan_5_\u9636\u6bb5\u4e09_\u534a_\u5916\u90e8\u8c03\u7814_\u53ef\u9009\u5c42_\u9ed8\u8ba4_off",
+      "community": 2,
+      "norm_label": "5. \u9636\u6bb5\u4e09\u00b7\u534a:\u5916\u90e8\u8c03\u7814(\u53ef\u9009\u5c42,\u9ed8\u8ba4 off)"
+    },
+    {
+      "label": "6. \u9636\u6bb5\u56db\uff1a\u52a8\u6001\u62a5\u544a\u7ed3\u6784\u8bbe\u8ba1",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L395",
+      "_origin": "ast",
+      "id": "analysis_plan_6_\u9636\u6bb5\u56db_\u52a8\u6001\u62a5\u544a\u7ed3\u6784\u8bbe\u8ba1",
+      "community": 2,
+      "norm_label": "6. \u9636\u6bb5\u56db:\u52a8\u6001\u62a5\u544a\u7ed3\u6784\u8bbe\u8ba1"
+    },
+    {
+      "label": "6.1 \u4e1a\u52a1\u6a21\u5757\u8bc6\u522b\uff08\u6309\u4e1a\u52a1\u529f\u80fd\uff0c\u4e0d\u6309\u6587\u4ef6\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L399",
+      "_origin": "ast",
+      "id": "analysis_plan_6_1_\u4e1a\u52a1\u6a21\u5757\u8bc6\u522b_\u6309\u4e1a\u52a1\u529f\u80fd_\u4e0d\u6309\u6587\u4ef6",
+      "community": 2,
+      "norm_label": "6.1 \u4e1a\u52a1\u6a21\u5757\u8bc6\u522b(\u6309\u4e1a\u52a1\u529f\u80fd,\u4e0d\u6309\u6587\u4ef6)"
+    },
+    {
+      "label": "6.2 \u53d9\u4e8b\u4e3b\u7ebf\u9009\u62e9",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L405",
+      "_origin": "ast",
+      "id": "analysis_plan_6_2_\u53d9\u4e8b\u4e3b\u7ebf\u9009\u62e9",
+      "community": 2,
+      "norm_label": "6.2 \u53d9\u4e8b\u4e3b\u7ebf\u9009\u62e9"
+    },
+    {
+      "label": "6.3 \u6a21\u5757\u4f9d\u8d56\u56fe",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L415",
+      "_origin": "ast",
+      "id": "analysis_plan_6_3_\u6a21\u5757\u4f9d\u8d56\u56fe",
+      "community": 2,
+      "norm_label": "6.3 \u6a21\u5757\u4f9d\u8d56\u56fe"
+    },
+    {
+      "label": "7. \u9636\u6bb5\u4e94\uff1a\u4e1a\u52a1\u6a21\u5757\u5e76\u884c\u6df1\u5ea6\u5206\u6790\uff08subagent \u56e2\u961f\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L424",
+      "_origin": "ast",
+      "id": "analysis_plan_7_\u9636\u6bb5\u4e94_\u4e1a\u52a1\u6a21\u5757\u5e76\u884c\u6df1\u5ea6\u5206\u6790_subagent_\u56e2\u961f",
+      "community": 2,
+      "norm_label": "7. \u9636\u6bb5\u4e94:\u4e1a\u52a1\u6a21\u5757\u5e76\u884c\u6df1\u5ea6\u5206\u6790(subagent \u56e2\u961f)"
+    },
+    {
+      "label": "7.1 \u8c03\u5ea6\u7b56\u7565",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L430",
+      "_origin": "ast",
+      "id": "analysis_plan_7_1_\u8c03\u5ea6\u7b56\u7565",
+      "community": 2,
+      "norm_label": "7.1 \u8c03\u5ea6\u7b56\u7565"
+    },
+    {
+      "label": "7.2 \u6838\u5fc3\u6a21\u5757 Subagent Prompt \u6a21\u677f",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L438",
+      "_origin": "ast",
+      "id": "analysis_plan_7_2_\u6838\u5fc3\u6a21\u5757_subagent_prompt_\u6a21\u677f",
+      "community": 2,
+      "norm_label": "7.2 \u6838\u5fc3\u6a21\u5757 subagent prompt \u6a21\u677f"
+    },
+    {
+      "label": "7.3 \u6b21\u8981\u6a21\u5757\u6279\u91cf Subagent Prompt \u6a21\u677f",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L479",
+      "_origin": "ast",
+      "id": "analysis_plan_7_3_\u6b21\u8981\u6a21\u5757\u6279\u91cf_subagent_prompt_\u6a21\u677f",
+      "community": 2,
+      "norm_label": "7.3 \u6b21\u8981\u6a21\u5757\u6279\u91cf subagent prompt \u6a21\u677f"
+    },
+    {
+      "label": "7.4 Subagent \u534f\u4f5c\u89c4\u8303",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L501",
+      "_origin": "ast",
+      "id": "analysis_plan_7_4_subagent_\u534f\u4f5c\u89c4\u8303",
+      "community": 2,
+      "norm_label": "7.4 subagent \u534f\u4f5c\u89c4\u8303"
+    },
+    {
+      "label": "8. \u9636\u6bb5\u516d\uff1a\u4ea4\u53c9\u9a8c\u8bc1 + \u8986\u76d6\u7387\u95e8\u63a7",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L511",
+      "_origin": "ast",
+      "id": "analysis_plan_8_\u9636\u6bb5\u516d_\u4ea4\u53c9\u9a8c\u8bc1_\u8986\u76d6\u7387\u95e8\u63a7",
+      "community": 2,
+      "norm_label": "8. \u9636\u6bb5\u516d:\u4ea4\u53c9\u9a8c\u8bc1 + \u8986\u76d6\u7387\u95e8\u63a7"
+    },
+    {
+      "label": "8.1 \u8986\u76d6\u7387\u95e8\u63a7",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L513",
+      "_origin": "ast",
+      "id": "analysis_plan_8_1_\u8986\u76d6\u7387\u95e8\u63a7",
+      "community": 2,
+      "norm_label": "8.1 \u8986\u76d6\u7387\u95e8\u63a7"
+    },
+    {
+      "label": "8.2 \u4ea4\u53c9\u9a8c\u8bc1\u6e05\u5355",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L520",
+      "_origin": "ast",
+      "id": "analysis_plan_8_2_\u4ea4\u53c9\u9a8c\u8bc1\u6e05\u5355",
+      "community": 2,
+      "norm_label": "8.2 \u4ea4\u53c9\u9a8c\u8bc1\u6e05\u5355"
+    },
+    {
+      "label": "8.3 \u4ea7\u51fa",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L527",
+      "_origin": "ast",
+      "id": "analysis_plan_8_3_\u4ea7\u51fa",
+      "community": 2,
+      "norm_label": "8.3 \u4ea7\u51fa"
+    },
+    {
+      "label": "9. \u9636\u6bb5\u4e03\uff1a\u591a\u6e90\u878d\u5408 \u2192 \u6700\u7ec8\u62a5\u544a",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L533",
+      "_origin": "ast",
+      "id": "analysis_plan_9_\u9636\u6bb5\u4e03_\u591a\u6e90\u878d\u5408_\u6700\u7ec8\u62a5\u544a",
+      "community": 2,
+      "norm_label": "9. \u9636\u6bb5\u4e03:\u591a\u6e90\u878d\u5408 \u2192 \u6700\u7ec8\u62a5\u544a"
+    },
+    {
+      "label": "9.1 \u62a5\u544a\u9aa8\u67b6",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L537",
+      "_origin": "ast",
+      "id": "analysis_plan_9_1_\u62a5\u544a\u9aa8\u67b6",
+      "community": 2,
+      "norm_label": "9.1 \u62a5\u544a\u9aa8\u67b6"
+    },
+    {
+      "label": "9.2 \u4ea4\u4ed8\u7269\u603b\u89c8",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L585",
+      "_origin": "ast",
+      "id": "analysis_plan_9_2_\u4ea4\u4ed8\u7269\u603b\u89c8",
+      "community": 2,
+      "norm_label": "9.2 \u4ea4\u4ed8\u7269\u603b\u89c8"
+    },
+    {
+      "label": "10. \u9a8c\u6536\u6807\u51c6\uff08\u6838\u5fc3 80% / \u6b21\u8981 20% \u6a21\u5f0f\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L620",
+      "_origin": "ast",
+      "id": "analysis_plan_10_\u9a8c\u6536\u6807\u51c6_\u6838\u5fc3_80_\u6b21\u8981_20_\u6a21\u5f0f",
+      "community": 2,
+      "norm_label": "10. \u9a8c\u6536\u6807\u51c6(\u6838\u5fc3 80% / \u6b21\u8981 20% \u6a21\u5f0f)"
+    },
+    {
+      "label": "11. \u5b8c\u6574\u6267\u884c\u987a\u5e8f",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L635",
+      "_origin": "ast",
+      "id": "analysis_plan_11_\u5b8c\u6574\u6267\u884c\u987a\u5e8f",
+      "community": 2,
+      "norm_label": "11. \u5b8c\u6574\u6267\u884c\u987a\u5e8f"
+    },
+    {
+      "label": "12. \u5f00\u5173\u4e0e\u9ed8\u8ba4\u503c",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L652",
+      "_origin": "ast",
+      "id": "analysis_plan_12_\u5f00\u5173\u4e0e\u9ed8\u8ba4\u503c",
+      "community": 2,
+      "norm_label": "12. \u5f00\u5173\u4e0e\u9ed8\u8ba4\u503c"
+    },
+    {
+      "label": "13. \u53cd\u9988\u8bb0\u5f55\uff08\u4f9b\u672a\u6765\u590d\u7528\uff09",
+      "file_type": "document",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L669",
+      "_origin": "ast",
+      "id": "analysis_plan_13_\u53cd\u9988\u8bb0\u5f55_\u4f9b\u672a\u6765\u590d\u7528",
+      "community": 2,
+      "norm_label": "13. \u53cd\u9988\u8bb0\u5f55(\u4f9b\u672a\u6765\u590d\u7528)"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/settings.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "claude_settings",
+      "target": "claude_settings_hooks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/settings.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "claude_settings_hooks",
+      "target": "claude_settings_hooks_pretooluse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/hooks.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "codex_hooks",
+      "target": "codex_hooks_hooks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/hooks.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "codex_hooks_hooks",
+      "target": "codex_hooks_hooks_pretooluse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_active",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_authoritymode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_blockedon",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_completed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_continuationboundary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_currentstage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_currentstagekey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_deactivatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_deactivationreason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_drivermode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_hookgatemode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_languageresolution",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_lastuservisiblenotice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_next",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_percent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_publiclabels",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_publicreadyauthority",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_publicreadyboundary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_publicsurface",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_resolvedoutputlanguage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_runid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_schemaversion",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_stageindex",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_stagepurpose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_stagepurposekey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_stagetotal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_startedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_surfacemode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_triggeredby",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "default_active_run",
+      "target": "default_active_run_updatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "default_active_run_publicreadyboundary",
+      "target": "default_active_run_publicreadyboundary_reason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "default_active_run_publicreadyboundary",
+      "target": "default_active_run_publicreadyboundary_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "default_active_run_continuationboundary",
+      "target": "default_active_run_continuationboundary_mode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "default_active_run_continuationboundary",
+      "target": "default_active_run_continuationboundary_reason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "default_active_run_continuationboundary",
+      "target": "default_active_run_continuationboundary_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "default_active_run_languageresolution",
+      "target": "default_active_run_languageresolution_language",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "default_active_run_languageresolution",
+      "target": "default_active_run_languageresolution_source",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "default_active_run_publicsurface",
+      "target": "default_active_run_publicsurface_hiddeninternalfields",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "default_active_run_publicsurface",
+      "target": "default_active_run_publicsurface_nativeenhancementallowed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "default_active_run_publicsurface",
+      "target": "default_active_run_publicsurface_popuprequired",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/active-run.json",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "default_active_run_publicsurface",
+      "target": "default_active_run_publicsurface_primarydisplay",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "default_post_copy_init",
+      "target": "default_post_copy_init_mode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "default_post_copy_init",
+      "target": "default_post_copy_init_scriptmtimems",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "default_post_copy_init",
+      "target": "default_post_copy_init_startedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "default_post_copy_init",
+      "target": "default_post_copy_init_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/post-copy-init.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "default_post_copy_init",
+      "target": "default_post_copy_init_updatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_active",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_authoritymode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_blockedon",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_completed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_continuationboundary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_currentstage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_currentstagekey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_deactivatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_deactivationreason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_drivermode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_hookgatemode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_languageresolution",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_lastuservisiblenotice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_next",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_percent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publiclabels",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publicreadyauthority",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publicreadyboundary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publicsurface",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_resolvedoutputlanguage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_runid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_schemaversion",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_stageindex",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_stagepurpose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_stagepurposekey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_stagetotal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_startedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_surfacemode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_triggeredby",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status",
+      "target": "meta_2026_07_06t09_05_53_455z_status_updatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_publicreadyboundary",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publicreadyboundary_reason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_publicreadyboundary",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publicreadyboundary_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_continuationboundary",
+      "target": "meta_2026_07_06t09_05_53_455z_status_continuationboundary_mode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_continuationboundary",
+      "target": "meta_2026_07_06t09_05_53_455z_status_continuationboundary_reason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_continuationboundary",
+      "target": "meta_2026_07_06t09_05_53_455z_status_continuationboundary_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_languageresolution",
+      "target": "meta_2026_07_06t09_05_53_455z_status_languageresolution_language",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_languageresolution",
+      "target": "meta_2026_07_06t09_05_53_455z_status_languageresolution_source",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_publicsurface",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publicsurface_hiddeninternalfields",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_publicsurface",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publicsurface_nativeenhancementallowed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_publicsurface",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publicsurface_popuprequired",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "meta_2026_07_06t09_05_53_455z_status_publicsurface",
+      "target": "meta_2026_07_06t09_05_53_455z_status_publicsurface_primarydisplay",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_active",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_choicesurfacestate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_controlstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_criticalfetchloopcount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_criticalfetchloopmax",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_currentstage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_dispatchchain",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_dispatchedagents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_executionstarted",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_gatestate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_intentcard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_intentconfirmationstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_intentconfirmationtimestamp",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_intentcorrectionpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_latestuserinputlanguage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_querybypass",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_runid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_skippedhooks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_stageruntimecontrol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_stages",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_surfacestate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_taskclassification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_triggeredat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_triggerreason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "spine_spine_state",
+      "target": "spine_spine_state_version",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "spine_spine_state_stageruntimecontrol",
+      "target": "spine_spine_state_stageruntimecontrol_activationmode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "spine_spine_state_stageruntimecontrol",
+      "target": "spine_spine_state_stageruntimecontrol_createdat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "spine_spine_state_stageruntimecontrol",
+      "target": "spine_spine_state_stageruntimecontrol_drivermode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "spine_spine_state_stageruntimecontrol",
+      "target": "spine_spine_state_stageruntimecontrol_executionleasepolicy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "spine_spine_state_stageruntimecontrol",
+      "target": "spine_spine_state_stageruntimecontrol_factgatepolicy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "spine_spine_state_stageruntimecontrol",
+      "target": "spine_spine_state_stageruntimecontrol_hookgatemode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "spine_spine_state_stageruntimecontrol",
+      "target": "spine_spine_state_stageruntimecontrol_promptfingerprint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "spine_spine_state_stageruntimecontrol",
+      "target": "spine_spine_state_stageruntimecontrol_userlanguage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages",
+      "target": "spine_spine_state_stages_critical",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L46",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages",
+      "target": "spine_spine_state_stages_evolution",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages",
+      "target": "spine_spine_state_stages_execution",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages",
+      "target": "spine_spine_state_stages_fetch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages",
+      "target": "spine_spine_state_stages_meta_review",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages",
+      "target": "spine_spine_state_stages_review",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages",
+      "target": "spine_spine_state_stages_thinking",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages",
+      "target": "spine_spine_state_stages_verification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_critical",
+      "target": "spine_spine_state_critical_completedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_critical",
+      "target": "spine_spine_state_critical_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_fetch",
+      "target": "spine_spine_state_fetch_completedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_fetch",
+      "target": "spine_spine_state_fetch_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_thinking",
+      "target": "spine_spine_state_thinking_completedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_thinking",
+      "target": "spine_spine_state_thinking_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_execution",
+      "target": "spine_spine_state_execution_completedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_execution",
+      "target": "spine_spine_state_execution_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_review",
+      "target": "spine_spine_state_review_completedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_review",
+      "target": "spine_spine_state_review_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_meta_review",
+      "target": "spine_spine_state_meta_review_completedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_meta_review",
+      "target": "spine_spine_state_meta_review_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_verification",
+      "target": "spine_spine_state_verification_completedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_verification",
+      "target": "spine_spine_state_verification_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_evolution",
+      "target": "spine_spine_state_evolution_completedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".meta-kim/state/default/spine/spine-state.json",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "spine_spine_state_stages_evolution",
+      "target": "spine_spine_state_evolution_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "agents",
+      "target": "agents_graphify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "claude",
+      "target": "claude_graphify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "analysis_plan",
+      "target": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_0_\u73af\u5883\u4e0e\u76ee\u5f55\u7ea6\u5b9a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L620",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_10_\u9a8c\u6536\u6807\u51c6_\u6838\u5fc3_80_\u6b21\u8981_20_\u6a21\u5f0f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L635",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_11_\u5b8c\u6574\u6267\u884c\u987a\u5e8f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L652",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_12_\u5f00\u5173\u4e0e\u9ed8\u8ba4\u503c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L669",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_13_\u53cd\u9988\u8bb0\u5f55_\u4f9b\u672a\u6765\u590d\u7528",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_1_\u9636\u6bb5\u96f6_\u514b\u9686_\u5143\u6570\u636e\u91c7\u96c6",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_2_\u9636\u6bb5\u4e00_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21_\u538b\u7f29_repomix",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L264",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_3_\u9636\u6bb5\u4e8c_12_\u7ef4\u7cbe\u7ec6\u5207\u7247_\u4e0d\u538b\u7f29_xml_\u5e76\u884c\u6267\u884c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L344",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_4_\u9636\u6bb5\u4e09_\u9879\u76ee\u7279\u5f81\u8bc6\u522b_\u81ea\u9002\u5e94\u63d0\u95ee_\u6838\u5fc3\u6d41\u7a0b",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L372",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_5_\u9636\u6bb5\u4e09_\u534a_\u5916\u90e8\u8c03\u7814_\u53ef\u9009\u5c42_\u9ed8\u8ba4_off",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L395",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_6_\u9636\u6bb5\u56db_\u52a8\u6001\u62a5\u544a\u7ed3\u6784\u8bbe\u8ba1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L424",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_7_\u9636\u6bb5\u4e94_\u4e1a\u52a1\u6a21\u5757\u5e76\u884c\u6df1\u5ea6\u5206\u6790_subagent_\u56e2\u961f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L511",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_8_\u9636\u6bb5\u516d_\u4ea4\u53c9\u9a8c\u8bc1_\u8986\u76d6\u7387\u95e8\u63a7",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L533",
+      "weight": 1.0,
+      "source": "analysis_plan_video_use_\u4ed3\u5e93\u5206\u6790\u65b9\u6848_v2_\u57fa\u4e8e_repomix_repo_analyzer_\u6846\u67b6",
+      "target": "analysis_plan_9_\u9636\u6bb5\u4e03_\u591a\u6e90\u878d\u5408_\u6700\u7ec8\u62a5\u544a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L95",
+      "weight": 1.0,
+      "source": "analysis_plan_2_\u9636\u6bb5\u4e00_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21_\u538b\u7f29_repomix",
+      "target": "analysis_plan_2_1_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\u7684\u673a\u5236\u4e0e\u539f\u7406",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L161",
+      "weight": 1.0,
+      "source": "analysis_plan_2_\u9636\u6bb5\u4e00_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21_\u538b\u7f29_repomix",
+      "target": "analysis_plan_2_2_\u5e76\u884c\u5b50\u4ee3\u7406\u63d0\u53d6\u7b56\u7565",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L99",
+      "weight": 1.0,
+      "source": "analysis_plan_2_1_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\u7684\u673a\u5236\u4e0e\u539f\u7406",
+      "target": "analysis_plan_2_1_1_\u673a\u5236_repomix_compress_\u5185\u90e8\u505a\u4e86\u4ec0\u4e48",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L110",
+      "weight": 1.0,
+      "source": "analysis_plan_2_1_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\u7684\u673a\u5236\u4e0e\u539f\u7406",
+      "target": "analysis_plan_2_1_2_\u539f\u7406_\u4e3a\u4ec0\u4e48_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21_\u80fd\u6210\u7acb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L127",
+      "weight": 1.0,
+      "source": "analysis_plan_2_1_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\u7684\u673a\u5236\u4e0e\u539f\u7406",
+      "target": "analysis_plan_2_1_3_\u4e0e_overview_md_14_\u9879\u7684\u5bf9\u5e94\u5173\u7cfb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "analysis_plan_2_1_\u5b8f\u89c2\u8ba4\u77e5\u5efa\u6a21\u7684\u673a\u5236\u4e0e\u539f\u7406",
+      "target": "analysis_plan_2_1_4_\u5931\u6548\u8fb9\u754c_\u4ec0\u4e48\u573a\u666f\u4e0b\u538b\u7f29\u673a\u5236\u4e0d\u591f\u7528",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L165",
+      "weight": 1.0,
+      "source": "analysis_plan_2_2_\u5e76\u884c\u5b50\u4ee3\u7406\u63d0\u53d6\u7b56\u7565",
+      "target": "analysis_plan_2_2_1_\u5206\u7ec4\u7b56\u7565_\u6309_\u4fe1\u606f\u6e90_\u5207_\u4e0d\u662f\u6309_\u9879\u53f7_\u5207",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L177",
+      "weight": 1.0,
+      "source": "analysis_plan_2_2_\u5e76\u884c\u5b50\u4ee3\u7406\u63d0\u53d6\u7b56\u7565",
+      "target": "analysis_plan_2_2_2_subagent_prompt_\u6a21\u677f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L203",
+      "weight": 1.0,
+      "source": "analysis_plan_2_2_\u5e76\u884c\u5b50\u4ee3\u7406\u63d0\u53d6\u7b56\u7565",
+      "target": "analysis_plan_2_2_3_\u6267\u884c\u6d41\u7a0b",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L221",
+      "weight": 1.0,
+      "source": "analysis_plan_2_2_\u5e76\u884c\u5b50\u4ee3\u7406\u63d0\u53d6\u7b56\u7565",
+      "target": "analysis_plan_2_2_4_\u51b2\u7a81\u4e0e\u53bb\u91cd\u89c4\u5219",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L231",
+      "weight": 1.0,
+      "source": "analysis_plan_2_2_\u5e76\u884c\u5b50\u4ee3\u7406\u63d0\u53d6\u7b56\u7565",
+      "target": "analysis_plan_2_2_5_\u4f55\u65f6\u56de\u9000\u5230\u4e32\u884c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L266",
+      "weight": 1.0,
+      "source": "analysis_plan_3_\u9636\u6bb5\u4e8c_12_\u7ef4\u7cbe\u7ec6\u5207\u7247_\u4e0d\u538b\u7f29_xml_\u5e76\u884c\u6267\u884c",
+      "target": "analysis_plan_3_0_\u5171\u4eab\u8d44\u6e90",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L293",
+      "weight": 1.0,
+      "source": "analysis_plan_3_\u9636\u6bb5\u4e8c_12_\u7ef4\u7cbe\u7ec6\u5207\u7247_\u4e0d\u538b\u7f29_xml_\u5e76\u884c\u6267\u884c",
+      "target": "analysis_plan_3_1_\u5207\u7247\u6e05\u5355",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L314",
+      "weight": 1.0,
+      "source": "analysis_plan_3_\u9636\u6bb5\u4e8c_12_\u7ef4\u7cbe\u7ec6\u5207\u7247_\u4e0d\u538b\u7f29_xml_\u5e76\u884c\u6267\u884c",
+      "target": "analysis_plan_3_2_\u7ef4\u5ea6_12_\u7684_git_log_\u805a\u5408\u811a\u672c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L331",
+      "weight": 1.0,
+      "source": "analysis_plan_3_\u9636\u6bb5\u4e8c_12_\u7ef4\u7cbe\u7ec6\u5207\u7247_\u4e0d\u538b\u7f29_xml_\u5e76\u884c\u6267\u884c",
+      "target": "analysis_plan_3_3_\u5e76\u884c\u8c03\u5ea6",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L348",
+      "weight": 1.0,
+      "source": "analysis_plan_4_\u9636\u6bb5\u4e09_\u9879\u76ee\u7279\u5f81\u8bc6\u522b_\u81ea\u9002\u5e94\u63d0\u95ee_\u6838\u5fc3\u6d41\u7a0b",
+      "target": "analysis_plan_4_1_\u8bc6\u522b\u9879",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L358",
+      "weight": 1.0,
+      "source": "analysis_plan_4_\u9636\u6bb5\u4e09_\u9879\u76ee\u7279\u5f81\u8bc6\u522b_\u81ea\u9002\u5e94\u63d0\u95ee_\u6838\u5fc3\u6d41\u7a0b",
+      "target": "analysis_plan_4_2_\u81ea\u9002\u5e94\u63d0\u95ee_askuserquestion",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L399",
+      "weight": 1.0,
+      "source": "analysis_plan_6_\u9636\u6bb5\u56db_\u52a8\u6001\u62a5\u544a\u7ed3\u6784\u8bbe\u8ba1",
+      "target": "analysis_plan_6_1_\u4e1a\u52a1\u6a21\u5757\u8bc6\u522b_\u6309\u4e1a\u52a1\u529f\u80fd_\u4e0d\u6309\u6587\u4ef6",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L405",
+      "weight": 1.0,
+      "source": "analysis_plan_6_\u9636\u6bb5\u56db_\u52a8\u6001\u62a5\u544a\u7ed3\u6784\u8bbe\u8ba1",
+      "target": "analysis_plan_6_2_\u53d9\u4e8b\u4e3b\u7ebf\u9009\u62e9",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L415",
+      "weight": 1.0,
+      "source": "analysis_plan_6_\u9636\u6bb5\u56db_\u52a8\u6001\u62a5\u544a\u7ed3\u6784\u8bbe\u8ba1",
+      "target": "analysis_plan_6_3_\u6a21\u5757\u4f9d\u8d56\u56fe",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L430",
+      "weight": 1.0,
+      "source": "analysis_plan_7_\u9636\u6bb5\u4e94_\u4e1a\u52a1\u6a21\u5757\u5e76\u884c\u6df1\u5ea6\u5206\u6790_subagent_\u56e2\u961f",
+      "target": "analysis_plan_7_1_\u8c03\u5ea6\u7b56\u7565",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L438",
+      "weight": 1.0,
+      "source": "analysis_plan_7_\u9636\u6bb5\u4e94_\u4e1a\u52a1\u6a21\u5757\u5e76\u884c\u6df1\u5ea6\u5206\u6790_subagent_\u56e2\u961f",
+      "target": "analysis_plan_7_2_\u6838\u5fc3\u6a21\u5757_subagent_prompt_\u6a21\u677f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L479",
+      "weight": 1.0,
+      "source": "analysis_plan_7_\u9636\u6bb5\u4e94_\u4e1a\u52a1\u6a21\u5757\u5e76\u884c\u6df1\u5ea6\u5206\u6790_subagent_\u56e2\u961f",
+      "target": "analysis_plan_7_3_\u6b21\u8981\u6a21\u5757\u6279\u91cf_subagent_prompt_\u6a21\u677f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L501",
+      "weight": 1.0,
+      "source": "analysis_plan_7_\u9636\u6bb5\u4e94_\u4e1a\u52a1\u6a21\u5757\u5e76\u884c\u6df1\u5ea6\u5206\u6790_subagent_\u56e2\u961f",
+      "target": "analysis_plan_7_4_subagent_\u534f\u4f5c\u89c4\u8303",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L513",
+      "weight": 1.0,
+      "source": "analysis_plan_8_\u9636\u6bb5\u516d_\u4ea4\u53c9\u9a8c\u8bc1_\u8986\u76d6\u7387\u95e8\u63a7",
+      "target": "analysis_plan_8_1_\u8986\u76d6\u7387\u95e8\u63a7",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L520",
+      "weight": 1.0,
+      "source": "analysis_plan_8_\u9636\u6bb5\u516d_\u4ea4\u53c9\u9a8c\u8bc1_\u8986\u76d6\u7387\u95e8\u63a7",
+      "target": "analysis_plan_8_2_\u4ea4\u53c9\u9a8c\u8bc1\u6e05\u5355",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L527",
+      "weight": 1.0,
+      "source": "analysis_plan_8_\u9636\u6bb5\u516d_\u4ea4\u53c9\u9a8c\u8bc1_\u8986\u76d6\u7387\u95e8\u63a7",
+      "target": "analysis_plan_8_3_\u4ea7\u51fa",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L537",
+      "weight": 1.0,
+      "source": "analysis_plan_9_\u9636\u6bb5\u4e03_\u591a\u6e90\u878d\u5408_\u6700\u7ec8\u62a5\u544a",
+      "target": "analysis_plan_9_1_\u62a5\u544a\u9aa8\u67b6",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "analysis/PLAN.md",
+      "source_location": "L585",
+      "weight": 1.0,
+      "source": "analysis_plan_9_\u9636\u6bb5\u4e03_\u591a\u6e90\u878d\u5408_\u6700\u7ec8\u62a5\u544a",
+      "target": "analysis_plan_9_2_\u4ea4\u4ed8\u7269\u603b\u89c8",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": []
+}

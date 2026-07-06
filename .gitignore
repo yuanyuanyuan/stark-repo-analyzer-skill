@@ -1,0 +1,79 @@
+# ========================
+# Stark-Repo-Analyzer-Skill .gitignore
+# 屏蔽常见敏感/生成文件
+# ========================
+
+# ---- 密钥与环境变量 ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+
+# ---- 依赖与构建产物 ----
+node_modules/
+bower_components/
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+dist/
+build/
+*.egg-info/
+.target/
+target/
+
+# ---- IDE / 编辑器 / Agent 元数据 ----
+# 注: .claude/、.codex/、.meta-kim/ 是 agent metadata,
+# 如需在私有仓库共享配置可保留;这里默认屏蔽避免污染。
+.claude/
+.codex/
+.meta-kim/
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ---- 日志与运行时数据 ----
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# ---- 测试与覆盖率 ----
+coverage/
+.nyc_output/
+*.lcov
+.pytest_cache/
+.tox/
+.coverage
+
+# ---- 临时文件 ----
+*.tmp
+*.bak
+*.swp
+.cache/
+.tmp/
+tmp/
+
+# ---- Obsidian / 知识库产物 ----
+.obsidian/workspace/
+.obsidian/cache/
+.trash/
+
+# ---- 操作系统 ----
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+ehthumbs.db
+Desktop.ini

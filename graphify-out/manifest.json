@@ -1,0 +1,47 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1783328757.9102879,
+    "ast_hash": "bfee062c3962c14264fd704e975a6b38",
+    "semantic_hash": ""
+  },
+  ".codex/hooks.json": {
+    "mtime": 1783328757.9860349,
+    "ast_hash": "8ed41db4e39350418397c5d3fe0904f2",
+    "semantic_hash": ""
+  },
+  ".meta-kim/state/default/active-run.json": {
+    "mtime": 1783328753.4795868,
+    "ast_hash": "48e2c3ef12d0ca119957f19329d2c198",
+    "semantic_hash": ""
+  },
+  ".meta-kim/state/default/post-copy-init.json": {
+    "mtime": 1783328753.4455624,
+    "ast_hash": "0cbaef9969d66799973d9bdead3c68f2",
+    "semantic_hash": ""
+  },
+  ".meta-kim/state/default/runs/meta-2026-07-06T09-05-53-455Z/status.json": {
+    "mtime": 1783328753.4815843,
+    "ast_hash": "48e2c3ef12d0ca119957f19329d2c198",
+    "semantic_hash": ""
+  },
+  ".meta-kim/state/default/spine/spine-state.json": {
+    "mtime": 1783328753.4630742,
+    "ast_hash": "b09caa328c9646fb2b05c3996ce070ca",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1783328757.9805944,
+    "ast_hash": "62c05a2bf20bf036a0b2633478663e64",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1783328757.9062865,
+    "ast_hash": "82efb97a359f5c7290bf2513d14686be",
+    "semantic_hash": ""
+  },
+  "analysis/PLAN.md": {
+    "mtime": 1783328556.659289,
+    "ast_hash": "80acef46a7b0ea73f64a47e8f51bfd29",
+    "semantic_hash": ""
+  }
+}
