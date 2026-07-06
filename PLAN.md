@@ -675,3 +675,72 @@ analysis/
 - 用户在收到"先出方案再执行"工作流时的反应：直接采纳 → 在确认 Q1/Q2 后立即升级方案。
 - 用户在阶段 1 三轮迭代中的偏好：**先补全 ignore（13 大类全语言）→ 再补机制解释（让人理解为什么可行）→ 再补并行 subagent 调度（提效 4×）**。反映出**重视体系自洽**的工作流——每加一个能力，都要求解释它与既有体系的契合点。
 - 用户对"避免重复"的偏好：拒绝在多章节里重复同一规则（如锁文件例外、§7 与 §2.2 的范式一致性），倾向于用"详见 §X"交叉引用代替复制粘贴。
+
+---
+
+## 14. R4 grilling 决策修订记录（2026-07-06）
+
+> 本节由 `/grill-with-docs` 在 R1~R4 共 4 轮 11 个问题全部答完后追加。
+> **不修改** 上述 §0–§13 原文，仅以链接形式指向 ADR。后续段落若引用新决策，请用"详见 ADR-XXXX"。
+
+### 14.1 R4 全部决策一览（10/10 完成）
+
+| # | 问题 | 用户决定 | ADR |
+|---|------|---------|-----|
+| Q1 | 阶段一是否保留 | **B 砍掉阶段一 + 5KB 名片** | [ADR-0001](decisions/0001-phase-1-cut.md) |
+| Q2 | 12 维切片是否写死 | **B2 先识别类型再切片** | [ADR-0002](decisions/0002-phase-2a-dynamic.md) |
+| Q3 | 交互层运行时差异 | **B Skill 内统一 `ask_user()`** | [ADR-0003](decisions/0003-ask-user-api.md) |
+| Q4 | cross-ref 放哪 | **阶段五自检 + 阶段六独立审稿** | [ADR-0004](decisions/0004-cross-ref-two-stage.md) |
+| Q5 | 覆盖率算法 | **C+E 混合（`tree-sitter` + grep）** | [ADR-0005](decisions/0005-coverage-tree-sitter.md) |
+| Q6 | 受众变体 | **三变体（tech/business/learning）** | [ADR-0006](decisions/0006-templates-three-audiences.md) |
+| Q7 | SLA 预算 | **激进 30min / 500K / 3 次失败** | [ADR-0007](decisions/0007-sla-budget.md) |
+| Q8 | 开关分类 | **接受二分（5 真 + 5 内部变量）** | [ADR-0008](decisions/0008-flags-classification.md) |
+| Q9 | 风险表 | **接受 R1~R6 + 预算耗尽兜底** | [ADR-0009](decisions/0009-risk-register.md) |
+| Q10 | 差异化 pitch | **三角度融合** | [ADR-0010](decisions/0010-positioning-pitch.md) |
+
+### 14.2 修订后流程变化摘要
+
+1. **阶段一整章移除**（ADR-0001）—— PLAN.md §2 标记为「已废弃 / 见 ADR-0001」，阶段号顺移。
+2. **阶段二拆为 Phase-2a + 12 维精切**（ADR-0002）—— Phase-2a 同时承担「Repo 类型识别」与「5KB 名片生成」双重职责，1 次扫描产 2 份产物。
+3. **阶段三新增 `ask_user()` 抽象层**（ADR-0003）—— 由 3 个运行时适配器挂接到 Claude Code / Codex CLI / Cursor 原生交互 API；不支持时降级到 `defaults.yaml` 默认值。
+4. **阶段五双层质检**（ADR-0004）—— 内置自检脚本 + 阶段六独立 cross-ref sub-agent，挑刺清单 `07-cross-ref-checks.md` 触发模块级回退。
+5. **阶段六覆盖率门控 = `tree-sitter` + grep 交集**（ADR-0005）—— 不再让 LLM self-report，强制门控 + 失败回退循环。
+6. **阶段七三分模板渲染**（ADR-0006）—— 数据层（drafts + manifest + 答案）与视图层（templates + renderer）分离；`render_report.py` 默认一次产 3 份受众变体。
+7. **SLA 预算三件套**（ADR-0007）—— 30min / 500K tokens / 3 次失败重试，超预算触发 `STATE_REPORT.md` 兜底。
+8. **开关二分**（ADR-0008）—— 5 真开关（runtime argv 透传）+ 5 内部变量（`defaults.yaml`）；`--max-context` / `--max-history` 砍掉。
+9. **6 类风险登记 + 预算耗尽兜底**（ADR-0009）—— R1 token 爆炸 / R2 sub-agent 超时 / R3 切片失败 / R4 repo 不可达 / R5 门控循环 / R6 mode 切换 + `STATE_REPORT.md` 统一兜底。
+10. **三角度融合 elevator pitch**（ADR-0010）—— 短 / 中 / 长 3 档稿件，最终定稿存 [ELEVATOR_PITCH.md](ELEVATOR_PITCH.md)。
+
+### 14.3 配套产物索引
+
+- 10 份 ADR：[`decisions/0001` ~ `0010`](decisions)
+- 术语表：[`glossary/GLOSSARY.md`](glossary/GLOSSARY.md)（18+ 词条）
+- 对外稿件：[`ELEVATOR_PITCH.md`](ELEVATOR_PITCH.md)（3 档）
+
+### 14.4 R5 决策落盘（2026-07-06 同日追加）
+
+> Round 5 共 5 个问题全部答完，每个决策落地为 ADR-0011~0015。
+
+| # | 问题 | 用户决定 | ADR |
+|---|------|---------|-----|
+| Q1 | §10 验收脚本化 | **B 全 13 条硬断言**（含 8 条 LLM-judge） | [ADR-0011](decisions/0011-acceptance-script-enforce.md) |
+| Q2 | 妥协性配置 | **A 三件齐做**（env 覆盖 + `extends:` 继承 + 偏好持久化） | [ADR-0012](decisions/0012-compromise-config.md) |
+| Q3 | graphify 协同 | **A 完全解耦** | [ADR-0013](decisions/0013-graphify-decoupled.md) |
+| Q4 | tree-sitter 防护 | **A 串行 + chunked 5MB** | [ADR-0014](decisions/0014-treesitter-chunked.md) |
+| Q5 | 未完成模块呈现 | **A 独立成章 `§9`** | [ADR-0015](decisions/0015-failed-module-section.md) |
+
+**R5 修订后流程增补**：
+
+1. **验收脚本 13 条全硬断言**（ADR-0011）—— §10 验收从主观题全变客观题；5 类执行器（`grep` × 3 / AST × 2 / JSON Schema × 2 / link check × 2 / Mermaid + LLM-judge × 4）；落地为 `analysis/acceptance/check.sh`。
+2. **妥协性配置三件套**（ADR-0012）—— env 变量 `REPO_ANALYZER_*` 覆盖 + `defaults.yaml` 的 `extends:` 父链继承 + `last-session.json` 偏好持久化；总 ~150 行 + 配置文档。
+3. **与 graphify 完全解耦**（ADR-0013）—— repo-analyzer 不读不写 `graphify-out/`，仅在 `analysis/README.md` 顶部加一行提示让用户在 shell 层串联。
+4. **tree-sitter 流式 chunked 5MB**（ADR-0014）—— 5MB 单文件阈值 + 单核串行；多语言按扩展名分发不并行；落地 `config/tree-sitter.yaml` 配 + `docs/benchmarks/tree-sitter-baseline.md` 3 仓库基准。
+5. **§9 未完成模块明细独立成章**（ADR-0015）—— 报告模板新增条件 block；STATE_REPORT YAML 增 `failed_modules[]` 必填字段；断言 9 在 ADR-0011 §10 验收脚本中校验 `STATE_REPORT.md` 字段完整性。
+
+### 14.5 Round 6 候选主题（仍未开启）
+
+- `defaults.yaml` 中 `graphify.compatible_mode` 占位字段后续是否实现
+- ADR-0014 中 5MB chunked 是否要按语言调（JS bundle 通常 > 5MB）
+- ADR-0014 中 `conservative` SLA 档是否加 `parallel: true` flag 加速大仓库
+- LLM-judge 模型选型（haiku-4.5 精度 vs sonnet-4.6 成本权衡）
+- ADR-0015 §9 全部 PASS 时是否在 TL;DR 加正向反馈行
