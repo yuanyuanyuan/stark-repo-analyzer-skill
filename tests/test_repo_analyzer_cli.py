@@ -2,6 +2,7 @@ import subprocess
 import sys
 import tempfile
 import re
+import json
 from pathlib import Path
 from unittest import TestCase
 
@@ -204,6 +205,10 @@ class RepoAnalyzerCliTest(TestCase):
             (repo / "main.py").write_text("def run():\n    return 'ok'\n", encoding="utf-8")
             (repo / "node_modules").mkdir()
             (repo / "node_modules" / "ignored.js").write_text("console.log('noise')\n", encoding="utf-8")
+            (repo / "uat-evidence").mkdir()
+            (repo / "uat-evidence" / "old.md").write_text("待 LLM 深度分析补全\n", encoding="utf-8")
+            (repo / "analysis").mkdir()
+            (repo / "analysis" / "old.py").write_text("def stale_symbol():\n    pass\n", encoding="utf-8")
             subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             subprocess.run(["git", "add", "."], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             subprocess.run(
@@ -231,6 +236,8 @@ class RepoAnalyzerCliTest(TestCase):
                 self.assertTrue((output / ref).exists(), ref)
             history = (output / "slices" / "12-history-hotspot.txt").read_text(encoding="utf-8")
             self.assertNotIn("node_modules", history)
+            self.assertNotIn("uat-evidence", report)
+            self.assertNotIn("stale_symbol", report)
 
     def test_reports_mcp_tool_names_from_source(self):
         with tempfile.TemporaryDirectory() as repo_tmp, tempfile.TemporaryDirectory() as out_tmp:
@@ -309,5 +316,97 @@ class RepoAnalyzerCliTest(TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             report = (output / "ANALYSIS_REPORT.md").read_text(encoding="utf-8")
             self.assertEqual(report.count("```") % 2, 0)
+            acceptance = subprocess.run([str(output / "acceptance" / "check.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.assertEqual(acceptance.returncode, 0, acceptance.stdout + acceptance.stderr)
+
+    def test_quality_gates_write_cross_ref_and_symbol_coverage(self):
+        with tempfile.TemporaryDirectory() as repo_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            repo = Path(repo_tmp)
+            output = Path(out_tmp) / "analysis"
+
+            (repo / "README.md").write_text("# Demo Tool\n", encoding="utf-8")
+            (repo / "main.py").write_text(
+                "def run():\n    return 'ok'\n\n"
+                "def search_docs(query):\n    return query\n",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run(["git", "add", "."], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run(["git", "commit", "-m", "initial"], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+            result = subprocess.run(
+                [sys.executable, str(CLI), str(repo), "--output", str(output), "--no-question"],
+                cwd=ROOT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            draft = (output / "drafts" / "06-module-module_001.md").read_text(encoding="utf-8")
+            self.assertIn("## 深度分析", draft)
+            self.assertIn("## 关键路径", draft)
+            self.assertIn("## 风险与缺口", draft)
+            self.assertIn("## 证据", draft)
+            self.assertIn("search_docs", draft)
+            cross_ref = (output / "drafts" / "07-cross-ref-checks.md").read_text(encoding="utf-8")
+            self.assertIn("PASS", cross_ref)
+            coverage_json = json.loads((output / "coverage-symbols.json").read_text(encoding="utf-8"))
+            self.assertIn("module_001", coverage_json["modules"])
+            self.assertEqual(coverage_json["modules"]["module_001"]["status"], "PASS")
+
+            check = output / "acceptance" / "check.sh"
+            passing = subprocess.run([str(check)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.assertEqual(passing.returncode, 0, passing.stdout + passing.stderr)
+
+            draft_path = output / "drafts" / "06-module-module_001.md"
+            draft_path.write_text(draft.replace("search_docs", "removed_symbol"), encoding="utf-8")
+            broken = subprocess.run([str(check)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.assertNotEqual(broken.returncode, 0, broken.stdout + broken.stderr)
+            self.assertIn("coverage symbol:module_001:search_docs", broken.stdout)
+
+    def test_config_sla_and_resume_are_recorded(self):
+        with tempfile.TemporaryDirectory() as repo_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            repo = Path(repo_tmp)
+            output = Path(out_tmp) / "analysis"
+            config = Path(out_tmp) / "repo-analyzer.json"
+
+            (repo / "README.md").write_text("# Demo Tool\n", encoding="utf-8")
+            (repo / "main.py").write_text("def run():\n    return 'ok'\n", encoding="utf-8")
+            subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run(["git", "add", "."], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run(["git", "commit", "-m", "initial"], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            output.mkdir()
+            (output / "manual-note.md").write_text("keep me\n", encoding="utf-8")
+            config.write_text(
+                json.dumps(
+                    {
+                        "mode": "all",
+                        "no_question": True,
+                        "target_coverage_core": 0.8,
+                        "target_coverage_minor": 0.2,
+                        "sla_minutes": 30,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(CLI), str(repo), "--output", str(output), "--config", str(config), "--resume"],
+                cwd=ROOT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((output / "manual-note.md").exists())
+            effective = json.loads((output / "CONFIG_EFFECTIVE.json").read_text(encoding="utf-8"))
+            self.assertEqual(effective["mode"], "all")
+            self.assertTrue(effective["no_question"])
+            sla = (output / "SLA_REPORT.md").read_text(encoding="utf-8")
+            self.assertIn("resumed: true", sla)
+            self.assertIn("status: PASS", sla)
+            self.assertTrue((output / "ANALYSIS_REPORT.business.md").exists())
             acceptance = subprocess.run([str(output / "acceptance" / "check.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             self.assertEqual(acceptance.returncode, 0, acceptance.stdout + acceptance.stderr)

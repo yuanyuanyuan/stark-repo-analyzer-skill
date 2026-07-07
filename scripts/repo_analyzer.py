@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from collections import Counter
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
@@ -34,6 +35,13 @@ IGNORE_DIRS = {
     "env",
     "vendor",
     "coverage",
+    "analysis",
+    "analysis-final",
+    "analysis-judge",
+    "analysis-judge-final",
+    "analysis-novice-final",
+    "graphify-out",
+    "uat-evidence",
 }
 
 BINARY_SUFFIXES = {
@@ -58,6 +66,10 @@ BINARY_SUFFIXES = {
     ".woff2",
     ".wasm",
 }
+
+GENERATED_DIRS = {"slices", "drafts", "acceptance"}
+SOURCE_SYMBOL_LIMIT = 400
+API_SURFACE_LIMIT = 1_000
 
 SLICES: Dict[str, List[Tuple[str, str, Sequence[str]]]] = {
     "web-fullstack": [
@@ -121,6 +133,40 @@ def clean_output(path: Path) -> None:
     path.mkdir(parents=True)
 
 
+def prepare_output(path: Path, resume: bool) -> None:
+    if not resume:
+        clean_output(path)
+        return
+    path.mkdir(parents=True, exist_ok=True)
+    generated_files = {
+        "00-meta.txt",
+        "02a-repo-type.yaml",
+        "02a-manifest-card.md",
+        "03-question-answers.md",
+        "05-module-ids.yaml",
+        "08-coverage.md",
+        "08-coverage-failure.md",
+        "coverage-symbols.json",
+        "mcp-tools.json",
+        "STATE_REPORT.md",
+        "SLA_REPORT.md",
+        "CONFIG_EFFECTIVE.json",
+        "ANALYSIS_REPORT.md",
+        "ANALYSIS_REPORT.tech-lead.md",
+        "ANALYSIS_REPORT.business.md",
+        "ANALYSIS_REPORT.learning.md",
+        "README.md",
+    }
+    for item in generated_files:
+        target = path / item
+        if target.exists():
+            target.unlink()
+    for item in GENERATED_DIRS:
+        target = path / item
+        if target.exists():
+            shutil.rmtree(target)
+
+
 def is_url(value: str) -> bool:
     return value.startswith("https://") or value.startswith("http://") or value.startswith("git@")
 
@@ -165,6 +211,45 @@ def read_text(path: Path, limit: int = 200_000) -> str:
         return data.decode("utf-8", errors="replace")
     except OSError:
         return ""
+
+
+def load_config(path: str) -> dict:
+    if not path:
+        return {}
+    config_path = Path(path).expanduser()
+    try:
+        return json.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"配置文件读取失败: {config_path}: {exc}") from exc
+
+
+def bool_config(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(value)
+
+
+def apply_config(args: argparse.Namespace) -> argparse.Namespace:
+    config = load_config(args.config)
+    if config:
+        if "mode" in config and args.mode == "tech-lead":
+            args.mode = str(config["mode"])
+        if "no_question" in config and not args.no_question:
+            args.no_question = bool_config(config["no_question"])
+        if "offline" in config and not args.offline:
+            args.offline = bool_config(config["offline"])
+        if "target_coverage_core" in config and args.target_coverage_core is None:
+            args.target_coverage_core = float(config["target_coverage_core"])
+        if "target_coverage_minor" in config and args.target_coverage_minor is None:
+            args.target_coverage_minor = float(config["target_coverage_minor"])
+        if "sla_minutes" in config and args.sla_minutes is None:
+            args.sla_minutes = float(config["sla_minutes"])
+    args.target_coverage_core = 0.8 if args.target_coverage_core is None else args.target_coverage_core
+    args.target_coverage_minor = 0.2 if args.target_coverage_minor is None else args.target_coverage_minor
+    args.sla_minutes = 30.0 if args.sla_minutes is None else args.sla_minutes
+    return args
 
 
 def markdown_snippet(text: str) -> str:
@@ -286,7 +371,7 @@ def command_hints(repo: Path, files: List[Path]) -> List[str]:
     return hints or ["未从常见入口识别到运行命令"]
 
 
-def source_symbols(repo: Path, files: List[Path], limit: int = 80) -> List[Tuple[str, str, str]]:
+def source_symbols(repo: Path, files: List[Path], limit: int = SOURCE_SYMBOL_LIMIT) -> List[Tuple[str, str, str]]:
     symbols = []
     seen = set()
     patterns = [
@@ -314,7 +399,7 @@ def source_symbols(repo: Path, files: List[Path], limit: int = 80) -> List[Tuple
     return symbols
 
 
-def mcp_tool_names(repo: Path, files: List[Path], limit: int = 80) -> List[Tuple[str, str, str]]:
+def mcp_tool_names(repo: Path, files: List[Path], limit: int = API_SURFACE_LIMIT) -> List[Tuple[str, str, str]]:
     tools = []
     seen = set()
     pattern = re.compile(r"\bname\s*:\s*['\"](ai_[A-Za-z0-9_$-]+)['\"]")
@@ -333,6 +418,30 @@ def mcp_tool_names(repo: Path, files: List[Path], limit: int = 80) -> List[Tuple
     return tools
 
 
+def module_file_paths(files: List[Path], repo: Path, root: str) -> List[str]:
+    paths = []
+    for path in files:
+        relative = rel(path, repo)
+        if (root == "[root]" and "/" not in relative) or relative.startswith(f"{root}/"):
+            paths.append(relative)
+    return sorted(paths)
+
+
+def risk_lines(module_files: List[str], root_symbols: List[Tuple[str, str, str]], root_tools: List[Tuple[str, str, str]]) -> List[str]:
+    risks = []
+    has_tests = any(re.search(r"(^|/)(tests?|__tests__)/|test|spec", item, re.I) for item in module_files)
+    has_docs = any(Path(item).name.lower().startswith("readme") or "/docs/" in item for item in module_files)
+    if not has_tests:
+        risks.append("缺少可见测试文件，变更该模块前应先补最小回归验证。")
+    if root_tools and not has_docs:
+        risks.append("该模块暴露对外工具/API，但同组文档信号较弱，使用说明可能不足。")
+    if len(root_symbols) > 20:
+        risks.append("公开符号较多，后续人工深挖应优先确认职责边界是否过宽。")
+    if not risks:
+        risks.append("未发现明显结构性风险；后续重点核对业务语义是否与 README 承诺一致。")
+    return risks
+
+
 def write_module_drafts(repo: Path, output: Path, files: List[Path]) -> None:
     drafts = output / "drafts"
     drafts.mkdir()
@@ -347,8 +456,14 @@ def write_module_drafts(repo: Path, output: Path, files: List[Path]) -> None:
         if root == "[root]":
             root_symbols = [symbol for symbol in symbols if "/" not in symbol[1]]
         root_tools = [tool for tool in tools if (root == "[root]" and "/" not in tool[1]) or tool[1].startswith(f"{root}/")]
-        symbol_lines = "\n".join(f"- `{name}` ({file_path}:{line})" for name, file_path, line in root_symbols[:30]) or "- 未识别到公开符号"
+        module_files = module_file_paths(files, repo, root)
+        symbol_lines = "\n".join(f"- `{name}` ({file_path}:{line})" for name, file_path, line in root_symbols) or "- 未识别到公开符号"
         tool_lines = "\n".join(f"- `{name}` ({file_path}:{line})" for name, file_path, line in root_tools[:40]) or "- 未识别到 MCP 工具"
+        file_lines = "\n".join(f"- `{item}`" for item in module_files[:20]) or "- 未识别到模块文件"
+        path_lines = "\n".join(
+            f"- 从 `{file_path}:{line}` 的 `{name}` 开始核对调用链。" for name, file_path, line in (root_tools or root_symbols)[:8]
+        ) or "- 先从模块文件清单逐个确认入口。"
+        risk_text = "\n".join(f"- {line}" for line in risk_lines(module_files, root_symbols, root_tools))
         (drafts / f"06-module-{module_id}.md").write_text(
             f"""# {module_id} {root}
 
@@ -356,7 +471,18 @@ def write_module_drafts(repo: Path, output: Path, files: List[Path]) -> None:
 - 分层: {"core" if index <= 3 else "minor"}
 
 ## 角色
-该模块由确定性扫描按路径分组生成，用于给后续 subagent 提供分析入口。
+该模块由确定性扫描按路径、公开符号和对外工具/API 生成，是后续 agent 判断业务价值与架构风险的分析底稿。
+
+## 深度分析
+- 模块边界：`{root}` 路径组，共 {count} 个文件。
+- 分析优先级：{"核心模块，必须优先核对入口、测试和对外 API。" if index <= 3 else "次要模块，先轻量确认依赖和辅助职责。"}
+- 业务假设：若该模块包含运行入口或对外 API，它就是报告后续判断的主要证据来源；否则先按支撑模块处理。
+
+## 关键文件
+{file_lines}
+
+## 关键路径
+{path_lines}
 
 ## 关键符号
 {symbol_lines}
@@ -364,10 +490,19 @@ def write_module_drafts(repo: Path, output: Path, files: List[Path]) -> None:
 ## MCP 工具/API 表面
 {tool_lines}
 
+## 风险与缺口
+{risk_text}
+
+## 证据
+- 模块 ID 来源：`05-module-ids.yaml`
+- 代码切片：`slices/02-backend.xml`
+- 依赖切片：`slices/09-dependencies.xml`
+- 历史热点：`slices/12-history-hotspot.txt`
+
 ## 覆盖率明细
 | 文件组 | 文件数 | 已读方式 |
 |---|---:|---|
-| {root} | {count} | deterministic scan |
+| {root} | {count} | deterministic deep scan |
 """,
             encoding="utf-8",
         )
@@ -530,26 +665,156 @@ def write_module_plan(repo: Path, output: Path, files: List[Path]) -> None:
     (output / "05-module-ids.yaml").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def write_coverage(output: Path, files: List[Path], repo: Path) -> None:
+def write_cross_ref(output: Path) -> List[str]:
+    drafts = output / "drafts"
+    module_text = (output / "05-module-ids.yaml").read_text(encoding="utf-8", errors="replace")
+    module_ids = re.findall(r"(?m)^\s*- id: (module_[0-9]+)", module_text)
+    valid_ids = set(module_ids)
+    issues = []
+    seen_titles = set()
+    for draft in sorted(drafts.glob("06-module-*.md")):
+        text = draft.read_text(encoding="utf-8", errors="replace")
+        title_match = re.search(r"^#\s+(module_[0-9]+)", text)
+        module_id = title_match.group(1) if title_match else draft.stem.replace("06-module-", "")
+        if module_id not in valid_ids:
+            issues.append(f"{draft.name}: 未在 05-module-ids.yaml 中登记")
+        for ref in re.findall(r"\[\[(module_[0-9]+)\]\]", text):
+            if ref not in valid_ids:
+                issues.append(f"{draft.name}: 断裂引用 {ref}")
+        for heading in re.findall(r"(?m)^##\s+(.+)$", text):
+            key = heading.strip().lower()
+            if (module_id, key) in seen_titles:
+                issues.append(f"{draft.name}: 重复章节 {heading}")
+            seen_titles.add((module_id, key))
+    lines = [
+        "# Cross-ref 校验",
+        "",
+        f"- 状态: {'PASS' if not issues else 'FAIL'}",
+        f"- 模块数: {len(module_ids)}",
+        "",
+        "## 检查项",
+        "- 模块草稿标题必须匹配 `05-module-ids.yaml` 中的 ID。",
+        "- `[[module_xxx]]` 引用必须能解析到模块清单。",
+        "- 单个模块草稿不应出现重复二级章节。",
+        "",
+        "## 问题",
+    ]
+    lines.extend(f"- {issue}" for issue in issues)
+    if not issues:
+        lines.append("- 未发现断裂引用或重复章节。")
+    (drafts / "07-cross-ref-checks.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return issues
+
+
+def symbol_coverage(
+    output: Path,
+    files: List[Path],
+    repo: Path,
+    core_threshold: float,
+    minor_threshold: float,
+) -> dict:
+    symbols = source_symbols(repo, files, 10_000)
     rows = module_rows(files, repo)
-    lines = ["# 覆盖率门控", "", "| 模块 ID | tier | 文件数 | 覆盖状态 |", "|---|---|---:|---|"]
-    for index, (module_id, _name, count) in enumerate(rows, 1):
+    draft_dir = output / "drafts"
+    result = {"thresholds": {"core": core_threshold, "minor": minor_threshold}, "modules": {}}
+    for index, (module_id, root, count) in enumerate(rows, 1):
         tier = "core" if index <= 3 else "minor"
-        lines.append(f"| {module_id} | {tier} | {count} | 已完成确定性门控 |")
-    lines.extend(["", "> 覆盖率门控已记录模块、分层、文件数和切片证据；业务语义评价可由后续 subagent 复核。"])
+        expected = [
+            {"name": name, "file": file_path, "line": line}
+            for name, file_path, line in symbols
+            if (root == "[root]" and "/" not in file_path) or file_path.startswith(f"{root}/")
+        ]
+        draft_text = read_text(draft_dir / f"06-module-{module_id}.md", 500_000)
+        covered = sorted({item["name"] for item in expected if re.search(rf"\b{re.escape(item['name'])}\b", draft_text)})
+        missing = sorted({item["name"] for item in expected} - set(covered))
+        ratio = 1.0 if not expected else len(covered) / len({item["name"] for item in expected})
+        threshold = core_threshold if tier == "core" else minor_threshold
+        result["modules"][module_id] = {
+            "root": root,
+            "tier": tier,
+            "file_count": count,
+            "expected_symbols": expected,
+            "covered_symbols": covered,
+            "missing_symbols": missing,
+            "coverage_ratio": round(ratio, 4),
+            "threshold": threshold,
+            "status": "PASS" if ratio >= threshold else "FAIL",
+        }
+    return result
+
+
+def write_coverage(output: Path, files: List[Path], repo: Path, core_threshold: float, minor_threshold: float) -> dict:
+    rows = module_rows(files, repo)
+    coverage = symbol_coverage(output, files, repo, core_threshold, minor_threshold)
+    (output / "coverage-symbols.json").write_text(json.dumps(coverage, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    failed = [module_id for module_id, item in coverage["modules"].items() if item["status"] != "PASS"]
+    lines = [
+        "# 覆盖率门控",
+        "",
+        f"- 状态: {'PASS' if not failed else 'FAIL'}",
+        f"- 核心阈值: {core_threshold:.2f}",
+        f"- 次要阈值: {minor_threshold:.2f}",
+        "",
+        "| 模块 ID | tier | 文件数 | 符号覆盖率 | 覆盖状态 |",
+        "|---|---|---:|---:|---|",
+    ]
+    for module_id, _name, _count in rows:
+        item = coverage["modules"][module_id]
+        lines.append(f"| {module_id} | {item['tier']} | {item['file_count']} | {item['coverage_ratio']:.2f} | {item['status']} |")
+    lines.extend(["", "> 覆盖率门控已用确定性符号提取核对模块草稿；业务语义评价可由后续 subagent 复核。"])
     (output / "08-coverage.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if failed:
+        failure_lines = ["# 覆盖率失败明细", ""]
+        for module_id in failed:
+            item = coverage["modules"][module_id]
+            failure_lines.append(f"## {module_id}")
+            failure_lines.append(f"- 覆盖率: {item['coverage_ratio']:.2f}")
+            failure_lines.append(f"- 阈值: {item['threshold']:.2f}")
+            failure_lines.append(f"- 缺失符号: {', '.join(item['missing_symbols'][:30]) or '无'}")
+            failure_lines.append("")
+        (output / "08-coverage-failure.md").write_text("\n".join(failure_lines), encoding="utf-8")
+    return coverage
 
 
-def write_state_report(output: Path) -> None:
+def write_state_report(output: Path, coverage: dict, cross_ref_issues: List[str]) -> None:
+    failed_modules = []
+    for module_id, item in coverage["modules"].items():
+        if item["status"] != "PASS":
+            failed_modules.append(
+                {
+                    "id": module_id,
+                    "tier": item["tier"],
+                    "attempts": 1,
+                    "last_error": "COVERAGE_FAILED",
+                    "missing_symbols_count": len(item["missing_symbols"]),
+                    "suggested_recovery": f"补充 drafts/06-module-{module_id}.md 中缺失符号说明后重跑 acceptance",
+                }
+            )
+    yaml_items = "\n".join(
+        "\n".join(
+            [
+                f"  - id: {item['id']}",
+                f"    tier: {item['tier']}",
+                f"    attempts: {item['attempts']}",
+                f"    last_error: {item['last_error']}",
+                f"    missing_symbols_count: {item['missing_symbols_count']}",
+                f"    suggested_recovery: {item['suggested_recovery']}",
+            ]
+        )
+        for item in failed_modules
+    )
+    failed_yaml = "[]" if not failed_modules else "\n" + yaml_items
+    status = "PASS_DETERMINISTIC_ACCEPTANCE" if not failed_modules and not cross_ref_issues else "FAILED_DETERMINISTIC_ACCEPTANCE"
     (output / "STATE_REPORT.md").write_text(
-        """---
-failed_modules: []
+        f"""---
+failed_modules: {failed_yaml}
 ---
 
 # 状态报告
 
-- 当前状态: PASS_DETERMINISTIC_ACCEPTANCE
-- 失败模块: 0
+- 当前状态: {status}
+- 失败模块: {len(failed_modules)}
+- Cross-ref 问题: {len(cross_ref_issues)}
 - 下一步: 如需主观架构评价，使用 subagent 基于当前产物复核。
 """,
         encoding="utf-8",
@@ -614,7 +879,7 @@ def report_body(project_name: str, source: str, repo_type: str, files: List[Path
     tree = "\n".join(f"- `{item}`" for item in top_tree(repo, files, 40))
     symbols = source_symbols(repo, files, 30)
     symbol_lines = "\n".join(f"- `{name}` (`{file_path}:{line}`)" for name, file_path, line in symbols) or "- 未识别到代码符号"
-    tools = mcp_tool_names(repo, files, 60)
+    tools = mcp_tool_names(repo, files, API_SURFACE_LIMIT)
     tool_lines = "\n".join(f"- `{name}` (`{file_path}:{line}`)" for name, file_path, line in tools) or "- 未识别到 MCP 工具/API 名称"
     slice_names = [filename for filename, _label, _patterns in SLICES[repo_type]] + ["12-history-hotspot.txt"]
     slice_links = "\n".join(f"- `slices/{name}`" for name in slice_names)
@@ -777,7 +1042,7 @@ def overview_report_body(project_name: str, source: str, repo_type: str, files: 
     module_table = "\n".join(f"| {module_id} | {name} | {count} |" for module_id, name, count in modules[:8])
     readme_title, readme_points = readme_summary(repo)
     commands = "\n".join(f"- `{command}`" for command in command_hints(repo, files))
-    tools = mcp_tool_names(repo, files, 60)
+    tools = mcp_tool_names(repo, files, API_SURFACE_LIMIT)
     tool_lines = "\n".join(f"- `{name}` (`{file_path}:{line}`)" for name, file_path, line in tools) or "- 未识别到 MCP 工具/API 名称"
     slice_names = [filename for filename, _label, _patterns in SLICES[repo_type]] + ["12-history-hotspot.txt"]
     slice_links = "\n".join(f"- `slices/{name}`" for name in slice_names)
@@ -859,9 +1124,50 @@ def write_readme(output: Path, project_name: str, repo_type: str, mode: str) -> 
 - [02a-repo-type.yaml](02a-repo-type.yaml)
 - [02a-manifest-card.md](02a-manifest-card.md)
 - [05-module-ids.yaml](05-module-ids.yaml)
+- [drafts/07-cross-ref-checks.md](drafts/07-cross-ref-checks.md)
 - [08-coverage.md](08-coverage.md)
+- [coverage-symbols.json](coverage-symbols.json)
 - [STATE_REPORT.md](STATE_REPORT.md)
+- [SLA_REPORT.md](SLA_REPORT.md)
+- [CONFIG_EFFECTIVE.json](CONFIG_EFFECTIVE.json)
 - [slices/](slices/)
+""",
+        encoding="utf-8",
+    )
+
+
+def write_config_effective(output: Path, args: argparse.Namespace) -> None:
+    config = {
+        "mode": args.mode,
+        "no_question": bool(args.no_question),
+        "offline": bool(args.offline),
+        "resume": bool(args.resume),
+        "target_coverage_core": args.target_coverage_core,
+        "target_coverage_minor": args.target_coverage_minor,
+        "sla_minutes": args.sla_minutes,
+        "config": args.config or "",
+    }
+    (output / "CONFIG_EFFECTIVE.json").write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def write_mcp_tools(output: Path, tools: List[Tuple[str, str, str]]) -> None:
+    data = [{"name": name, "file": file_path, "line": line} for name, file_path, line in tools]
+    (output / "mcp-tools.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def write_sla_report(output: Path, args: argparse.Namespace, started_at: float, coverage: dict, cross_ref_issues: List[str]) -> None:
+    elapsed_seconds = time.monotonic() - started_at
+    failed = [module_id for module_id, item in coverage["modules"].items() if item["status"] != "PASS"]
+    status = "PASS" if elapsed_seconds <= args.sla_minutes * 60 and not failed and not cross_ref_issues else "FAIL"
+    (output / "SLA_REPORT.md").write_text(
+        f"""# SLA 报告
+
+- status: {status}
+- budget_minutes: {args.sla_minutes:.2f}
+- elapsed_seconds: {elapsed_seconds:.2f}
+- resumed: {str(bool(args.resume)).lower()}
+- failed_modules: {len(failed)}
+- cross_ref_issues: {len(cross_ref_issues)}
 """,
         encoding="utf-8",
     )
@@ -878,6 +1184,7 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 python3 - "$ROOT" <<'PY'
+import json
 import re
 import sys
 from pathlib import Path
@@ -909,9 +1216,14 @@ required = [
     "03-question-answers.md",
     "05-module-ids.yaml",
     "08-coverage.md",
+    "coverage-symbols.json",
+    "mcp-tools.json",
     "STATE_REPORT.md",
+    "SLA_REPORT.md",
+    "CONFIG_EFFECTIVE.json",
     "ANALYSIS_REPORT.md",
     "README.md",
+    "drafts/07-cross-ref-checks.md",
 ]
 for item in required:
     check(f"required:{item}", (root / item).is_file())
@@ -930,15 +1242,45 @@ state = read("STATE_REPORT.md")
 coverage = read("08-coverage.md")
 check("failed_modules tracked", "failed_modules: []" in state)
 check("state final", "PASS_DETERMINISTIC_ACCEPTANCE" in state and "PASS_WITH_DETERMINISTIC_BASELINE" not in state)
-check("coverage final", "已完成确定性门控" in coverage and "待 LLM" not in coverage)
+check("coverage final", "状态: PASS" in coverage and "待 LLM" not in coverage)
+check("cross-ref pass", "状态: PASS" in read("drafts/07-cross-ref-checks.md"))
+check("sla pass", "status: PASS" in read("SLA_REPORT.md"))
+
+try:
+    coverage_data = json.loads(read("coverage-symbols.json"))
+except json.JSONDecodeError:
+    coverage_data = {"modules": {}}
+    check("coverage json parse", False)
+for module_id, item in coverage_data.get("modules", {}).items():
+    draft_text = read(f"drafts/06-module-{module_id}.md")
+    threshold = float(item.get("threshold", 0))
+    expected = item.get("expected_symbols", [])
+    covered_now = []
+    for symbol in expected:
+        name = symbol.get("name", "")
+        ok = bool(name) and re.search(rf"\\b{re.escape(name)}\\b", draft_text)
+        check(f"coverage symbol:{module_id}:{name}", ok)
+        if ok:
+            covered_now.append(name)
+    ratio = 1.0 if not expected else len(set(covered_now)) / max(1, len({symbol.get("name", "") for symbol in expected if symbol.get("name")}))
+    check(f"coverage gate:{module_id}", ratio >= threshold, f"{ratio:.2f}/{threshold:.2f}")
 
 markdown_files = [path for path in root.glob("*.md") if path.is_file()]
-artifact_files = [path for path in root.rglob("*") if path.is_file() and "acceptance" not in path.relative_to(root).parts]
-all_text = "\\n".join(path.read_text(encoding="utf-8", errors="replace") for path in artifact_files)
+claim_files = [
+    path
+    for path in root.rglob("*")
+    if path.is_file()
+    and "acceptance" not in path.relative_to(root).parts
+    and (path.name.startswith("ANALYSIS_REPORT") or path.name in {"08-coverage.md", "STATE_REPORT.md", "SLA_REPORT.md"})
+]
+claim_text = "\\n".join(path.read_text(encoding="utf-8", errors="replace") for path in claim_files)
 markdown_text = "\\n".join(strip_fenced_code(path.read_text(encoding="utf-8", errors="replace")) for path in markdown_files)
 main_report = read("ANALYSIS_REPORT.md")
-code_slices = [path for path in slices if path.name.startswith(("01-", "02-", "05-"))]
-tools = sorted(set(re.findall(r"\\bai_[A-Za-z0-9_$-]+\\b", "\\n".join(read(f"slices/{path.name}") for path in code_slices))))
+try:
+    tools = sorted(item["name"] for item in json.loads(read("mcp-tools.json")))
+except (json.JSONDecodeError, KeyError, TypeError):
+    tools = []
+    check("mcp tools json parse", False)
 check("api surface count", not tools or all(tool in main_report for tool in tools), f"{len(tools)} tools")
 
 slice_refs = sorted(set(re.findall(r"slices/[A-Za-z0-9_.-]+", main_report)))
@@ -984,7 +1326,7 @@ else:
 
 check("mermaid present", "```mermaid" in main_report and "flowchart TD" in main_report)
 check("markdown fences balanced", main_report.count("```") % 2 == 0)
-check("no placeholder claims", not any(term in all_text for term in ["待 LLM 深度分析补全", "PASS_WITH_DETERMINISTIC_BASELINE", "骨架/待补全"]))
+check("no placeholder claims", not any(term in claim_text for term in ["待 LLM 深度分析补全", "PASS_WITH_DETERMINISTIC_BASELINE", "骨架/待补全"]))
 
 sys.exit(1 if failures else 0)
 PY
@@ -995,10 +1337,12 @@ PY
 
 
 def analyze(args: argparse.Namespace) -> Path:
+    args = apply_config(args)
+    started_at = time.monotonic()
     repo, source, temp = checkout_target(args.target)
     try:
         output = Path(args.output).expanduser().resolve()
-        clean_output(output)
+        prepare_output(output, args.resume)
         files = sorted(iter_files(repo), key=lambda path: rel(path, repo))
         project_name = parse_project_name(repo)
         repo_type = detect_repo_type(repo, files)
@@ -1011,11 +1355,15 @@ def analyze(args: argparse.Namespace) -> Path:
         write_slices(repo, output, repo_type, files)
         write_module_plan(repo, output, files)
         write_module_drafts(repo, output, files)
-        write_coverage(output, files, repo)
-        write_state_report(output)
+        cross_ref_issues = write_cross_ref(output)
+        coverage = write_coverage(output, files, repo, args.target_coverage_core, args.target_coverage_minor)
+        write_state_report(output, coverage, cross_ref_issues)
         write_reports(repo, output, source, project_name, repo_type, files, args.mode)
-        write_acceptance(output)
         write_readme(output, project_name, repo_type, args.mode)
+        write_config_effective(output, args)
+        write_mcp_tools(output, mcp_tool_names(repo, files, API_SURFACE_LIMIT))
+        write_sla_report(output, args, started_at, coverage, cross_ref_issues)
+        write_acceptance(output)
         return output
     finally:
         temp.cleanup()
@@ -1028,6 +1376,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--mode", choices=["tech-lead", "business", "learning", "all"], default="tech-lead")
     parser.add_argument("--no-question", action="store_true", help="跳过交互问题，使用默认值")
     parser.add_argument("--offline", action="store_true", help="保留给后续外部调研开关；当前实现不访问 Web")
+    parser.add_argument("--config", default="", help="JSON 配置文件路径，支持 mode/no_question/coverage/SLA 默认值")
+    parser.add_argument("--resume", action="store_true", help="复用输出目录，清理本工具生成文件但保留用户手写文件")
+    parser.add_argument("--target-coverage-core", type=float, default=None, help="核心模块符号覆盖率阈值")
+    parser.add_argument("--target-coverage-minor", type=float, default=None, help="次要模块符号覆盖率阈值")
+    parser.add_argument("--sla-minutes", type=float, default=None, help="本次分析 SLA 分钟预算")
     return parser
 
 

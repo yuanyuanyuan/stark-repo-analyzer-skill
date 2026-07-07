@@ -13,9 +13,9 @@
 当前版本不是完整实现 `PLAN.md` 的 full-spec 方案，而是实现了一个 **v1 最小可用 skill**：
 
 - 已能被用户用短提示调用，分析 GitHub 或本地仓库。
-- 已能生成分析底料、模块候选、受众报告、状态报告和本地验收入口。
+- 已能生成分析底料、模块候选、模块深度分析底稿、cross-ref 校验、符号覆盖率门控、受众报告、状态报告、SLA/配置记录和本地验收入口。
 - 已通过 `claude-video` 的 UAT 回路，并修复了主报告重复、prompt 过长、Markdown 验收等问题。
-- 尚未实现 PLAN 中成本最高的智能分析闭环：模块 subagent 深挖、cross-ref 审稿、tree-sitter 覆盖率门控、SLA/retry/resume、13 条硬断言、LLM judge。
+- 尚未实现 PLAN 中成本最高的完整智能闭环：真正的模块 subagent 深挖、独立 cross-ref 审稿、tree-sitter 覆盖率门控、token/retry 预算、13 条硬断言里的 LLM judge / Mermaid / 外链检查。
 
 因此当前状态应标记为：
 
@@ -28,9 +28,9 @@ full PLAN 合规: PARTIAL
 
 | 类别 | 条目数 | 当前状态 |
 |---|---:|---|
-| v1 必须实现 | 13 | 10 已实现，3 部分实现 |
+| v1 必须实现 | 13 | 12 已实现，1 部分实现 |
 | 已废弃 / 已改写 | 5 | 5 已由 ADR 明确处理 |
-| 延后实现 | 14 | 14 未进入 v1 |
+| 延后实现 | 14 | 5 已最小实现，9 延后 |
 
 ## 1. v1 必须实现
 
@@ -47,10 +47,10 @@ full PLAN 合规: PARTIAL
 | 7 | 按 repo 类型动态生成切片 | 部分实现 | `SLICES` 与 `write_slices()` | 未外置为 `config/repo-types.yaml` |
 | 8 | 生成用户问题答案文件，支持无交互默认值 | 部分实现 | `03-question-answers.md` | 还没有真正的 `ask_user()` 运行时适配层 |
 | 9 | 生成模块候选清单 | 已实现 | `05-module-ids.yaml` | 文件名与原 PLAN 的 `05-modules-plan.md` 不一致，当前更适合机器读 |
-| 10 | 生成模块草稿 | 部分实现 | `drafts/06-module-*.md` | 当前是确定性符号/路径摘要，不是 subagent 深度分析 |
-| 11 | 生成覆盖率与状态报告 | 已实现 | `08-coverage.md`、`STATE_REPORT.md` | 当前是基线门控，不是 tree-sitter 符号覆盖 |
+| 10 | 生成模块深度分析底稿 | 已实现 | `drafts/06-module-*.md` | 当前是确定性深度底稿，不是真 subagent 判断 |
+| 11 | 生成覆盖率、cross-ref 与状态报告 | 已实现 | `drafts/07-cross-ref-checks.md`、`08-coverage.md`、`coverage-symbols.json`、`STATE_REPORT.md` | 当前是正则符号门控，不是 tree-sitter |
 | 12 | 生成最终报告和三类受众报告 | 已实现 | `ANALYSIS_REPORT.md`、`ANALYSIS_REPORT.tech-lead.md`、`ANALYSIS_REPORT.business.md`、`ANALYSIS_REPORT.learning.md` | 模板逻辑内嵌在脚本中 |
-| 13 | 提供本地验收入口 | 已实现 | `acceptance/check.sh` | 当前是实用硬检查，不是 ADR-0011 的全 13 条断言 |
+| 13 | 提供本地验收入口 | 已实现 | `acceptance/check.sh` | 已覆盖产物、链接、受众差异、cross-ref、coverage、SLA；未含 LLM judge / Mermaid render / 外链检查 |
 
 ## 2. 已废弃 / 已改写
 
@@ -70,17 +70,17 @@ full PLAN 合规: PARTIAL
 
 | 优先级 | 能力 | 来源 | 当前状态 | 延后原因 |
 |---|---|---|---|---|
-| P0 | 模块 subagent 深度分析 | `PLAN.md` 阶段五 | 未实现 | 当前仅生成确定性模块草稿，缺少判断型深挖 |
-| P0 | cross-ref 双层质检 | [ADR-0004](decisions/0004-cross-ref-two-stage.md) | 未实现 | 需要 subagent 审稿、冲突清单、回退循环 |
-| P0 | tree-sitter + grep 覆盖率门控 | [ADR-0005](decisions/0005-coverage-tree-sitter.md) | 未实现 | 当前覆盖率只是基线记录，不计算符号覆盖 |
-| P0 | ADR-0011 全 13 条硬断言 | [ADR-0011](decisions/0011-acceptance-script-enforce.md) | 未实现 | 当前 `acceptance/check.sh` 是简化版实用验收 |
+| P0 | 模块 subagent 深度分析 | `PLAN.md` 阶段五 | 部分实现 | 已生成确定性深度底稿；缺少真 subagent 判断型深挖 |
+| P0 | cross-ref 双层质检 | [ADR-0004](decisions/0004-cross-ref-two-stage.md) | 部分实现 | 已生成 `07-cross-ref-checks.md`；缺少独立审稿 subagent 和回退循环 |
+| P0 | tree-sitter + grep 覆盖率门控 | [ADR-0005](decisions/0005-coverage-tree-sitter.md) | 部分实现 | 已有正则符号覆盖门控；未接 tree-sitter |
+| P0 | ADR-0011 全 13 条硬断言 | [ADR-0011](decisions/0011-acceptance-script-enforce.md) | 部分实现 | 已扩展本地硬断言；未实现 LLM judge / Mermaid render / 外链检查 |
 | P1 | `ask_user()` 三运行时适配器 | [ADR-0003](decisions/0003-ask-user-api.md) | 未实现 | 当前只支持默认答案与 `--no-question` 语义 |
 | P1 | `config/repo-types.yaml` 外置切片模板 | [ADR-0002](decisions/0002-phase-2a-dynamic.md) | 未实现 | 当前切片模板内嵌在 `SLICES` 常量里 |
 | P1 | 三受众模板与 `render_report.py` 分离 | [ADR-0006](decisions/0006-templates-three-audiences.md) | 未实现 | 当前报告渲染内嵌在一个 Python 文件里 |
-| P1 | SLA 预算、token/time 统计、3 次重试 | [ADR-0007](decisions/0007-sla-budget.md) | 未实现 | 当前没有预算会计或自动回退 |
+| P1 | SLA 预算、token/time 统计、3 次重试 | [ADR-0007](decisions/0007-sla-budget.md) | 部分实现 | 已记录时间 SLA 和 resume；未统计 token 或自动重试 |
 | P1 | 失败模块详细 schema 与报告 `§9` | [ADR-0015](decisions/0015-failed-module-section.md) | 部分实现 | `STATE_REPORT.md` 有 `failed_modules: []`，但无失败详情渲染 |
 | P2 | 外部调研 `03-research.md` | `PLAN.md` 阶段三半 | 未实现 | 原计划默认 OFF，v1 暂未接入 web research |
-| P2 | env 覆盖、`defaults.yaml extends:`、`last-session.json` | [ADR-0012](decisions/0012-compromise-config.md) | 未实现 | 配置体系会显著扩大代码面 |
+| P2 | env 覆盖、`defaults.yaml extends:`、`last-session.json` | [ADR-0012](decisions/0012-compromise-config.md) | 部分实现 | 已支持 `--config` JSON；未做 env、extends、last-session |
 | P2 | tree-sitter chunked 5MB 与 benchmark | [ADR-0014](decisions/0014-treesitter-chunked.md) | 未实现 | 依赖 ADR-0005 先落地 |
 | P2 | Mermaid 渲染、外链检查、LLM-judge | [ADR-0011](decisions/0011-acceptance-script-enforce.md) | 未实现 | 成本高，且需要额外运行依赖/模型预算 |
 | P2 | 原始 smart-search-mcp 终验收路径 | [`docs/goals/implement-plan-with-ponytail-tdd.md`](../docs/goals/implement-plan-with-ponytail-tdd.md) | 未完成到最新 UAT | 最新 UAT 改为 `claude-video`，不能替代原目标仓库验收 |
@@ -89,24 +89,21 @@ full PLAN 合规: PARTIAL
 
 如果继续补 full PLAN，不建议一次性补所有延后项。最小顺序如下：
 
-1. **P0-1：模块 subagent 深度分析**
-   - 输入：现有 `02a-manifest-card.md`、`05-module-ids.yaml`、`slices/`。
-   - 输出：替换或增强 `drafts/06-module-*.md`。
-   - 验收：至少一个真实仓库的核心模块草稿能说明业务角色、关键路径、风险和证据链接。
+1. **升级到 tree-sitter coverage**
+   - 当前正则符号覆盖已经能挡住草稿漏写关键符号。
+   - 下一步再接 ADR-0005/0014 的 tree-sitter expected-symbols。
 
-2. **P0-2：cross-ref 检查**
-   - 输入：所有 module drafts。
-   - 输出：`drafts/07-cross-ref-checks.md`。
-   - 验收：能发现断裂引用、重复定义、术语漂移；失败时不声称 PASS。
+2. **补真 subagent 审稿**
+   - 当前 `07-cross-ref-checks.md` 是确定性校验。
+   - 下一步再接独立审稿 subagent 和失败回退循环。
 
-3. **P0-3：真正覆盖率门控**
-   - 输入：源码符号清单 + drafts 覆盖符号。
-   - 输出：增强 `08-coverage.md`，失败时写 `08-coverage-failure.md`。
-   - 验收：核心模块低于阈值时 `acceptance/check.sh` 失败。
+3. **补完整工程配置**
+   - 当前已有 `--config` JSON、`--resume`、`SLA_REPORT.md`。
+   - 下一步再补 env 覆盖、`defaults.yaml extends:`、`last-session.json`。
 
-4. **P0-4：扩展 acceptance**
-   - 先补最便宜的 grep/schema 断言。
-   - 暂不急着补 LLM-judge、Mermaid、外链检查。
+4. **补高成本 acceptance**
+   - 当前已覆盖本地硬断言。
+   - 下一步只在需要 full PLAN 合规时补 LLM-judge、Mermaid render、外链检查。
 
 ## 维护规则
 
