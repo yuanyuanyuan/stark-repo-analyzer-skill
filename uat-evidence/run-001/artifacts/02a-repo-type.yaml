@@ -1,0 +1,16 @@
+project_name: /watch
+repo_type: multi-agent-config
+dimension_count: 6
+dimensions:
+  - file: 04-docs.xml
+    label: 文档
+  - file: 05-agent-config.xml
+    label: AI Agent 配置
+  - file: 06-tests.xml
+    label: 测试
+  - file: 07-config-scripts.xml
+    label: 配置与脚本
+  - file: 09-dependencies.xml
+    label: 第三方依赖清单
+  - file: 12-history-hotspot.txt
+    label: 变更历史热点

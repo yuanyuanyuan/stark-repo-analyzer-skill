@@ -1,0 +1,34 @@
+# 元数据
+
+- 目标: https://github.com/bradautomates/claude-video
+- HEAD: 83da59f
+
+## 最近提交
+commit 83da59fa78c3eee9e20f515fe75c438bb5166efd
+Author:     bradautomates <bradley_bonanno@outlook.com>
+AuthorDate: Tue Jun 30 17:20:07 2026 +1000
+Commit:     bradautomates <bradley_bonanno@outlook.com>
+CommitDate: Tue Jun 30 17:20:07 2026 +1000
+
+    Fix WATCH_DETAIL silently falling back to default
+    
+    An inline comment on the WATCH_DETAIL value line (e.g.
+    `WATCH_DETAIL=balanced  # ...`) parsed as the literal "balanced  # ..."
+    value, failed validation, and silently reverted to the default mode.
+    
+    - setup.py: move the allowed-values list off the value line in the env
+      template so the wizard no longer models a trailing inline comment.
+    - config.py: strip a whitespace-preceded inline comment from unquoted
+      values so a stray comment can't silently break selection again
+      (preserves '#' inside quotes / API keys).
+    - SKILL.md: note to write the bare key with no trailing comment.
+    
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+## 文件扩展名 Top20
+- .py: 17
+- .json: 5
+- [no-ext]: 5
+- .md: 5
+- .sh: 3
+- .yml: 1

@@ -98,14 +98,9 @@ class RepoAnalyzerCliTest(TestCase):
             self.assertTrue((output / "ANALYSIS_REPORT.tech-lead.md").exists())
             self.assertTrue((output / "ANALYSIS_REPORT.business.md").exists())
             self.assertTrue((output / "ANALYSIS_REPORT.learning.md").exists())
-            main_path = output / "ANALYSIS_REPORT.md"
-            main = main_path.read_text(encoding="utf-8")
             tech = (output / "ANALYSIS_REPORT.tech-lead.md").read_text(encoding="utf-8")
             business = (output / "ANALYSIS_REPORT.business.md").read_text(encoding="utf-8")
             learning = (output / "ANALYSIS_REPORT.learning.md").read_text(encoding="utf-8")
-            self.assertIn("分析总览", main)
-            self.assertIn("ANALYSIS_REPORT.tech-lead.md", main)
-            self.assertNotEqual(main, tech)
             self.assertIn("技术负责人关注", tech)
             self.assertIn("业务负责人关注", business)
             self.assertIn("学习路径", learning)
@@ -116,10 +111,6 @@ class RepoAnalyzerCliTest(TestCase):
             self.assertTrue(check.read_text(encoding="utf-8").startswith("#!/bin/sh"))
             acceptance = subprocess.run([str(check)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             self.assertEqual(acceptance.returncode, 0, acceptance.stdout + acceptance.stderr)
-            main_path.write_text(tech, encoding="utf-8")
-            broken_main = subprocess.run([str(check)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            self.assertNotEqual(broken_main.returncode, 0, broken_main.stdout + broken_main.stderr)
-            main_path.write_text(main, encoding="utf-8")
             (output / "ANALYSIS_REPORT.business.md").write_text(tech, encoding="utf-8")
             broken_audience = subprocess.run([str(check)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             self.assertNotEqual(broken_audience.returncode, 0, broken_audience.stdout + broken_audience.stderr)
@@ -270,44 +261,3 @@ class RepoAnalyzerCliTest(TestCase):
             report = (output / "ANALYSIS_REPORT.md").read_text(encoding="utf-8")
             self.assertIn("ai_search_web", report)
             self.assertIn("ai_search_github", report)
-
-    def test_external_markdown_syntax_does_not_break_acceptance(self):
-        with tempfile.TemporaryDirectory() as repo_tmp, tempfile.TemporaryDirectory() as out_tmp:
-            repo = Path(repo_tmp)
-            output = Path(out_tmp) / "analysis"
-
-            (repo / "README.md").write_text(
-                "# Demo Tool\n\n"
-                "See [Install](#install) and [[not_a_module]].\n\n"
-                "```bash\n"
-                "if [[ -z \"$DEST\" ]]; then\n"
-                "  echo missing\n"
-                "fi\n"
-                "```\n",
-                encoding="utf-8",
-            )
-            (repo / "main.py").write_text("def run():\n    return 'ok'\n", encoding="utf-8")
-            subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            subprocess.run(["git", "add", "."], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            subprocess.run(
-                ["git", "commit", "-m", "initial"],
-                cwd=repo,
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-
-            result = subprocess.run(
-                [sys.executable, str(CLI), str(repo), "--output", str(output), "--mode", "all", "--no-question"],
-                cwd=ROOT,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-
-            self.assertEqual(result.returncode, 0, result.stderr)
-            report = (output / "ANALYSIS_REPORT.md").read_text(encoding="utf-8")
-            self.assertEqual(report.count("```") % 2, 0)
-            acceptance = subprocess.run([str(output / "acceptance" / "check.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            self.assertEqual(acceptance.returncode, 0, acceptance.stdout + acceptance.stderr)

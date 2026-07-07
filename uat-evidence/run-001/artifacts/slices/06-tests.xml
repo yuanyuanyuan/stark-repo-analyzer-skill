@@ -1,0 +1,881 @@
+<slice name="测试">
+  <file path="tests/conftest.py">
+&quot;&quot;&quot;Shared pytest fixtures: ffmpeg-synthesized clips and scripts/ on sys.path.&quot;&quot;&quot;
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+# Make the bundled scripts importable (mirrors watch.py&#x27;s sys.path insert).
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent / &quot;skills&quot; / &quot;watch&quot; / &quot;scripts&quot;
+sys.path.insert(0, str(SCRIPTS_DIR))
+
+# 14 visually distinct fills → 14 abrupt cuts → x264 emits a keyframe per cut.
+COLORS = [
+    &quot;red&quot;, &quot;green&quot;, &quot;blue&quot;, &quot;white&quot;, &quot;black&quot;, &quot;yellow&quot;, &quot;cyan&quot;,
+    &quot;magenta&quot;, &quot;gray&quot;, &quot;orange&quot;, &quot;purple&quot;, &quot;brown&quot;, &quot;navy&quot;, &quot;olive&quot;,
+]
+
+
+def _run(cmd: list[str]) -&gt; None:
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f&quot;ffmpeg failed: {&#x27; &#x27;.join(cmd)}\n{result.stderr}&quot;)
+
+
+def build_cut_clip(
+    path: Path,
+    n: int = 14,
+    seg: float = 0.4,
+    size: str = &quot;320x240&quot;,
+    fps: int = 10,
+) -&gt; None:
+    &quot;&quot;&quot;Concatenate ``n`` solid-color segments into one clip with ``n`` cuts.
+
+    Each color change is a hard scene cut, so the scene selector finds ~n-1
+    changes. x264&#x27;s own scenecut detection is unreliable on flat fills, so we
+    force a keyframe at every ``seg`` boundary — giving ~n real keyframes for
+    the keyframe engine to find.
+    &quot;&quot;&quot;
+    inputs: list[str] = []
+    for i in range(n):
+        color = COLORS[i % len(COLORS)]
+        inputs += [&quot;-f&quot;, &quot;lavfi&quot;, &quot;-t&quot;, str(seg), &quot;-i&quot;, f&quot;color=c={color}:s={size}:r={fps}&quot;]
+    streams = &quot;&quot;.join(f&quot;[{i}:v]&quot; for i in range(n))
+    filt = f&quot;{streams}concat=n={n}:v=1:a=0[out]&quot;
+    _run([
+        &quot;ffmpeg&quot;, &quot;-hide_banner&quot;, &quot;-loglevel&quot;, &quot;error&quot;, &quot;-y&quot;,
+        *inputs,
+        &quot;-filter_complex&quot;, filt, &quot;-map&quot;, &quot;[out]&quot;,
+        &quot;-c:v&quot;, &quot;libx264&quot;, &quot;-pix_fmt&quot;, &quot;yuv420p&quot;,
+        &quot;-force_key_frames&quot;, f&quot;expr:gte(t,n_forced*{seg})&quot;,
+        str(path),
+    ])
+
+
+def build_static_clip(
+    path: Path,
+    duration: float = 3.0,
+    size: str = &quot;320x240&quot;,
+    fps: int = 10,
+) -&gt; None:
+    &quot;&quot;&quot;One solid color: 1 keyframe, no scene changes → triggers both fallbacks.&quot;&quot;&quot;
+    _run([
+        &quot;ffmpeg&quot;, &quot;-hide_banner&quot;, &quot;-loglevel&quot;, &quot;error&quot;, &quot;-y&quot;,
+        &quot;-f&quot;, &quot;lavfi&quot;, &quot;-t&quot;, str(duration), &quot;-i&quot;, f&quot;color=c=blue:s={size}:r={fps}&quot;,
+        &quot;-c:v&quot;, &quot;libx264&quot;, &quot;-pix_fmt&quot;, &quot;yuv420p&quot;, &quot;-g&quot;, &quot;600&quot;,
+        str(path),
+    ])
+
+
+@pytest.fixture(scope=&quot;session&quot;)
+def cut_clip(tmp_path_factory: pytest.TempPathFactory) -&gt; Path:
+    path = tmp_path_factory.mktemp(&quot;clips&quot;) / &quot;cuts.mp4&quot;
+    build_cut_clip(path)
+    return path
+
+
+@pytest.fixture(scope=&quot;session&quot;)
+def static_clip(tmp_path_factory: pytest.TempPathFactory) -&gt; Path:
+    path = tmp_path_factory.mktemp(&quot;clips&quot;) / &quot;static.mp4&quot;
+    build_static_clip(path)
+    return path
+
+  </file>
+  <file path="tests/test_config.py">
+&quot;&quot;&quot;WATCH_DETAIL resolution and frame_cap mapping.&quot;&quot;&quot;
+from __future__ import annotations
+
+import config
+
+
+def test_default_detail_is_balanced(monkeypatch, tmp_path):
+    monkeypatch.delenv(&quot;WATCH_DETAIL&quot;, raising=False)
+    monkeypatch.setattr(config, &quot;CONFIG_FILE&quot;, tmp_path / &quot;missing.env&quot;)
+    assert config.get_config()[&quot;detail&quot;] == &quot;balanced&quot;
+
+
+def test_env_overrides_detail(monkeypatch, tmp_path):
+    monkeypatch.setenv(&quot;WATCH_DETAIL&quot;, &quot;efficient&quot;)
+    monkeypatch.setattr(config, &quot;CONFIG_FILE&quot;, tmp_path / &quot;missing.env&quot;)
+    assert config.get_config()[&quot;detail&quot;] == &quot;efficient&quot;
+
+
+def test_invalid_detail_falls_back_to_default(monkeypatch, tmp_path):
+    monkeypatch.setenv(&quot;WATCH_DETAIL&quot;, &quot;bogus&quot;)
+    monkeypatch.setattr(config, &quot;CONFIG_FILE&quot;, tmp_path / &quot;missing.env&quot;)
+    assert config.get_config()[&quot;detail&quot;] == &quot;balanced&quot;
+
+
+def test_get_config_keys(monkeypatch, tmp_path):
+    monkeypatch.delenv(&quot;WATCH_DETAIL&quot;, raising=False)
+    monkeypatch.setattr(config, &quot;CONFIG_FILE&quot;, tmp_path / &quot;missing.env&quot;)
+    cfg = config.get_config()
+    assert set(cfg) == {&quot;detail&quot;, &quot;config_file&quot;}
+
+
+def test_frame_cap_mapping():
+    assert config.frame_cap(&quot;efficient&quot;) == 50
+    assert config.frame_cap(&quot;balanced&quot;) == 100
+    assert config.frame_cap(&quot;token-burner&quot;) is None
+    assert config.frame_cap(&quot;transcript&quot;) is None
+    assert config.frame_cap(&quot;anything-else&quot;) == 100
+
+  </file>
+  <file path="tests/test_dedup.py">
+&quot;&quot;&quot;Frame-delta dedup: per-pixel difference, greedy de-duplication, integration.&quot;&quot;&quot;
+from __future__ import annotations
+
+from pathlib import Path
+
+import frames
+
+
+# --- _frame_delta: mean absolute per-pixel difference ------------------------
+
+def test_frame_delta_identical_is_zero():
+    a = bytes([10] * 16)
+    assert frames._frame_delta(a, a) == 0.0
+
+
+def test_frame_delta_is_mean_absolute_difference():
+    a = bytes([0, 0, 0, 0])
+    b = bytes([4, 0, 0, 0])
+    assert frames._frame_delta(a, b) == 1.0  # (4+0+0+0)/4
+
+
+def test_frame_delta_mismatched_length_is_infinite():
+    assert frames._frame_delta(bytes([1, 2]), bytes([1, 2, 3])) == float(&quot;inf&quot;)
+
+
+# --- _dedupe_by_deltas: greedy drop vs last *kept* thumbnail ------------------
+
+def _touch(dirpath: Path, n: int) -&gt; list[dict]:
+    dirpath.mkdir(parents=True, exist_ok=True)
+    out = []
+    for i in range(n):
+        p = dirpath / f&quot;frame_{i:04d}.jpg&quot;
+        p.write_bytes(b&quot;x&quot;)
+        out.append({&quot;index&quot;: i, &quot;timestamp_seconds&quot;: float(i), &quot;path&quot;: str(p), &quot;reason&quot;: &quot;scene-change&quot;})
+    return out
+
+
+FLAT0 = bytes([0, 0, 0, 0])
+FLAT255 = bytes([255, 255, 255, 255])
+
+
+def test_dedupe_collapses_identical_run(tmp_path: Path):
+    cands = _touch(tmp_path, 5)
+    thumbs = [FLAT0, FLAT0, FLAT0, FLAT0, FLAT0]
+    survivors, dropped = frames._dedupe_by_deltas(cands, thumbs, threshold=2.0)
+    assert dropped == 4
+    assert len(survivors) == 1
+    assert survivors[0][&quot;index&quot;] == 0
+    assert sorted(p.name for p in tmp_path.glob(&quot;frame_*.jpg&quot;)) == [&quot;frame_0000.jpg&quot;]
+
+
+def test_dedupe_keeps_all_distinct(tmp_path: Path):
+    cands = _touch(tmp_path, 4)
+    thumbs = [FLAT0, FLAT255, FLAT0, FLAT255]
+    survivors, dropped = frames._dedupe_by_deltas(cands, thumbs, threshold=2.0)
+    assert dropped == 0
+    assert [s[&quot;index&quot;] for s in survivors] == [0, 1, 2, 3]
+    assert len(list(tmp_path.glob(&quot;frame_*.jpg&quot;))) == 4
+
+
+def test_dedupe_compares_against_last_kept_not_previous(tmp_path: Path):
+    &quot;&quot;&quot;A,A,B,B,A with A/B far apart -&gt; keep A0, B2, A4 (drops the repeats).&quot;&quot;&quot;
+    cands = _touch(tmp_path, 5)
+    survivors, dropped = frames._dedupe_by_deltas(
+        cands, [FLAT0, FLAT0, FLAT255, FLAT255, FLAT0], threshold=2.0
+    )
+    assert [s[&quot;index&quot;] for s in survivors] == [0, 1, 2]  # reindexed survivors
+    assert dropped == 2
+
+
+def test_dedupe_threshold_is_inclusive(tmp_path: Path):
+    &quot;&quot;&quot;Delta exactly == threshold is treated as a duplicate (&lt;=).&quot;&quot;&quot;
+    cands = _touch(tmp_path, 2)
+    a = bytes([0, 0, 0, 0])
+    b = bytes([8, 0, 0, 0])  # mean abs diff == 2.0
+    survivors, dropped = frames._dedupe_by_deltas(cands, [a, b], threshold=2.0)
+    assert dropped == 1
+    assert len(survivors) == 1
+
+
+def test_dedupe_empty_and_single_are_noops(tmp_path: Path):
+    assert frames._dedupe_by_deltas([], [], threshold=2.0) == ([], 0)
+    one = _touch(tmp_path, 1)
+    survivors, dropped = frames._dedupe_by_deltas(one, [FLAT0], threshold=2.0)
+    assert dropped == 0
+    assert len(survivors) == 1
+
+
+def test_dedupe_mismatched_thumb_count_is_noop(tmp_path: Path):
+    &quot;&quot;&quot;Fail open: if thumbs don&#x27;t line up with candidates, change nothing.&quot;&quot;&quot;
+    cands = _touch(tmp_path, 3)
+    survivors, dropped = frames._dedupe_by_deltas(cands, [FLAT0], threshold=2.0)
+    assert dropped == 0
+    assert len(survivors) == 3
+
+
+# --- _thumb_frames + dedupe_perceptual: real ffmpeg over extracted JPEGs ------
+
+def test_thumb_frames_match_candidate_count(cut_clip: Path, tmp_path: Path):
+    out = frames.extract_scene_candidates(str(cut_clip), tmp_path / &quot;f&quot;, max_frames=None)
+    thumbs = frames._thumb_frames([Path(fr[&quot;path&quot;]) for fr in out])
+    assert len(thumbs) == len(out)
+    assert all(len(t) == frames.DEDUP_THUMB * frames.DEDUP_THUMB for t in thumbs)
+
+
+def test_dedupe_perceptual_collapses_static_clip(static_clip: Path, tmp_path: Path):
+    out = frames.extract(str(static_clip), tmp_path / &quot;f&quot;, fps=4.0, max_frames=10)
+    n_before = len(out)
+    survivors, dropped = frames.dedupe_perceptual(out)
+    assert n_before &gt; 1
+    assert len(survivors) == 1
+    assert dropped == n_before - 1
+    assert len(list((tmp_path / &quot;f&quot;).glob(&quot;frame_*.jpg&quot;))) == 1
+
+
+def test_dedupe_perceptual_keeps_distinct_cuts(cut_clip: Path, tmp_path: Path):
+    &quot;&quot;&quot;Distinct color shots differ in luma, so frame-delta keeps them all.&quot;&quot;&quot;
+    out = frames.extract_scene_candidates(str(cut_clip), tmp_path / &quot;f&quot;, max_frames=None)
+    n_before = len(out)
+    survivors, dropped = frames.dedupe_perceptual(out)
+    assert dropped == 0
+    assert len(survivors) == n_before
+
+
+# --- engine integration: dedup runs before the cap, reports deduped_count -----
+
+def test_scene_engine_reports_zero_dedup_on_distinct(cut_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_scene_or_uniform(
+        str(cut_clip), tmp_path / &quot;f&quot;, fps=2.0, target_frames=50, max_frames=100,
+    )
+    assert meta[&quot;engine&quot;] == &quot;scene&quot;
+    assert meta[&quot;deduped_count&quot;] == 0
+    assert len(out) == len(list((tmp_path / &quot;f&quot;).glob(&quot;frame_*.jpg&quot;)))
+
+
+def test_uniform_fallback_dedupes_static(static_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_scene_or_uniform(
+        str(static_clip), tmp_path / &quot;f&quot;, fps=4.0, target_frames=12, max_frames=100,
+    )
+    assert meta[&quot;engine&quot;] == &quot;uniform&quot;
+    assert meta[&quot;fallback&quot;] is True
+    assert meta[&quot;deduped_count&quot;] &gt; 0
+    assert meta[&quot;selected_count&quot;] == 1  # identical frames collapse to one
+    assert len(out) == 1
+    assert len(list((tmp_path / &quot;f&quot;).glob(&quot;frame_*.jpg&quot;))) == 1
+
+
+def test_keyframe_uniform_fallback_dedupes_static(static_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_keyframes(str(static_clip), tmp_path / &quot;f&quot;, max_frames=50)
+    assert meta[&quot;engine&quot;] == &quot;uniform&quot;
+    assert meta[&quot;deduped_count&quot;] &gt; 0
+    assert len(out) == 1
+
+
+def test_dedup_false_disables_collapse(static_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_scene_or_uniform(
+        str(static_clip), tmp_path / &quot;f&quot;, fps=4.0, target_frames=12, max_frames=100,
+        dedup=False,
+    )
+    assert meta[&quot;deduped_count&quot;] == 0
+    assert meta[&quot;selected_count&quot;] &gt; 1  # no collapse without dedup
+    assert len(out) &gt; 1
+
+  </file>
+  <file path="tests/test_download.py">
+&quot;&quot;&quot;yt-dlp argv construction for download.py.
+
+Regression guard: ``--sub-langs all`` makes yt-dlp fetch YouTube&#x27;s hundreds of
+auto-translated caption tracks, which can take minutes and stalls before the
+video download even starts. We only support English, so the request must stay
+bounded to the English-only pattern.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent / &quot;skills&quot; / &quot;watch&quot; / &quot;scripts&quot;
+sys.path.insert(0, str(SCRIPTS_DIR))
+
+import download  # noqa: E402
+
+URL = &quot;https://www.youtube.com/watch?v=rlOpbu3Enkw&quot;
+
+
+def _capture_argv(monkeypatch: pytest.MonkeyPatch) -&gt; list[list[str]]:
+    &quot;&quot;&quot;Stub subprocess.run inside download.py and record every argv.&quot;&quot;&quot;
+    calls: list[list[str]] = []
+
+    class _Result:
+        returncode = 0
+        stdout = &quot;&quot;
+        stderr = &quot;&quot;
+
+    def fake_run(cmd, *args, **kwargs):
+        calls.append(list(cmd))
+        return _Result()
+
+    monkeypatch.setattr(download.subprocess, &quot;run&quot;, fake_run)
+    return calls
+
+
+def _sub_langs(argv: list[str]) -&gt; str:
+    idx = argv.index(&quot;--sub-langs&quot;)
+    return argv[idx + 1]
+
+
+def _assert_english_only(langs: str) -&gt; None:
+    tokens = langs.split(&quot;,&quot;)
+    assert &quot;all&quot; not in tokens, f&quot;sub-langs must not request all languages, got {langs!r}&quot;
+    assert all(t.startswith(&quot;en&quot;) for t in tokens), f&quot;sub-langs must be English-only, got {langs!r}&quot;
+
+
+def test_fetch_captions_requests_english_only(monkeypatch, tmp_path):
+    calls = _capture_argv(monkeypatch)
+    download.fetch_captions(URL, tmp_path / &quot;download&quot;)
+    _assert_english_only(_sub_langs(calls[0]))
+
+
+def test_download_url_requests_english_only(monkeypatch, tmp_path):
+    calls = _capture_argv(monkeypatch)
+    # _pick_video returns None with no real file, which raises SystemExit after
+    # the yt-dlp argv is already built — that&#x27;s all we need to inspect.
+    with pytest.raises(SystemExit):
+        download.download_url(URL, tmp_path / &quot;download&quot;)
+    _assert_english_only(_sub_langs(calls[0]))
+
+  </file>
+  <file path="tests/test_fixtures.py">
+&quot;&quot;&quot;Smoke test: the ffmpeg fixtures actually produce playable clips.&quot;&quot;&quot;
+from __future__ import annotations
+
+import json
+import subprocess
+from pathlib import Path
+
+
+def _duration(path: Path) -&gt; float:
+    out = subprocess.run(
+        [&quot;ffprobe&quot;, &quot;-v&quot;, &quot;quiet&quot;, &quot;-print_format&quot;, &quot;json&quot;, &quot;-show_format&quot;, str(path)],
+        capture_output=True, text=True,
+    ).stdout
+    return float(json.loads(out)[&quot;format&quot;][&quot;duration&quot;])
+
+
+def test_cut_clip_builds(cut_clip: Path):
+    assert cut_clip.exists() and cut_clip.stat().st_size &gt; 0
+    assert _duration(cut_clip) &gt; 4.0  # 14 * 0.4s ≈ 5.6s
+
+
+def test_static_clip_builds(static_clip: Path):
+    assert static_clip.exists() and static_clip.stat().st_size &gt; 0
+    assert _duration(static_clip) &gt; 2.0
+
+  </file>
+  <file path="tests/test_frames.py">
+&quot;&quot;&quot;Keyframe engine + preserved scene/uniform fallbacks.&quot;&quot;&quot;
+from __future__ import annotations
+
+from pathlib import Path
+
+import frames
+
+
+def test_keyframe_engine_on_cut_clip(cut_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_keyframes(str(cut_clip), tmp_path / &quot;f&quot;, max_frames=50)
+    assert meta[&quot;engine&quot;] == &quot;keyframe&quot;
+    assert meta[&quot;fallback&quot;] is False
+    assert len(out) &gt;= frames.KEYFRAME_MIN
+    assert all(fr[&quot;reason&quot;] == &quot;keyframe&quot; for fr in out)
+    assert len(out) == len(list((tmp_path / &quot;f&quot;).glob(&quot;frame_*.jpg&quot;)))
+
+
+def test_keyframe_even_sampling_caps_and_spans(cut_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_keyframes(str(cut_clip), tmp_path / &quot;f&quot;, max_frames=5)
+    assert meta[&quot;engine&quot;] == &quot;keyframe&quot;
+    assert len(out) == 5
+    assert meta[&quot;selected_count&quot;] == 5
+    assert meta[&quot;candidate_count&quot;] &gt; 5
+    ts = [fr[&quot;timestamp_seconds&quot;] for fr in out]
+    assert ts == sorted(ts)
+    assert ts[0] &lt; ts[-1]  # spans first → last keyframe
+    assert [fr[&quot;index&quot;] for fr in out] == [0, 1, 2, 3, 4]
+
+
+def test_keyframe_fallback_on_static_clip(static_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_keyframes(str(static_clip), tmp_path / &quot;f&quot;, max_frames=50)
+    assert meta[&quot;engine&quot;] == &quot;uniform&quot;
+    assert meta[&quot;fallback&quot;] is True
+    assert len(out) &gt; 0
+    assert all(fr[&quot;reason&quot;] == &quot;uniform&quot; for fr in out)
+
+
+def test_scene_engine_on_cut_clip(cut_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_scene_or_uniform(
+        str(cut_clip), tmp_path / &quot;f&quot;, fps=2.0, target_frames=50, max_frames=100,
+    )
+    assert meta[&quot;engine&quot;] == &quot;scene&quot;
+    assert meta[&quot;fallback&quot;] is False
+    assert len(out) &gt;= frames.SCENE_MIN_FRAMES
+
+
+def test_scene_even_sampling_caps_and_spans(cut_clip: Path, tmp_path: Path):
+    &quot;&quot;&quot;Over-cap scene detection must even-sample across the whole clip, not keep
+    the first N cuts and drop the tail (the long-video coverage bug).&quot;&quot;&quot;
+    out, meta = frames.extract_scene_or_uniform(
+        str(cut_clip), tmp_path / &quot;f&quot;, fps=2.0, target_frames=50, max_frames=5,
+    )
+    assert meta[&quot;engine&quot;] == &quot;scene&quot;
+    assert meta[&quot;fallback&quot;] is False
+    assert len(out) == 5
+    assert meta[&quot;selected_count&quot;] == 5
+    assert meta[&quot;candidate_count&quot;] &gt; 5  # all cuts detected, then sampled down
+    ts = [fr[&quot;timestamp_seconds&quot;] for fr in out]
+    assert ts == sorted(ts)
+    assert ts[-1] &gt; 4.0  # spans the full ~5.6s clip, not just the first ~1.6s
+    assert len(out) == len(list((tmp_path / &quot;f&quot;).glob(&quot;frame_*.jpg&quot;)))
+    assert [fr[&quot;index&quot;] for fr in out] == [0, 1, 2, 3, 4]
+
+
+def test_scene_fallback_on_static_clip(static_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_scene_or_uniform(
+        str(static_clip), tmp_path / &quot;f&quot;, fps=2.0, target_frames=12, max_frames=100,
+    )
+    assert meta[&quot;engine&quot;] == &quot;uniform&quot;
+    assert meta[&quot;fallback&quot;] is True
+
+  </file>
+  <file path="tests/test_setup.py">
+&quot;&quot;&quot;setup.py --json surfaces the resolved watch detail.&quot;&quot;&quot;
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+SETUP = Path(__file__).resolve().parent.parent / &quot;skills&quot; / &quot;watch&quot; / &quot;scripts&quot; / &quot;setup.py&quot;
+
+
+def _run(args, *, home=None, extra_env=None):
+    env = dict(os.environ)
+    env.pop(&quot;WATCH_DETAIL&quot;, None)
+    # Don&#x27;t let a real key in the developer&#x27;s shell env leak into the test.
+    env.pop(&quot;GROQ_API_KEY&quot;, None)
+    env.pop(&quot;OPENAI_API_KEY&quot;, None)
+    env.pop(&quot;SETUP_COMPLETE&quot;, None)
+    if home is not None:
+        env[&quot;HOME&quot;] = str(home)
+        env[&quot;USERPROFILE&quot;] = str(home)  # Windows
+    if extra_env:
+        env.update(extra_env)
+    return subprocess.run(
+        [sys.executable, str(SETUP), *args],
+        capture_output=True, text=True, env=env,
+    )
+
+
+def _write_env(home: Path, body: str) -&gt; None:
+    cfg = home / &quot;.config&quot; / &quot;watch&quot;
+    cfg.mkdir(parents=True, exist_ok=True)
+    f = cfg / &quot;.env&quot;
+    f.write_text(body, encoding=&quot;utf-8&quot;)
+    f.chmod(0o600)
+
+
+def test_json_reports_watch_detail():
+    proc = _run([&quot;--json&quot;])
+    assert proc.returncode == 0, proc.stderr
+    data = json.loads(proc.stdout)
+    assert data[&quot;watch_detail&quot;] == &quot;balanced&quot;
+
+
+def test_keyless_completed_setup_proceeds_silently(tmp_path):
+    &quot;&quot;&quot;A user who finished setup without a key must NOT be nagged forever.&quot;&quot;&quot;
+    _write_env(tmp_path, &quot;GROQ_API_KEY=\nOPENAI_API_KEY=\nSETUP_COMPLETE=true\n&quot;)
+    chk = _run([&quot;--check&quot;], home=tmp_path)
+    assert chk.returncode == 0, f&quot;keyless-complete should pass --check; got {chk.returncode}: {chk.stderr}&quot;
+    assert chk.stdout == &quot;&quot; and chk.stderr == &quot;&quot;
+
+    js = json.loads(_run([&quot;--json&quot;], home=tmp_path).stdout)
+    assert js[&quot;can_proceed&quot;] is True
+    assert js[&quot;first_run&quot;] is False
+    assert js[&quot;setup_complete&quot;] is True
+    # status still encourages a key even though we can proceed
+    assert js[&quot;status&quot;] == &quot;needs_key&quot;
+
+
+def test_keyless_first_run_is_encouraged(tmp_path):
+    &quot;&quot;&quot;Genuine first run with no key: --check reports exit 3 (encourage a key).&quot;&quot;&quot;
+    _write_env(tmp_path, &quot;GROQ_API_KEY=\nOPENAI_API_KEY=\n&quot;)
+    chk = _run([&quot;--check&quot;], home=tmp_path)
+    assert chk.returncode == 3, chk.stderr
+
+    js = json.loads(_run([&quot;--json&quot;], home=tmp_path).stdout)
+    assert js[&quot;can_proceed&quot;] is False
+    assert js[&quot;first_run&quot;] is True
+
+
+def test_key_present_is_ready(tmp_path):
+    _write_env(tmp_path, &quot;GROQ_API_KEY=sk-test-abc\n&quot;)
+    chk = _run([&quot;--check&quot;], home=tmp_path)
+    assert chk.returncode == 0, chk.stderr
+
+    js = json.loads(_run([&quot;--json&quot;], home=tmp_path).stdout)
+    assert js[&quot;status&quot;] == &quot;ready&quot;
+    assert js[&quot;can_proceed&quot;] is True
+    assert js[&quot;whisper_backend&quot;] == &quot;groq&quot;
+
+  </file>
+  <file path="tests/test_timestamps.py">
+&quot;&quot;&quot;Transcript-cue timestamps: parsing, point extraction, and pinned merge.&quot;&quot;&quot;
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+import frames
+
+
+def test_parse_timestamps_mixed_formats():
+    assert frames.parse_timestamps(&quot;30,1:05,90&quot;) == [30.0, 65.0, 90.0]
+
+
+def test_parse_timestamps_strips_and_dedupes():
+    assert frames.parse_timestamps(&quot; 90 , 30, 30 &quot;) == [30.0, 90.0]
+
+
+def test_parse_timestamps_empty():
+    assert frames.parse_timestamps(&quot;&quot;) == []
+    assert frames.parse_timestamps(&quot;  ,  &quot;) == []
+
+
+def test_parse_timestamps_rejects_garbage():
+    with pytest.raises(SystemExit):
+        frames.parse_timestamps(&quot;4:bad&quot;)
+
+
+def test_merge_frames_sorts_and_reindexes():
+    primary = [
+        {&quot;index&quot;: 0, &quot;timestamp_seconds&quot;: 1.0, &quot;path&quot;: &quot;a&quot;, &quot;reason&quot;: &quot;scene-change&quot;},
+        {&quot;index&quot;: 1, &quot;timestamp_seconds&quot;: 5.0, &quot;path&quot;: &quot;b&quot;, &quot;reason&quot;: &quot;scene-change&quot;},
+    ]
+    pinned = [
+        {&quot;index&quot;: 0, &quot;timestamp_seconds&quot;: 3.0, &quot;path&quot;: &quot;c&quot;, &quot;reason&quot;: &quot;transcript-cue&quot;},
+    ]
+    merged = frames.merge_frames(primary, pinned)
+    assert [f[&quot;path&quot;] for f in merged] == [&quot;a&quot;, &quot;c&quot;, &quot;b&quot;]
+    assert [f[&quot;index&quot;] for f in merged] == [0, 1, 2]
+    assert merged[1][&quot;reason&quot;] == &quot;transcript-cue&quot;
+
+
+def test_merge_frames_keeps_all_pinned():
+    pinned = [{&quot;index&quot;: 0, &quot;timestamp_seconds&quot;: 2.0, &quot;path&quot;: &quot;c&quot;, &quot;reason&quot;: &quot;transcript-cue&quot;}]
+    merged = frames.merge_frames([], pinned)
+    assert [f[&quot;path&quot;] for f in merged] == [&quot;c&quot;]
+
+
+def test_extract_at_timestamps_one_frame_per_point(cut_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_at_timestamps(str(cut_clip), tmp_path / &quot;f&quot;, [0.5, 2.0, 4.0])
+    assert meta[&quot;engine&quot;] == &quot;timestamps&quot;
+    assert meta[&quot;fallback&quot;] is False
+    assert len(out) == 3
+    assert all(f[&quot;reason&quot;] == &quot;transcript-cue&quot; for f in out)
+    ts = [f[&quot;timestamp_seconds&quot;] for f in out]
+    assert ts == sorted(ts)
+    assert len(out) == len(list((tmp_path / &quot;f&quot;).glob(&quot;cue_*.jpg&quot;)))
+
+
+def test_extract_at_timestamps_drops_out_of_window(cut_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_at_timestamps(
+        str(cut_clip), tmp_path / &quot;f&quot;, [0.5, 2.0, 4.0],
+        start_seconds=1.0, end_seconds=3.0,
+    )
+    assert [f[&quot;timestamp_seconds&quot;] for f in out] == [2.0]
+    assert meta[&quot;dropped_out_of_window&quot;] == 2
+
+
+def test_extract_at_timestamps_caps_and_spans(cut_clip: Path, tmp_path: Path):
+    out, meta = frames.extract_at_timestamps(
+        str(cut_clip), tmp_path / &quot;f&quot;, [0.5, 1.5, 2.5, 3.5, 4.5], max_frames=3,
+    )
+    assert len(out) == 3
+    ts = [f[&quot;timestamp_seconds&quot;] for f in out]
+    assert ts[0] == 0.5 and ts[-1] == 4.5  # even-sample keeps first + last
+    assert len(out) == len(list((tmp_path / &quot;f&quot;).glob(&quot;cue_*.jpg&quot;)))
+
+
+def test_extract_at_timestamps_does_not_clobber_detail_frames(cut_clip: Path, tmp_path: Path):
+    &quot;&quot;&quot;Cue frames live alongside detail frames in the same dir without deleting them.&quot;&quot;&quot;
+    d = tmp_path / &quot;f&quot;
+    scene, _ = frames.extract_scene_or_uniform(
+        str(cut_clip), d, fps=2.0, target_frames=50, max_frames=100,
+    )
+    cues, _ = frames.extract_at_timestamps(str(cut_clip), d, [1.0, 3.0])
+    assert len(list(d.glob(&quot;frame_*.jpg&quot;))) == len(scene)
+    assert len(list(d.glob(&quot;cue_*.jpg&quot;))) == len(cues)
+
+  </file>
+  <file path="tests/test_watch.py">
+&quot;&quot;&quot;End-to-end routing of --detail through watch.py on a local clip.&quot;&quot;&quot;
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+WATCH = Path(__file__).resolve().parent.parent / &quot;skills&quot; / &quot;watch&quot; / &quot;scripts&quot; / &quot;watch.py&quot;
+
+
+def _run(clip: Path, *args: str, env_extra: dict | None = None) -&gt; str:
+    env = dict(os.environ)
+    env.pop(&quot;WATCH_DETAIL&quot;, None)
+    if env_extra:
+        env.update(env_extra)
+    proc = subprocess.run(
+        [sys.executable, str(WATCH), str(clip), &quot;--no-whisper&quot;, *args],
+        capture_output=True, text=True, env=env,
+    )
+    assert proc.returncode == 0, proc.stderr
+    return proc.stdout
+
+
+def test_efficient_uses_keyframe_engine(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;efficient&quot;)
+    assert &quot;(keyframe&quot; in out
+    assert &quot;**Detail:** efficient&quot; in out
+
+
+def test_balanced_uses_scene_engine(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;balanced&quot;)
+    assert &quot;(scene&quot; in out
+    assert &quot;**Detail:** balanced&quot; in out
+
+
+def test_token_burner_uses_scene_engine(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;token-burner&quot;)
+    assert &quot;(scene&quot; in out
+
+
+def test_transcript_skips_frames(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;transcript&quot;)
+    assert &quot;skipped&quot; in out
+    assert &quot;frame_0000.jpg&quot; not in out
+
+
+def test_flag_overrides_env(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;efficient&quot;, env_extra={&quot;WATCH_DETAIL&quot;: &quot;balanced&quot;})
+    assert &quot;(keyframe&quot; in out
+
+
+def test_default_is_balanced(cut_clip: Path):
+    out = _run(cut_clip)  # no flag, WATCH_DETAIL cleared
+    assert &quot;**Detail:** balanced&quot; in out
+    assert &quot;(scene&quot; in out
+
+
+def test_timestamps_add_cue_frames_to_detail(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;balanced&quot;, &quot;--timestamps&quot;, &quot;1,3&quot;)
+    assert &quot;reason=transcript-cue&quot; in out
+    assert &quot;reason=scene-change&quot; in out  # detail frames still present (additive)
+
+
+def test_timestamps_with_transcript_detail_is_cue_only(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;transcript&quot;, &quot;--timestamps&quot;, &quot;1,3&quot;)
+    assert &quot;reason=transcript-cue&quot; in out
+    assert &quot;reason=scene-change&quot; not in out
+    assert &quot;reason=keyframe&quot; not in out
+
+
+def _frame_lines(out: str) -&gt; int:
+    return sum(1 for line in out.splitlines() if &quot;/frames/frame_&quot; in line and &quot;(t=&quot; in line)
+
+
+def test_dedup_collapses_static_by_default(static_clip: Path):
+    out = _run(static_clip)  # solid blue → identical frames collapse to one
+    assert &quot;near-duplicate&quot; in out
+    assert _frame_lines(out) == 1
+
+
+def test_no_dedup_preserves_static_frames(static_clip: Path):
+    out = _run(static_clip, &quot;--no-dedup&quot;)
+    assert &quot;near-duplicate&quot; not in out
+    assert _frame_lines(out) &gt; 1
+
+  </file>
+  <file path="tests/test_whisper.py">
+&quot;&quot;&quot;Whisper auto-chunking: plan, split, and timestamp stitching.&quot;&quot;&quot;
+from __future__ import annotations
+
+import math
+import subprocess
+from pathlib import Path
+
+import pytest
+
+import whisper
+
+
+MB = 1024 * 1024
+
+
+class TestPlanChunks:
+    def test_under_limit_is_single_chunk(self):
+        plan = whisper.plan_chunks(total_seconds=600.0, total_bytes=5 * MB, max_bytes=24 * MB)
+        assert plan == [(0.0, 600.0)]
+
+    def test_at_limit_is_single_chunk(self):
+        plan = whisper.plan_chunks(total_seconds=600.0, total_bytes=24 * MB, max_bytes=24 * MB)
+        assert plan == [(0.0, 600.0)]
+
+    def test_over_limit_splits_into_enough_chunks(self):
+        # 71 MB against a 24 MB cap → ceil(71/24) = 3 chunks.
+        plan = whisper.plan_chunks(total_seconds=3600.0, total_bytes=71 * MB, max_bytes=24 * MB)
+        assert len(plan) == 3
+
+    def test_chunks_are_contiguous_and_cover_full_duration(self):
+        total = 3600.0
+        plan = whisper.plan_chunks(total_seconds=total, total_bytes=71 * MB, max_bytes=24 * MB)
+        # Offsets start at 0 and each picks up where the previous ended.
+        assert plan[0][0] == 0.0
+        for (off, dur), (next_off, _) in zip(plan, plan[1:]):
+            assert math.isclose(off + dur, next_off)
+        last_off, last_dur = plan[-1]
+        assert math.isclose(last_off + last_dur, total)
+
+    def test_each_chunk_estimated_under_limit(self):
+        total_seconds, total_bytes, cap = 3600.0, 71 * MB, 24 * MB
+        plan = whisper.plan_chunks(total_seconds, total_bytes, cap)
+        bytes_per_second = total_bytes / total_seconds
+        for _off, dur in plan:
+            assert dur * bytes_per_second &lt;= cap
+
+    def test_zero_duration_is_single_chunk(self):
+        plan = whisper.plan_chunks(total_seconds=0.0, total_bytes=0, max_bytes=24 * MB)
+        assert plan == [(0.0, 0.0)]
+
+
+class TestShiftSegments:
+    def test_adds_offset_to_start_and_end(self):
+        segs = [{&quot;start&quot;: 0.0, &quot;end&quot;: 2.5, &quot;text&quot;: &quot;hi&quot;}, {&quot;start&quot;: 2.5, &quot;end&quot;: 4.0, &quot;text&quot;: &quot;there&quot;}]
+        shifted = whisper.shift_segments(segs, 1800.0)
+        assert shifted == [
+            {&quot;start&quot;: 1800.0, &quot;end&quot;: 1802.5, &quot;text&quot;: &quot;hi&quot;},
+            {&quot;start&quot;: 1802.5, &quot;end&quot;: 1804.0, &quot;text&quot;: &quot;there&quot;},
+        ]
+
+    def test_zero_offset_is_identity(self):
+        segs = [{&quot;start&quot;: 1.0, &quot;end&quot;: 2.0, &quot;text&quot;: &quot;x&quot;}]
+        assert whisper.shift_segments(segs, 0.0) == segs
+
+    def test_does_not_mutate_input(self):
+        segs = [{&quot;start&quot;: 0.0, &quot;end&quot;: 1.0, &quot;text&quot;: &quot;x&quot;}]
+        whisper.shift_segments(segs, 10.0)
+        assert segs[0][&quot;start&quot;] == 0.0
+
+
+def _make_mp3(path: Path, seconds: float) -&gt; None:
+    &quot;&quot;&quot;Synthesize a mono 16k 64k mp3 of a sine tone — mirrors extract_audio&#x27;s format.&quot;&quot;&quot;
+    subprocess.run(
+        [
+            &quot;ffmpeg&quot;, &quot;-hide_banner&quot;, &quot;-loglevel&quot;, &quot;error&quot;, &quot;-y&quot;,
+            &quot;-f&quot;, &quot;lavfi&quot;, &quot;-t&quot;, str(seconds), &quot;-i&quot;, &quot;sine=frequency=440:sample_rate=16000&quot;,
+            &quot;-acodec&quot;, &quot;libmp3lame&quot;, &quot;-ar&quot;, &quot;16000&quot;, &quot;-ac&quot;, &quot;1&quot;, &quot;-b:a&quot;, &quot;64k&quot;,
+            str(path),
+        ],
+        check=True,
+    )
+
+
+class TestSplitAudio:
+    def test_creates_one_file_per_plan_entry(self, tmp_path: Path):
+        full = tmp_path / &quot;audio.mp3&quot;
+        _make_mp3(full, 6.0)
+        plan = [(0.0, 3.0), (3.0, 3.0)]
+
+        chunks = whisper.split_audio(full, tmp_path, plan)
+
+        assert len(chunks) == 2
+        for chunk_path, _offset in chunks:
+            assert chunk_path.exists() and chunk_path.stat().st_size &gt; 0
+
+    def test_returns_plan_offsets(self, tmp_path: Path):
+        full = tmp_path / &quot;audio.mp3&quot;
+        _make_mp3(full, 6.0)
+        plan = [(0.0, 3.0), (3.0, 3.0)]
+
+        chunks = whisper.split_audio(full, tmp_path, plan)
+
+        assert [offset for _path, offset in chunks] == [0.0, 3.0]
+
+    def test_chunks_are_smaller_than_full(self, tmp_path: Path):
+        full = tmp_path / &quot;audio.mp3&quot;
+        _make_mp3(full, 6.0)
+        plan = [(0.0, 3.0), (3.0, 3.0)]
+
+        chunks = whisper.split_audio(full, tmp_path, plan)
+
+        full_size = full.stat().st_size
+        for chunk_path, _offset in chunks:
+            assert chunk_path.stat().st_size &lt; full_size
+
+
+class TestAudioDuration:
+    def test_reads_duration_of_synthesized_clip(self, tmp_path: Path):
+        audio = tmp_path / &quot;audio.mp3&quot;
+        _make_mp3(audio, 5.0)
+        assert whisper.audio_duration(audio) == pytest.approx(5.0, abs=0.5)
+
+
+class TestTranscribeChunks:
+    def test_shifts_and_concatenates_each_chunk(self):
+        chunks = [(Path(&quot;a.mp3&quot;), 0.0), (Path(&quot;b.mp3&quot;), 100.0)]
+
+        def fake_transcribe(path: Path) -&gt; list[dict]:
+            return [{&quot;start&quot;: 0.0, &quot;end&quot;: 2.0, &quot;text&quot;: path.stem}]
+
+        out = whisper.transcribe_chunks(chunks, fake_transcribe)
+
+        assert out == [
+            {&quot;start&quot;: 0.0, &quot;end&quot;: 2.0, &quot;text&quot;: &quot;a&quot;},
+            {&quot;start&quot;: 100.0, &quot;end&quot;: 102.0, &quot;text&quot;: &quot;b&quot;},
+        ]
+
+    def test_keeps_successful_chunks_when_one_fails(self):
+        chunks = [(Path(&quot;a.mp3&quot;), 0.0), (Path(&quot;b.mp3&quot;), 100.0)]
+
+        def flaky(path: Path) -&gt; list[dict]:
+            if path.stem == &quot;b&quot;:
+                raise SystemExit(&quot;chunk b failed&quot;)
+            return [{&quot;start&quot;: 1.0, &quot;end&quot;: 2.0, &quot;text&quot;: &quot;a&quot;}]
+
+        out = whisper.transcribe_chunks(chunks, flaky)
+
+        assert out == [{&quot;start&quot;: 1.0, &quot;end&quot;: 2.0, &quot;text&quot;: &quot;a&quot;}]
+
+    def test_raises_when_every_chunk_fails(self):
+        chunks = [(Path(&quot;a.mp3&quot;), 0.0), (Path(&quot;b.mp3&quot;), 100.0)]
+
+        def always_fail(path: Path) -&gt; list[dict]:
+            raise SystemExit(&quot;boom&quot;)
+
+        with pytest.raises(SystemExit):
+            whisper.transcribe_chunks(chunks, always_fail)
+
+  </file>
+</slice>

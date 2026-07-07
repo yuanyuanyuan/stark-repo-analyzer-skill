@@ -1,0 +1,137 @@
+diff --git a/scripts/repo_analyzer.py b/scripts/repo_analyzer.py
+index 1a63814..2417c4b 100644
+--- a/scripts/repo_analyzer.py
++++ b/scripts/repo_analyzer.py
+@@ -167,6 +167,10 @@ def read_text(path: Path, limit: int = 200_000) -> str:
+         return ""
+ 
+ 
++def markdown_snippet(text: str) -> str:
++    return text.replace("```", "'''").replace("](#", "](\\#").replace("[[", "[ [").replace("]]", "] ]")
++
++
+ def match_any(relative_path: str, patterns: Sequence[str]) -> bool:
+     name = Path(relative_path).name
+     for pattern in patterns:
+@@ -245,7 +249,7 @@ def readme_summary(repo: Path) -> Tuple[str, str]:
+             continue
+         if line and not line.startswith("#") and len(summary) < 5:
+             summary.append(line)
+-    return title or "未命名项目", "\n".join(f"- {line}" for line in summary) or "README 未提供正文摘要。"
++    return title or "未命名项目", "\n".join(f"- {markdown_snippet(line)}" for line in summary) or "README 未提供正文摘要。"
+ 
+ 
+ def manifest_snippets(repo: Path) -> List[Tuple[str, str]]:
+@@ -254,7 +258,7 @@ def manifest_snippets(repo: Path) -> List[Tuple[str, str]]:
+     for name in names:
+         path = repo / name
+         if path.exists():
+-            text = "\n".join(read_text(path, 40_000).splitlines()[:80])
++            text = markdown_snippet("\n".join(read_text(path, 40_000).splitlines()[:80]))
+             snippets.append((name, text))
+     return snippets
+ 
+@@ -429,7 +433,7 @@ def top_tree(repo: Path, files: List[Path], limit: int = 80) -> List[str]:
+ 
+ def write_manifest_card(repo: Path, output: Path, source: str, project_name: str, repo_type: str, files: List[Path]) -> None:
+     readme = first_existing(repo, ["README.md", "readme.md", "README.rst"])
+-    readme_head = "\n".join(read_text(readme).splitlines()[:30]) if readme else "未发现 README。"
++    readme_head = markdown_snippet("\n".join(read_text(readme).splitlines()[:30])) if readme else "未发现 README。"
+     languages = ", ".join(f"{name}({count})" for name, count in language_counts(files).most_common()) or "未识别"
+     card = f"""# 5KB 项目名片
+ 
+@@ -837,6 +841,10 @@ def check(name, ok, detail=""):
+         failures.append(name)
+ 
+ 
++def strip_fenced_code(text):
++    return re.sub(r"(?ms)^```.*?^```", "", text)
++
++
+ required = [
+     "00-meta.txt",
+     "02a-repo-type.yaml",
+@@ -867,8 +875,10 @@ check("failed_modules tracked", "failed_modules: []" in state)
+ check("state final", "PASS_DETERMINISTIC_ACCEPTANCE" in state and "PASS_WITH_DETERMINISTIC_BASELINE" not in state)
+ check("coverage final", "已完成确定性门控" in coverage and "待 LLM" not in coverage)
+ 
++markdown_files = [path for path in root.glob("*.md") if path.is_file()]
+ artifact_files = [path for path in root.rglob("*") if path.is_file() and "acceptance" not in path.relative_to(root).parts]
+ all_text = "\\n".join(path.read_text(encoding="utf-8", errors="replace") for path in artifact_files)
++markdown_text = "\\n".join(strip_fenced_code(path.read_text(encoding="utf-8", errors="replace")) for path in markdown_files)
+ main_report = read("ANALYSIS_REPORT.md")
+ code_slices = [path for path in slices if path.name.startswith(("01-", "02-", "05-"))]
+ tools = sorted(set(re.findall(r"\\bai_[A-Za-z0-9_$-]+\\b", "\\n".join(read(f"slices/{path.name}") for path in code_slices))))
+@@ -884,18 +894,19 @@ readme = read("README.md")
+ local_links = [link for link in re.findall(r"\\[[^\\]]+\\]\\(([^)#][^)]+)\\)", readme) if not link.startswith(("http://", "https://"))]
+ check("readme links exist", all((root / link).exists() for link in local_links))
+ 
+-wiki_refs = set(re.findall(r"\\[\\[([^\\]]+)\\]\\]", all_text))
++wiki_refs = set(re.findall(r"\\[\\[([^\\]]+)\\]\\]", markdown_text))
+ valid_wiki = set(module_ids)
+ check("wikilinks valid", all(ref in valid_wiki for ref in wiki_refs), ",".join(sorted(wiki_refs - valid_wiki)))
+ 
+-for md in root.glob("*.md"):
++for md in markdown_files:
+     text = md.read_text(encoding="utf-8", errors="replace")
++    structural_text = strip_fenced_code(text)
+     headings = set()
+-    for heading in re.findall(r"(?m)^#+\\s+(.+)$", text):
++    for heading in re.findall(r"(?m)^#+\\s+(.+)$", structural_text):
+         slug = re.sub(r"[^a-z0-9\\u4e00-\\u9fff -]", "", heading.lower()).strip().replace(" ", "-")
+         if slug:
+             headings.add(slug)
+-    anchors = [anchor[1:] for anchor in re.findall(r"\\(#[^)]+\\)", text)]
++    anchors = [anchor[1:] for anchor in re.findall(r"\\(#[^)]+\\)", structural_text)]
+     check(f"anchors:{md.name}", all(anchor in headings for anchor in anchors))
+ 
+ report_names = ["tech-lead", "business", "learning"]
+diff --git a/tests/test_repo_analyzer_cli.py b/tests/test_repo_analyzer_cli.py
+index 3c2c2e4..d2f5a7d 100644
+--- a/tests/test_repo_analyzer_cli.py
++++ b/tests/test_repo_analyzer_cli.py
+@@ -261,3 +261,44 @@ class RepoAnalyzerCliTest(TestCase):
+             report = (output / "ANALYSIS_REPORT.md").read_text(encoding="utf-8")
+             self.assertIn("ai_search_web", report)
+             self.assertIn("ai_search_github", report)
++
++    def test_external_markdown_syntax_does_not_break_acceptance(self):
++        with tempfile.TemporaryDirectory() as repo_tmp, tempfile.TemporaryDirectory() as out_tmp:
++            repo = Path(repo_tmp)
++            output = Path(out_tmp) / "analysis"
++
++            (repo / "README.md").write_text(
++                "# Demo Tool\n\n"
++                "See [Install](#install) and [[not_a_module]].\n\n"
++                "```bash\n"
++                "if [[ -z \"$DEST\" ]]; then\n"
++                "  echo missing\n"
++                "fi\n"
++                "```\n",
++                encoding="utf-8",
++            )
++            (repo / "main.py").write_text("def run():\n    return 'ok'\n", encoding="utf-8")
++            subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
++            subprocess.run(["git", "add", "."], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
++            subprocess.run(
++                ["git", "commit", "-m", "initial"],
++                cwd=repo,
++                check=True,
++                stdout=subprocess.PIPE,
++                stderr=subprocess.PIPE,
++                text=True,
++            )
++
++            result = subprocess.run(
++                [sys.executable, str(CLI), str(repo), "--output", str(output), "--mode", "all", "--no-question"],
++                cwd=ROOT,
++                stdout=subprocess.PIPE,
++                stderr=subprocess.PIPE,
++                text=True,
++            )
++
++            self.assertEqual(result.returncode, 0, result.stderr)
++            report = (output / "ANALYSIS_REPORT.md").read_text(encoding="utf-8")
++            self.assertEqual(report.count("```") % 2, 0)
++            acceptance = subprocess.run([str(output / "acceptance" / "check.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
++            self.assertEqual(acceptance.returncode, 0, acceptance.stdout + acceptance.stderr)

@@ -167,10 +167,6 @@ def read_text(path: Path, limit: int = 200_000) -> str:
         return ""
 
 
-def markdown_snippet(text: str) -> str:
-    return text.replace("```", "'''").replace("](#", "](\\#").replace("[[", "[ [").replace("]]", "] ]")
-
-
 def match_any(relative_path: str, patterns: Sequence[str]) -> bool:
     name = Path(relative_path).name
     for pattern in patterns:
@@ -249,7 +245,7 @@ def readme_summary(repo: Path) -> Tuple[str, str]:
             continue
         if line and not line.startswith("#") and len(summary) < 5:
             summary.append(line)
-    return title or "未命名项目", "\n".join(f"- {markdown_snippet(line)}" for line in summary) or "README 未提供正文摘要。"
+    return title or "未命名项目", "\n".join(f"- {line}" for line in summary) or "README 未提供正文摘要。"
 
 
 def manifest_snippets(repo: Path) -> List[Tuple[str, str]]:
@@ -258,7 +254,7 @@ def manifest_snippets(repo: Path) -> List[Tuple[str, str]]:
     for name in names:
         path = repo / name
         if path.exists():
-            text = markdown_snippet("\n".join(read_text(path, 40_000).splitlines()[:80]))
+            text = "\n".join(read_text(path, 40_000).splitlines()[:80])
             snippets.append((name, text))
     return snippets
 
@@ -433,7 +429,7 @@ def top_tree(repo: Path, files: List[Path], limit: int = 80) -> List[str]:
 
 def write_manifest_card(repo: Path, output: Path, source: str, project_name: str, repo_type: str, files: List[Path]) -> None:
     readme = first_existing(repo, ["README.md", "readme.md", "README.rst"])
-    readme_head = markdown_snippet("\n".join(read_text(readme).splitlines()[:30])) if readme else "未发现 README。"
+    readme_head = "\n".join(read_text(readme).splitlines()[:30]) if readme else "未发现 README。"
     languages = ", ".join(f"{name}({count})" for name, count in language_counts(files).most_common()) or "未识别"
     card = f"""# 5KB 项目名片
 
@@ -771,73 +767,16 @@ python3 scripts/repo_analyzer.py {source} --output analysis --no-question
 """
 
 
-def overview_report_body(project_name: str, source: str, repo_type: str, files: List[Path], repo: Path) -> str:
-    language_line = ", ".join(f"{name}({count})" for name, count in language_counts(files).most_common()) or "未识别"
-    modules = module_rows(files, repo)
-    module_table = "\n".join(f"| {module_id} | {name} | {count} |" for module_id, name, count in modules[:8])
-    readme_title, readme_points = readme_summary(repo)
-    commands = "\n".join(f"- `{command}`" for command in command_hints(repo, files))
-    tools = mcp_tool_names(repo, files, 60)
-    tool_lines = "\n".join(f"- `{name}` (`{file_path}:{line}`)" for name, file_path, line in tools) or "- 未识别到 MCP 工具/API 名称"
-    slice_names = [filename for filename, _label, _patterns in SLICES[repo_type]] + ["12-history-hotspot.txt"]
-    slice_links = "\n".join(f"- `slices/{name}`" for name in slice_names)
-    return f"""# {project_name} 分析总览
-
-> 元信息：目标 `{source}`；Repo 类型 `{repo_type}`；报告由确定性 repo-analyzer CLI 生成。
-
-## 0. 读者导航
-- 技术负责人：读 `ANALYSIS_REPORT.tech-lead.md`
-- 业务负责人：读 `ANALYSIS_REPORT.business.md`
-- 学习者：读 `ANALYSIS_REPORT.learning.md`
-- 复查证据：读 `02a-manifest-card.md`、`05-module-ids.yaml`、`08-coverage.md`、`STATE_REPORT.md`
-
-## 1. 总览摘要
-- 项目识别名：{readme_title}
-- 主要语言：{language_line}
-- 文件总数：{len(files)}
-
-README 摘要：
-{readme_points}
-
-## 2. 架构地图
-```mermaid
-flowchart TD
-  A[目标仓库] --> B[类型识别]
-  B --> C[动态切片]
-  C --> D[模块清单]
-  D --> E[三份受众报告]
-```
-
-## 3. 核心模块
-| 模块 ID | 路径/分组 | 文件数 |
-|---|---|---:|
-{module_table or '| module_001 | [root] | 0 |'}
-
-## 4. API 与运行入口
-### 对外工具/API 表面
-{tool_lines}
-
-### 运行命令候选
-{commands}
-
-## 5. 证据切片
-{slice_links}
-
-## 6. 复现方法
-```bash
-python3 scripts/repo_analyzer.py {source} --output analysis --mode all --no-question
-```
-"""
-
-
 def write_reports(repo: Path, output: Path, source: str, project_name: str, repo_type: str, files: List[Path], mode: str) -> None:
     modes = ["tech-lead", "business", "learning"] if mode == "all" else [mode]
+    primary = None
     for report_mode in modes:
         body = report_body(project_name, source, repo_type, files, repo, report_mode)
         target = output / f"ANALYSIS_REPORT.{report_mode}.md"
         target.write_text(body, encoding="utf-8")
-    primary = overview_report_body(project_name, source, repo_type, files, repo) if mode == "all" else report_body(project_name, source, repo_type, files, repo, mode)
-    (output / "ANALYSIS_REPORT.md").write_text(primary, encoding="utf-8")
+        if primary is None:
+            primary = body
+    (output / "ANALYSIS_REPORT.md").write_text(primary or report_body(project_name, source, repo_type, files, repo, mode), encoding="utf-8")
 
 
 def write_readme(output: Path, project_name: str, repo_type: str, mode: str) -> None:
@@ -898,10 +837,6 @@ def check(name, ok, detail=""):
         failures.append(name)
 
 
-def strip_fenced_code(text):
-    return re.sub(r"(?ms)^```.*?^```", "", text)
-
-
 required = [
     "00-meta.txt",
     "02a-repo-type.yaml",
@@ -932,10 +867,8 @@ check("failed_modules tracked", "failed_modules: []" in state)
 check("state final", "PASS_DETERMINISTIC_ACCEPTANCE" in state and "PASS_WITH_DETERMINISTIC_BASELINE" not in state)
 check("coverage final", "已完成确定性门控" in coverage and "待 LLM" not in coverage)
 
-markdown_files = [path for path in root.glob("*.md") if path.is_file()]
 artifact_files = [path for path in root.rglob("*") if path.is_file() and "acceptance" not in path.relative_to(root).parts]
 all_text = "\\n".join(path.read_text(encoding="utf-8", errors="replace") for path in artifact_files)
-markdown_text = "\\n".join(strip_fenced_code(path.read_text(encoding="utf-8", errors="replace")) for path in markdown_files)
 main_report = read("ANALYSIS_REPORT.md")
 code_slices = [path for path in slices if path.name.startswith(("01-", "02-", "05-"))]
 tools = sorted(set(re.findall(r"\\bai_[A-Za-z0-9_$-]+\\b", "\\n".join(read(f"slices/{path.name}") for path in code_slices))))
@@ -951,25 +884,23 @@ readme = read("README.md")
 local_links = [link for link in re.findall(r"\\[[^\\]]+\\]\\(([^)#][^)]+)\\)", readme) if not link.startswith(("http://", "https://"))]
 check("readme links exist", all((root / link).exists() for link in local_links))
 
-wiki_refs = set(re.findall(r"\\[\\[([^\\]]+)\\]\\]", markdown_text))
+wiki_refs = set(re.findall(r"\\[\\[([^\\]]+)\\]\\]", all_text))
 valid_wiki = set(module_ids)
 check("wikilinks valid", all(ref in valid_wiki for ref in wiki_refs), ",".join(sorted(wiki_refs - valid_wiki)))
 
-for md in markdown_files:
+for md in root.glob("*.md"):
     text = md.read_text(encoding="utf-8", errors="replace")
-    structural_text = strip_fenced_code(text)
     headings = set()
-    for heading in re.findall(r"(?m)^#+\\s+(.+)$", structural_text):
+    for heading in re.findall(r"(?m)^#+\\s+(.+)$", text):
         slug = re.sub(r"[^a-z0-9\\u4e00-\\u9fff -]", "", heading.lower()).strip().replace(" ", "-")
         if slug:
             headings.add(slug)
-    anchors = [anchor[1:] for anchor in re.findall(r"\\(#[^)]+\\)", structural_text)]
+    anchors = [anchor[1:] for anchor in re.findall(r"\\(#[^)]+\\)", text)]
     check(f"anchors:{md.name}", all(anchor in headings for anchor in anchors))
 
 report_names = ["tech-lead", "business", "learning"]
 reports = {name: read(f"ANALYSIS_REPORT.{name}.md") for name in report_names}
 if all(reports.values()):
-    check("main report distinct", all(main_report != report for report in reports.values()))
     check("audience marker:tech", "技术负责人关注" in reports["tech-lead"])
     check("audience marker:business", "业务负责人关注" in reports["business"])
     check("audience marker:learning", "学习路径" in reports["learning"])

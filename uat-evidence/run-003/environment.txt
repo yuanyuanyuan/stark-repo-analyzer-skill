@@ -1,0 +1,10 @@
+skill_version: v1
+skill_name: stark-repo-analyzer
+skill_link: ~/.codex/skills/stark-repo-analyzer
+skill_target: /Users/chuzu/projests/stark-repo-analyzer-skill
+target_repo: https://github.com/bradautomates/claude-video
+created_at: 2026-07-07T12:41:23+08:00
+codex: /Users/chuzu/.local/bin/codex
+codex-cli 0.142.5
+graphify: /Users/chuzu/.local/bin/graphify
+graphify 0.9.2

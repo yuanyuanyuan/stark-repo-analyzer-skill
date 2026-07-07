@@ -4,7 +4,7 @@ Goal Prompt:
 
 ```markdown
 目标:
-使用 $ponytail 和 $tdd 实现 /Users/chuzu/projests/stark-repo-analyzer-skill/references/PLAN.md，把 PLAN.md 中的仓库分析流程落成当前仓库里可运行、可测试、可验收的最小可用 skill。
+使用 $ponytail 和 $tdd 实现 /Users/chuzu/projests/stark-repo-analyzer-skill/PLAN.md，把 PLAN.md 中的仓库分析流程落成当前仓库里可运行、可测试、可验收的最小可用 skill。
 
 真实意图:
 用户真正要的是让 PLAN.md 不再停留在方案文档，而是变成一个能被小白用户实际调用、能分析真实仓库、并能产出可信分析结果的 skill。最大误伤点是做成庞大的通用分析平台，或者只写包装文档却没有真实可运行证据。
@@ -40,7 +40,7 @@ Goal Prompt:
 
 优先阅读上下文:
 - /Users/chuzu/projests/stark-repo-analyzer-skill/AGENTS.md 或当前会话提供的 AGENTS.md 指令。
-- /Users/chuzu/projests/stark-repo-analyzer-skill/references/PLAN.md。
+- /Users/chuzu/projests/stark-repo-analyzer-skill/PLAN.md。
 - 如果存在 graphify-out/wiki/index.md，先用它做广义导航。
 - 如果存在 graphify-out/graph.json，先运行：`graphify query "How should PLAN.md be implemented as a skill in this repository?"`，再做原始源码浏览。
 - 用 `rg --files` 查看现有仓库文件，重点看 skill 元数据、scripts、tests、README/docs 和现有命令入口。
@@ -114,7 +114,7 @@ Loop Prompt:
 持续推进 PLAN.md 实现，直到该 skill 真实可用、实现足够克制、测试证据充分，并通过小白用户子代理 + 裁决代理的真实终验收，裁决分数 >= 9.5/10。
 
 循环状态:
-- 原始目标：使用 $ponytail 和 $tdd 实现 /Users/chuzu/projests/stark-repo-analyzer-skill/references/PLAN.md。
+- 原始目标：使用 $ponytail 和 $tdd 实现 /Users/chuzu/projests/stark-repo-analyzer-skill/PLAN.md。
 - 必须验收的目标仓库：https://github.com/adminhuan/smart-search-mcp。
 - 必须通过的终验收门槛：小白用户子代理完成分析；裁决代理对过程、agent 反应和分析结果评分 >= 9.5/10。
 - 当前轮次：从上一轮报告填写。

@@ -1,0 +1,2593 @@
+<slice name="配置与脚本">
+  <file path=".github/workflows/release.yml">
+name: Release
+
+on:
+  push:
+    tags:
+      - &quot;v*&quot;
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build .skill artifact
+        run: |
+          bash skills/watch/scripts/build-skill.sh
+          test -f dist/watch.skill
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/watch.skill
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+
+  </file>
+  <file path="dev-sync.sh">
+#!/usr/bin/env bash
+#
+# dev-sync.sh — copy this working tree into the installed /watch plugin cache so
+# local edits are picked up by Claude Code without publishing a release.
+#
+# The install path is resolved from ~/.claude/plugins/installed_plugins.json, so
+# it follows version bumps automatically. Override it by passing a path as $1 or
+# setting WATCH_INSTALL_PATH. Pass --dry-run to preview without writing.
+#
+# Usage:
+#   ./dev-sync.sh                 # sync into the resolved install path
+#   ./dev-sync.sh --dry-run       # show what would change
+#   ./dev-sync.sh /some/other/dir # sync into an explicit path
+#
+set -euo pipefail
+
+REPO_ROOT=&quot;$(cd &quot;$(dirname &quot;${BASH_SOURCE[0]}&quot;)&quot; &amp;&amp; pwd)&quot;
+PLUGIN_KEY=&quot;watch@claude-video&quot;
+INSTALLED_JSON=&quot;${HOME}/.claude/plugins/installed_plugins.json&quot;
+
+DRY_RUN=()
+DEST=&quot;&quot;
+for arg in &quot;$@&quot;; do
+  case &quot;$arg&quot; in
+    --dry-run) DRY_RUN=(--dry-run --itemize-changes) ;;
+    -*) echo &quot;unknown flag: $arg&quot; &gt;&amp;2; exit 2 ;;
+    *) DEST=&quot;$arg&quot; ;;
+  esac
+done
+
+# Resolve the destination install path if not given explicitly.
+if [[ -z &quot;$DEST&quot; ]]; then
+  DEST=&quot;${WATCH_INSTALL_PATH:-}&quot;
+fi
+if [[ -z &quot;$DEST&quot; ]]; then
+  if [[ ! -f &quot;$INSTALLED_JSON&quot; ]]; then
+    echo &quot;error: $INSTALLED_JSON not found; pass an install path explicitly&quot; &gt;&amp;2
+    exit 1
+  fi
+  DEST=&quot;$(PLUGIN_KEY=&quot;$PLUGIN_KEY&quot; python3 - &quot;$INSTALLED_JSON&quot; &lt;&lt;&#x27;PY&#x27;
+import json, os, sys
+data = json.load(open(sys.argv[1]))
+key = os.environ[&quot;PLUGIN_KEY&quot;]
+records = data.get(&quot;plugins&quot;, {}).get(key, [])
+# Prefer a record whose installPath actually exists on disk.
+paths = [r.get(&quot;installPath&quot;) for r in records if r.get(&quot;installPath&quot;)]
+for p in paths:
+    if os.path.isdir(p):
+        print(p); break
+else:
+    print(paths[0] if paths else &quot;&quot;)
+PY
+)&quot;
+fi
+
+if [[ -z &quot;$DEST&quot; ]]; then
+  echo &quot;error: could not resolve an install path for &#x27;$PLUGIN_KEY&#x27;&quot; &gt;&amp;2
+  echo &quot;       install the plugin first, or pass a path: scripts/dev-sync.sh /path/to/install&quot; &gt;&amp;2
+  exit 1
+fi
+if [[ ! -d &quot;$DEST&quot; ]]; then
+  echo &quot;error: install path does not exist: $DEST&quot; &gt;&amp;2
+  exit 1
+fi
+
+echo &quot;source: $REPO_ROOT&quot;
+echo &quot;dest:   $DEST&quot;
+echo
+
+# Mirror shipped files only. Dev-only artifacts and runtime state are excluded.
+# No --delete: the cache holds runtime state (.in_use/) we must not touch.
+rsync -a ${DRY_RUN[@]+&quot;${DRY_RUN[@]}&quot;} \
+  --exclude &#x27;.git/&#x27; \
+  --exclude &#x27;.venv/&#x27; \
+  --exclude &#x27;.pytest_cache/&#x27; \
+  --exclude &#x27;__pycache__/&#x27; \
+  --exclude &#x27;*.pyc&#x27; \
+  --exclude &#x27;.DS_Store&#x27; \
+  --exclude &#x27;.in_use/&#x27; \
+  --exclude &#x27;tests/&#x27; \
+  --exclude &#x27;docs/&#x27; \
+  --exclude &#x27;dist/&#x27; \
+  --exclude &#x27;V2_*.md&#x27; \
+  --exclude &#x27;dev-sync.sh&#x27; \
+  &quot;$REPO_ROOT/&quot; &quot;$DEST/&quot;
+
+echo &quot;done.&quot;
+
+  </file>
+  <file path="hooks/scripts/check-setup.sh">
+#!/usr/bin/env bash
+# SessionStart hook for /watch — one-line status so users know what&#x27;s wired up.
+# Silent on ready state to avoid spam. Points at the installer when something
+# is missing.
+set -euo pipefail
+
+CONFIG_FILE=&quot;$HOME/.config/watch/.env&quot;
+
+# Warn if the secrets file has loose permissions.
+if [[ -f &quot;$CONFIG_FILE&quot; ]]; then
+  perms=$(stat -c &#x27;%a&#x27; &quot;$CONFIG_FILE&quot; 2&gt;/dev/null || stat -f &#x27;%Lp&#x27; &quot;$CONFIG_FILE&quot; 2&gt;/dev/null || echo &quot;&quot;)
+  if [[ -n &quot;$perms&quot; &amp;&amp; &quot;$perms&quot; != &quot;600&quot; &amp;&amp; &quot;$perms&quot; != &quot;400&quot; ]]; then
+    echo &quot;/watch: WARNING — $CONFIG_FILE has permissions $perms (should be 600).&quot;
+    echo &quot;  Fix: chmod 600 $CONFIG_FILE&quot;
+  fi
+fi
+
+# Load API keys from the config file without exporting them.
+read_key() {
+  local name=&quot;$1&quot;
+  if [[ -n &quot;${!name:-}&quot; ]]; then
+    echo &quot;${!name}&quot;
+    return
+  fi
+  if [[ -f &quot;$CONFIG_FILE&quot; ]]; then
+    awk -F= -v k=&quot;$name&quot; &#x27;
+      /^[[:space:]]*#/ { next }
+      $1 == k {
+        sub(/^[[:space:]]*/, &quot;&quot;, $2); sub(/[[:space:]]*$/, &quot;&quot;, $2);
+        gsub(/^[&quot;&#x27;\&#x27;&#x27;]|[&quot;&#x27;\&#x27;&#x27;]$/, &quot;&quot;, $2);
+        print $2; exit
+      }
+    &#x27; &quot;$CONFIG_FILE&quot;
+  fi
+}
+
+HAS_FFMPEG=&quot;&quot;
+HAS_YTDLP=&quot;&quot;
+command -v ffmpeg &gt;/dev/null 2&gt;&amp;1 &amp;&amp; HAS_FFMPEG=&quot;yes&quot;
+command -v yt-dlp &gt;/dev/null 2&gt;&amp;1 &amp;&amp; HAS_YTDLP=&quot;yes&quot;
+
+HAS_GROQ=&quot;$(read_key GROQ_API_KEY)&quot;
+HAS_OPENAI=&quot;$(read_key OPENAI_API_KEY)&quot;
+SETUP_COMPLETE=&quot;$(read_key SETUP_COMPLETE)&quot;
+
+# Fully configured → silent (Claude can surface status on demand via --check).
+if [[ &quot;$SETUP_COMPLETE&quot; == &quot;true&quot; &amp;&amp; -n &quot;$HAS_FFMPEG&quot; &amp;&amp; -n &quot;$HAS_YTDLP&quot; ]]; then
+  exit 0
+fi
+
+# First-run / partially-configured → one-line hint.
+if [[ -z &quot;$HAS_FFMPEG&quot; || -z &quot;$HAS_YTDLP&quot; ]]; then
+  echo &quot;/watch: needs ffmpeg + yt-dlp. Run \`python3 \$CLAUDE_PLUGIN_ROOT/skills/watch/scripts/setup.py\` once to install and scaffold config.&quot;
+elif [[ -z &quot;$HAS_GROQ&quot; &amp;&amp; -z &quot;$HAS_OPENAI&quot; ]]; then
+  echo &quot;/watch: ready for videos with native captions. Add GROQ_API_KEY (preferred) or OPENAI_API_KEY to ~/.config/watch/.env to unlock Whisper fallback.&quot;
+else
+  echo &quot;/watch: ready.&quot;
+fi
+
+  </file>
+  <file path="skills/watch/scripts/build-skill.sh">
+#!/usr/bin/env bash
+# build-skill.sh — package the watch skill as a claude.ai-upload-ready .skill file.
+# Usage: bash skills/watch/scripts/build-skill.sh   (run from anywhere)
+#
+# Produces dist/watch.skill, a zip with a single top-level `watch/` directory
+# containing SKILL.md and the scripts/ runtime from skills/watch. Archiving the
+# skills/watch subtree directly keeps the bundle to exactly one SKILL.md and
+# well under claude.ai&#x27;s 200-file cap, with no post-hoc `zip -d` stripping.
+set -euo pipefail
+
+REPO_ROOT=&quot;$(cd &quot;$(dirname &quot;$0&quot;)/../../..&quot; &amp;&amp; pwd)&quot;
+cd &quot;$REPO_ROOT&quot;
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo &quot;error: working tree is dirty; commit or stash before building&quot; &gt;&amp;2
+  exit 1
+fi
+
+mkdir -p dist
+OUT=&quot;dist/watch.skill&quot;
+git archive --format=zip --prefix=watch/ --output=&quot;$OUT&quot; HEAD:skills/watch
+
+COUNT=$(unzip -l &quot;$OUT&quot; | tail -1 | awk &#x27;{print $2}&#x27;)
+SIZE=$(du -h &quot;$OUT&quot; | cut -f1)
+
+if [ &quot;$COUNT&quot; -gt 200 ]; then
+  echo &quot;error: $COUNT files in zip, claude.ai&#x27;s cap is 200&quot; &gt;&amp;2
+  echo &quot;       trim the skills/watch/ tree or add a .gitattributes export-ignore entry&quot; &gt;&amp;2
+  exit 1
+fi
+
+SKILL_MD_COUNT=$(unzip -l &quot;$OUT&quot; | grep -c &quot;SKILL.md&quot; || true)
+if [ &quot;$SKILL_MD_COUNT&quot; -ne 1 ]; then
+  echo &quot;error: expected exactly one SKILL.md, found $SKILL_MD_COUNT&quot; &gt;&amp;2
+  exit 1
+fi
+
+echo &quot;built $OUT ($COUNT files, $SIZE)&quot;
+echo &quot;upload via the claude.ai skill UI&quot;
+
+  </file>
+  <file path="skills/watch/scripts/config.py">
+#!/usr/bin/env python3
+&quot;&quot;&quot;Shared /watch configuration helpers.&quot;&quot;&quot;
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+
+CONFIG_DIR = Path.home() / &quot;.config&quot; / &quot;watch&quot;
+CONFIG_FILE = CONFIG_DIR / &quot;.env&quot;
+
+DEFAULT_DETAIL = &quot;balanced&quot;
+
+DETAILS = {&quot;transcript&quot;, &quot;efficient&quot;, &quot;balanced&quot;, &quot;token-burner&quot;}
+
+
+def read_env_file(path: Path | None = None) -&gt; dict[str, str]:
+    if path is None:
+        path = CONFIG_FILE
+    values: dict[str, str] = {}
+    if not path.exists():
+        return values
+    try:
+        lines = path.read_text(encoding=&quot;utf-8&quot;).splitlines()
+    except OSError:
+        return values
+    for line in lines:
+        raw = line.strip()
+        if not raw or raw.startswith(&quot;#&quot;) or &quot;=&quot; not in raw:
+            continue
+        key, _, value = raw.partition(&quot;=&quot;)
+        value = value.strip()
+        if len(value) &gt;= 2 and value[0] in (&#x27;&quot;&#x27;, &quot;&#x27;&quot;) and value[-1] == value[0]:
+            value = value[1:-1]
+        else:
+            # Strip an inline comment (a &#x27;#&#x27; preceded by whitespace) from an
+            # unquoted value. Without this, `WATCH_DETAIL=balanced  # note`
+            # parses as &quot;balanced  # note&quot;, fails validation, and silently
+            # falls back to the default. Keeps &#x27;#&#x27; inside quotes / API keys.
+            for i, ch in enumerate(value):
+                if ch == &quot;#&quot; and i &gt; 0 and value[i - 1] in &quot; \t&quot;:
+                    value = value[:i].rstrip()
+                    break
+        values[key.strip()] = value
+    return values
+
+
+def get_config() -&gt; dict[str, object]:
+    file_values = read_env_file()
+
+    detail = (
+        os.environ.get(&quot;WATCH_DETAIL&quot;)
+        or file_values.get(&quot;WATCH_DETAIL&quot;)
+        or DEFAULT_DETAIL
+    )
+    if detail not in DETAILS:
+        detail = DEFAULT_DETAIL
+
+    return {
+        &quot;detail&quot;: detail,
+        &quot;config_file&quot;: str(CONFIG_FILE),
+    }
+
+
+def frame_cap(detail: str) -&gt; int | None:
+    if detail == &quot;efficient&quot;:
+        return 50
+    if detail == &quot;balanced&quot;:
+        return 100
+    if detail == &quot;token-burner&quot;:
+        return None
+    if detail == &quot;transcript&quot;:
+        return None
+    return 100
+
+  </file>
+  <file path="skills/watch/scripts/download.py">
+#!/usr/bin/env python3
+&quot;&quot;&quot;Download a video via yt-dlp, or resolve a local file path.
+
+Also fetches subtitles (manual first, then auto-generated) in VTT format so
+transcribe.py can parse them without needing Whisper.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import json
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from urllib.parse import urlparse
+
+
+VIDEO_EXTS = {&quot;.mp4&quot;, &quot;.mkv&quot;, &quot;.webm&quot;, &quot;.mov&quot;, &quot;.m4v&quot;, &quot;.avi&quot;, &quot;.flv&quot;, &quot;.wmv&quot;}
+
+
+def is_url(source: str) -&gt; bool:
+    if source.startswith(&quot;-&quot;):
+        return False
+    parsed = urlparse(source)
+    return parsed.scheme in (&quot;http&quot;, &quot;https&quot;) and bool(parsed.netloc)
+
+
+def resolve_local(path: str) -&gt; dict:
+    p = Path(path).expanduser().resolve()
+    if not p.exists():
+        raise SystemExit(f&quot;File not found: {p}&quot;)
+    if p.suffix.lower() not in VIDEO_EXTS:
+        print(
+            f&quot;[watch] warning: {p.suffix} is not a known video extension, proceeding anyway&quot;,
+            file=sys.stderr,
+        )
+    return {
+        &quot;video_path&quot;: str(p),
+        &quot;subtitle_path&quot;: None,
+        &quot;info&quot;: {&quot;title&quot;: p.name, &quot;url&quot;: str(p)},
+        &quot;downloaded&quot;: False,
+    }
+
+
+def _pick_subtitle(out_dir: Path) -&gt; Path | None:
+    candidates = sorted(out_dir.glob(&quot;video*.vtt&quot;))
+    if not candidates:
+        return None
+    preferred = [
+        c for c in candidates
+        if any(marker in c.name for marker in (&quot;.en.&quot;, &quot;.en-US.&quot;, &quot;.en-GB.&quot;, &quot;.en-orig.&quot;))
+    ]
+    return preferred[0] if preferred else candidates[0]
+
+
+def _pick_video(out_dir: Path) -&gt; Path | None:
+    for ext in (&quot;.mp4&quot;, &quot;.mkv&quot;, &quot;.webm&quot;, &quot;.mov&quot;, &quot;.m4a&quot;, &quot;.mp3&quot;, &quot;.opus&quot;):
+        for candidate in out_dir.glob(f&quot;video*{ext}&quot;):
+            return candidate
+    for candidate in out_dir.glob(&quot;video.*&quot;):
+        if candidate.suffix.lower() in VIDEO_EXTS:
+            return candidate
+    return None
+
+
+def fetch_captions(url: str, out_dir: Path) -&gt; dict:
+    &quot;&quot;&quot;Fetch metadata and best available VTT captions without downloading video.&quot;&quot;&quot;
+    if shutil.which(&quot;yt-dlp&quot;) is None:
+        raise SystemExit(&quot;yt-dlp is not installed. Install with: brew install yt-dlp&quot;)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_template = str(out_dir / &quot;video.%(ext)s&quot;)
+    cmd = [
+        &quot;yt-dlp&quot;,
+        &quot;--skip-download&quot;,
+        &quot;--write-info-json&quot;,
+        &quot;--write-subs&quot;,
+        &quot;--write-auto-subs&quot;,
+        &quot;--sub-langs&quot;, &quot;en.*&quot;,
+        &quot;--sub-format&quot;, &quot;vtt&quot;,
+        &quot;--convert-subs&quot;, &quot;vtt&quot;,
+        &quot;--no-playlist&quot;,
+        &quot;--ignore-errors&quot;,
+        &quot;-o&quot;, output_template,
+        &quot;--&quot;,
+        url,
+    ]
+    subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
+    subtitle = _pick_subtitle(out_dir)
+    info = _read_info(out_dir / &quot;video.info.json&quot;, url)
+    return {
+        &quot;video_path&quot;: None,
+        &quot;subtitle_path&quot;: str(subtitle) if subtitle else None,
+        &quot;info&quot;: info or {&quot;url&quot;: url},
+        &quot;downloaded&quot;: False,
+    }
+
+
+def _read_info(info_path: Path, url: str) -&gt; dict:
+    info: dict = {}
+    if info_path.exists():
+        try:
+            raw = json.loads(info_path.read_text(encoding=&quot;utf-8&quot;))
+            info = {
+                &quot;title&quot;: raw.get(&quot;title&quot;),
+                &quot;uploader&quot;: raw.get(&quot;uploader&quot;) or raw.get(&quot;channel&quot;),
+                &quot;duration&quot;: raw.get(&quot;duration&quot;),
+                &quot;url&quot;: raw.get(&quot;webpage_url&quot;) or url,
+            }
+        except Exception as exc:
+            print(f&quot;[watch] info.json parse failed: {exc}&quot;, file=sys.stderr)
+            info = {&quot;url&quot;: url}
+    return info
+
+
+def download_url(
+    url: str,
+    out_dir: Path,
+    audio_only: bool = False,
+) -&gt; dict:
+    if shutil.which(&quot;yt-dlp&quot;) is None:
+        raise SystemExit(&quot;yt-dlp is not installed. Install with: brew install yt-dlp&quot;)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_template = str(out_dir / &quot;video.%(ext)s&quot;)
+
+    fmt = &quot;ba/bestaudio&quot; if audio_only else &quot;bv*[height&lt;=720]+ba/b[height&lt;=720]/bv+ba/b&quot;
+    cmd = [
+        &quot;yt-dlp&quot;,
+        &quot;-N&quot;, &quot;8&quot;,
+        &quot;-f&quot;, fmt,
+        &quot;--merge-output-format&quot;, &quot;mp4&quot;,
+        &quot;--write-info-json&quot;,
+        &quot;--write-subs&quot;,
+        &quot;--write-auto-subs&quot;,
+        &quot;--sub-langs&quot;, &quot;en.*&quot;,
+        &quot;--sub-format&quot;, &quot;vtt&quot;,
+        &quot;--convert-subs&quot;, &quot;vtt&quot;,
+        &quot;--no-playlist&quot;,
+        &quot;--ignore-errors&quot;,
+        &quot;-o&quot;, output_template,
+        &quot;--&quot;,
+        url,
+    ]
+
+    # yt-dlp may exit non-zero if a subtitle variant fails (e.g. 429) even when
+    # the video itself downloaded fine. Treat &quot;video file present&quot; as success.
+    result = subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
+    video = _pick_video(out_dir)
+    if video is None:
+        raise SystemExit(
+            f&quot;yt-dlp did not produce a video file in {out_dir} (exit {result.returncode})&quot;
+        )
+
+    subtitle = _pick_subtitle(out_dir)
+    info = _read_info(out_dir / &quot;video.info.json&quot;, url)
+
+    return {
+        &quot;video_path&quot;: str(video),
+        &quot;subtitle_path&quot;: str(subtitle) if subtitle else None,
+        &quot;info&quot;: info or {&quot;url&quot;: url},
+        &quot;downloaded&quot;: True,
+    }
+
+
+def download(
+    source: str,
+    out_dir: Path,
+    audio_only: bool = False,
+) -&gt; dict:
+    if is_url(source):
+        return download_url(source, out_dir, audio_only=audio_only)
+    return resolve_local(source)
+
+
+if __name__ == &quot;__main__&quot;:
+    if len(sys.argv) &lt; 3:
+        print(&quot;usage: download.py &lt;url-or-path&gt; &lt;out-dir&gt;&quot;, file=sys.stderr)
+        raise SystemExit(2)
+    result = download(sys.argv[1], Path(sys.argv[2]))
+    print(json.dumps(result, indent=2))
+
+  </file>
+  <file path="skills/watch/scripts/frames.py">
+#!/usr/bin/env python3
+&quot;&quot;&quot;Probe video metadata and extract frames at an auto-scaled fps.
+
+Auto-fps targets a frame budget, not a fixed rate. Token cost scales with frame
+count, so budget-by-duration keeps short videos dense and long videos capped.
+When a user-specified range is passed, focused-mode budgets denser (they are
+zooming in for detail).
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import json
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
+MAX_FPS = 2.0
+SCENE_THRESHOLD = 0.20
+# Keep scene-detection results once we have at least this many distinct shots.
+# Below this the video is effectively static (screen recording, talking head),
+# so we fall back to uniform sampling. Matching the reference fork&#x27;s behaviour,
+# this is a low floor — NOT the frame budget — so normal videos with cuts use
+# the (single-pass) scene engine instead of paying for a wasted second decode.
+SCENE_MIN_FRAMES = 8
+# Below this many decoded keyframes a clip is too sparse for keyframe coverage
+# (very short or oddly encoded), so the cheap tier falls back to uniform.
+KEYFRAME_MIN = 4
+MAX_READ_DIMENSION = 1998
+# Frame-delta dedup: downscale each frame to a DEDUP_THUMB x DEDUP_THUMB
+# grayscale thumbnail and treat two frames as near-identical when their mean
+# per-pixel difference (0-255) is at or below DEDUP_THRESHOLD. Conservative on
+# purpose: only collapses frames that are visually the same shot, so a code diff
+# / scrolling terminal / slide-gaining-a-bullet survives. Unlike a within-frame
+# perceptual hash, this distinguishes flat frames (solid slides, fades) by luma.
+DEDUP_THUMB = 16
+DEDUP_THRESHOLD = 2.0
+SHOWINFO_TS_RE = re.compile(r&quot;pts_time:([0-9.]+)&quot;)
+
+
+def _scale_filter(resolution: int) -&gt; str:
+    return (
+        f&quot;scale=w=&#x27;min({resolution},iw)&#x27;:h=&#x27;min({MAX_READ_DIMENSION},ih)&#x27;:&quot;
+        &quot;force_original_aspect_ratio=decrease:force_divisible_by=2&quot;
+    )
+
+
+def _clamp_fps(fps: float, duration_seconds: float, max_frames: int) -&gt; tuple[float, int]:
+    fps = min(fps, MAX_FPS)
+    target = min(max_frames, max(1, int(round(fps * duration_seconds))))
+    return fps, target
+
+
+def parse_time(value: str | float | int | None) -&gt; float | None:
+    &quot;&quot;&quot;Parse SS, MM:SS, or HH:MM:SS (with optional .ms) into seconds.&quot;&quot;&quot;
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    s = str(value).strip()
+    if not s:
+        return None
+    parts = s.split(&quot;:&quot;)
+    try:
+        if len(parts) == 1:
+            return float(parts[0])
+        if len(parts) == 2:
+            return int(parts[0]) * 60 + float(parts[1])
+        if len(parts) == 3:
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+    except ValueError:
+        pass
+    raise SystemExit(f&quot;Cannot parse time value: {value!r} (expected SS, MM:SS, or HH:MM:SS)&quot;)
+
+
+def format_time(seconds: float) -&gt; str:
+    total = int(round(seconds))
+    hours, rem = divmod(total, 3600)
+    minutes, sec = divmod(rem, 60)
+    if hours:
+        return f&quot;{hours}:{minutes:02d}:{sec:02d}&quot;
+    return f&quot;{minutes:02d}:{sec:02d}&quot;
+
+
+def get_metadata(video_path: str) -&gt; dict:
+    if shutil.which(&quot;ffprobe&quot;) is None:
+        raise SystemExit(&quot;ffprobe is not installed. Install with: brew install ffmpeg&quot;)
+
+    result = subprocess.run(
+        [
+            &quot;ffprobe&quot;,
+            &quot;-v&quot;, &quot;quiet&quot;,
+            &quot;-print_format&quot;, &quot;json&quot;,
+            &quot;-show_format&quot;,
+            &quot;-show_streams&quot;,
+            str(Path(video_path).resolve()),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise SystemExit(f&quot;ffprobe failed: {result.stderr.strip()}&quot;)
+
+    data = json.loads(result.stdout or &quot;{}&quot;)
+    streams = data.get(&quot;streams&quot;, [])
+    fmt = data.get(&quot;format&quot;, {})
+    video_stream = next((s for s in streams if s.get(&quot;codec_type&quot;) == &quot;video&quot;), {})
+    audio_stream = next((s for s in streams if s.get(&quot;codec_type&quot;) == &quot;audio&quot;), None)
+
+    duration = float(fmt.get(&quot;duration&quot;) or video_stream.get(&quot;duration&quot;) or 0)
+    return {
+        &quot;duration_seconds&quot;: duration,
+        &quot;width&quot;: video_stream.get(&quot;width&quot;),
+        &quot;height&quot;: video_stream.get(&quot;height&quot;),
+        &quot;codec&quot;: video_stream.get(&quot;codec_name&quot;),
+        &quot;size_bytes&quot;: int(fmt.get(&quot;size&quot;) or 0),
+        &quot;has_audio&quot;: audio_stream is not None,
+    }
+
+
+def auto_fps(duration_seconds: float, max_frames: int = 100) -&gt; tuple[float, int]:
+    &quot;&quot;&quot;Pick fps that targets a sensible frame budget for full-video scans.&quot;&quot;&quot;
+    if duration_seconds &lt;= 0:
+        return 1.0, 1
+
+    if duration_seconds &lt;= 30:
+        target = min(max_frames, max(12, int(round(duration_seconds))))
+    elif duration_seconds &lt;= 60:
+        target = min(max_frames, 40)
+    elif duration_seconds &lt;= 180:  # 3 min
+        target = min(max_frames, 60)
+    elif duration_seconds &lt;= 600:  # 10 min
+        target = min(max_frames, 80)
+    else:
+        target = max_frames
+
+    return _clamp_fps(target / duration_seconds, duration_seconds, max_frames)
+
+
+def auto_fps_focus(duration_seconds: float, max_frames: int = 100) -&gt; tuple[float, int]:
+    &quot;&quot;&quot;Denser budget for user-specified ranges — they are zooming in for detail.&quot;&quot;&quot;
+    if duration_seconds &lt;= 0:
+        return min(MAX_FPS, 2.0), 2
+
+    if duration_seconds &lt;= 5:
+        target = min(max_frames, max(10, int(round(duration_seconds * 6))))
+    elif duration_seconds &lt;= 15:
+        target = min(max_frames, max(30, int(round(duration_seconds * 4))))
+    elif duration_seconds &lt;= 30:
+        target = min(max_frames, 60)
+    elif duration_seconds &lt;= 60:
+        target = min(max_frames, 80)
+    elif duration_seconds &lt;= 180:
+        target = max_frames
+    else:
+        target = max_frames
+
+    return _clamp_fps(target / duration_seconds, duration_seconds, max_frames)
+
+
+def extract(
+    video_path: str,
+    out_dir: Path,
+    fps: float,
+    resolution: int = 512,
+    max_frames: int = 100,
+    start_seconds: float | None = None,
+    end_seconds: float | None = None,
+) -&gt; list[dict]:
+    if shutil.which(&quot;ffmpeg&quot;) is None:
+        raise SystemExit(&quot;ffmpeg is not installed. Install with: brew install ffmpeg&quot;)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for existing in out_dir.glob(&quot;frame_*.jpg&quot;):
+        existing.unlink()
+
+    output_pattern = str(out_dir / &quot;frame_%04d.jpg&quot;)
+    cmd: list[str] = [
+        &quot;ffmpeg&quot;,
+        &quot;-hide_banner&quot;,
+        &quot;-loglevel&quot;, &quot;error&quot;,
+        &quot;-y&quot;,
+    ]
+
+    # -ss before -i = fast seek (keyframe-snap, good enough for preview frames).
+    if start_seconds is not None:
+        cmd += [&quot;-ss&quot;, f&quot;{start_seconds:.3f}&quot;]
+    if end_seconds is not None:
+        cmd += [&quot;-to&quot;, f&quot;{end_seconds:.3f}&quot;]
+
+    cmd += [
+        &quot;-i&quot;, str(Path(video_path).resolve()),
+        &quot;-vf&quot;, f&quot;fps={fps},{_scale_filter(resolution)}&quot;,
+        &quot;-frames:v&quot;, str(max_frames),
+        &quot;-q:v&quot;, &quot;4&quot;,
+        output_pattern,
+    ]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(f&quot;ffmpeg frame extraction failed: {result.stderr.strip()}&quot;)
+
+    offset = start_seconds or 0.0
+    frames = sorted(out_dir.glob(&quot;frame_*.jpg&quot;))
+    return [
+        {
+            &quot;index&quot;: i,
+            &quot;timestamp_seconds&quot;: round(offset + (i / fps if fps &gt; 0 else 0.0), 2),
+            &quot;path&quot;: str(p),
+            &quot;reason&quot;: &quot;uniform&quot;,
+        }
+        for i, p in enumerate(frames)
+    ]
+
+
+def extract_scene_candidates(
+    video_path: str,
+    out_dir: Path,
+    resolution: int = 512,
+    max_frames: int | None = 100,
+    start_seconds: float | None = None,
+    end_seconds: float | None = None,
+    threshold: float = SCENE_THRESHOLD,
+) -&gt; list[dict]:
+    &quot;&quot;&quot;Extract first frame plus ffmpeg scene-change frames.
+
+    When ``max_frames`` is set, ``-frames:v`` lets ffmpeg stop decoding once it
+    has emitted that many frames (early exit) and avoids writing extras that we
+    would only delete afterwards. ``None`` (uncapped &quot;complete&quot; detail) keeps
+    every detected shot, as the user explicitly opted in.
+    &quot;&quot;&quot;
+    if shutil.which(&quot;ffmpeg&quot;) is None:
+        raise SystemExit(&quot;ffmpeg is not installed. Install with: brew install ffmpeg&quot;)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for existing in out_dir.glob(&quot;frame_*.jpg&quot;):
+        existing.unlink()
+
+    output_pattern = str(out_dir / &quot;frame_%04d.jpg&quot;)
+    cmd: list[str] = [
+        &quot;ffmpeg&quot;,
+        &quot;-hide_banner&quot;,
+        &quot;-loglevel&quot;, &quot;info&quot;,
+        &quot;-y&quot;,
+    ]
+    if start_seconds is not None:
+        cmd += [&quot;-ss&quot;, f&quot;{start_seconds:.3f}&quot;]
+    if end_seconds is not None:
+        cmd += [&quot;-to&quot;, f&quot;{end_seconds:.3f}&quot;]
+
+    vf = f&quot;select=&#x27;eq(n\\,0)+gt(scene\\,{threshold})&#x27;,{_scale_filter(resolution)},showinfo&quot;
+    cmd += [
+        &quot;-i&quot;, str(Path(video_path).resolve()),
+        &quot;-vf&quot;, vf,
+        &quot;-vsync&quot;, &quot;vfr&quot;,
+    ]
+    if max_frames is not None:
+        cmd += [&quot;-frames:v&quot;, str(max_frames)]
+    cmd += [
+        &quot;-q:v&quot;, &quot;4&quot;,
+        output_pattern,
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(f&quot;ffmpeg scene extraction failed: {result.stderr.strip()}&quot;)
+
+    offset = start_seconds or 0.0
+    timestamps = [round(offset + float(match.group(1)), 2) for match in SHOWINFO_TS_RE.finditer(result.stderr)]
+    frames = sorted(out_dir.glob(&quot;frame_*.jpg&quot;))
+    out: list[dict] = []
+    for i, path in enumerate(frames):
+        ts = timestamps[i] if i &lt; len(timestamps) else offset
+        out.append({
+            &quot;index&quot;: i,
+            &quot;timestamp_seconds&quot;: ts,
+            &quot;path&quot;: str(path),
+            &quot;reason&quot;: &quot;first-frame&quot; if i == 0 else &quot;scene-change&quot;,
+        })
+    return out
+
+
+def _even_indices(count: int, n: int) -&gt; list[int]:
+    &quot;&quot;&quot;Indices of ``n`` evenly-spaced items out of ``count`` (first + last kept).
+
+    ``n &gt;= count`` returns every index; ``n == 1`` returns just the first.
+    &quot;&quot;&quot;
+    if n &gt;= count:
+        return list(range(count))
+    if n &lt;= 1:
+        return [0]
+    return [round(i * (count - 1) / (n - 1)) for i in range(n)]
+
+
+def parse_timestamps(value: str | None) -&gt; list[float]:
+    &quot;&quot;&quot;Parse a comma-separated list of times (SS, MM:SS, HH:MM:SS) into a
+    sorted, de-duplicated list of seconds. Empty/blank tokens are skipped;
+    an unparseable token raises (via :func:`parse_time`).&quot;&quot;&quot;
+    if not value:
+        return []
+    out: list[float] = []
+    for token in value.split(&quot;,&quot;):
+        token = token.strip()
+        if not token:
+            continue
+        seconds = parse_time(token)
+        if seconds is not None:
+            out.append(float(seconds))
+    return sorted(set(out))
+
+
+def merge_frames(primary: list[dict], pinned: list[dict]) -&gt; list[dict]:
+    &quot;&quot;&quot;Combine two frame lists into one chronological list and reindex 0..n-1.
+
+    ``pinned`` frames (transcript cues) are never dropped — this is a plain
+    union, so the cap is enforced upstream by reserving budget for the cues.
+    &quot;&quot;&quot;
+    merged = sorted([*primary, *pinned], key=lambda f: f[&quot;timestamp_seconds&quot;])
+    for i, frame in enumerate(merged):
+        frame[&quot;index&quot;] = i
+    return merged
+
+
+def extract_at_timestamps(
+    video_path: str,
+    out_dir: Path,
+    timestamps: list[float],
+    resolution: int = 512,
+    max_frames: int | None = None,
+    start_seconds: float | None = None,
+    end_seconds: float | None = None,
+) -&gt; tuple[list[dict], dict]:
+    &quot;&quot;&quot;Grab exactly one frame at each requested timestamp (transcript cues).
+
+    Timestamps are absolute source seconds. Any falling outside an active
+    ``[start, end]`` focus window are dropped. Files use a ``cue_*.jpg`` prefix
+    so they sit alongside detail-engine ``frame_*.jpg`` output without either
+    clobbering the other. When more cues than ``max_frames`` survive, they are
+    even-sampled (first + last kept) before extraction.
+    &quot;&quot;&quot;
+    if shutil.which(&quot;ffmpeg&quot;) is None:
+        raise SystemExit(&quot;ffmpeg is not installed. Install with: brew install ffmpeg&quot;)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for existing in out_dir.glob(&quot;cue_*.jpg&quot;):
+        existing.unlink()
+
+    lo = start_seconds or 0.0
+    hi = end_seconds if end_seconds is not None else float(&quot;inf&quot;)
+    requested = sorted(set(round(float(t), 2) for t in timestamps))
+    in_window = [t for t in requested if lo &lt;= t &lt;= hi]
+    dropped = len(requested) - len(in_window)
+
+    if max_frames is not None and len(in_window) &gt; max_frames:
+        points = [in_window[i] for i in _even_indices(len(in_window), max_frames)]
+    else:
+        points = in_window
+
+    out: list[dict] = []
+    for t in points:
+        path = out_dir / f&quot;cue_{len(out):04d}.jpg&quot;
+        cmd = [
+            &quot;ffmpeg&quot;,
+            &quot;-hide_banner&quot;,
+            &quot;-loglevel&quot;, &quot;error&quot;,
+            &quot;-y&quot;,
+            &quot;-ss&quot;, f&quot;{t:.3f}&quot;,
+            &quot;-i&quot;, str(Path(video_path).resolve()),
+            &quot;-frames:v&quot;, &quot;1&quot;,
+            &quot;-vf&quot;, _scale_filter(resolution),
+            &quot;-q:v&quot;, &quot;4&quot;,
+            str(path),
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0 and path.exists():
+            out.append({
+                &quot;index&quot;: len(out),
+                &quot;timestamp_seconds&quot;: t,
+                &quot;path&quot;: str(path),
+                &quot;reason&quot;: &quot;transcript-cue&quot;,
+            })
+
+    meta = {
+        &quot;engine&quot;: &quot;timestamps&quot;,
+        &quot;candidate_count&quot;: len(requested),
+        &quot;selected_count&quot;: len(out),
+        &quot;dropped_out_of_window&quot;: dropped,
+        &quot;fallback&quot;: False,
+    }
+    return out, meta
+
+
+def _even_sample(candidates: list[dict], n: int) -&gt; list[dict]:
+    &quot;&quot;&quot;Pick ``n`` evenly-spaced candidates (always including first and last),
+    delete the JPEGs we drop, and reindex the survivors 0..len-1.
+
+    Shared by every capped engine so all detail modes sample the same way:
+    detect all candidates across the full range, then thin down to the cap.
+    ``n &gt;= len(candidates)`` keeps everything (the uncapped / under-cap case).
+    &quot;&quot;&quot;
+    selected = [candidates[i] for i in _even_indices(len(candidates), n)]
+
+    keep_paths = {sel[&quot;path&quot;] for sel in selected}
+    for cand in candidates:
+        if cand[&quot;path&quot;] not in keep_paths:
+            try:
+                Path(cand[&quot;path&quot;]).unlink()
+            except OSError:
+                pass
+    for i, frame in enumerate(selected):
+        frame[&quot;index&quot;] = i
+    return selected
+
+
+def _frame_delta(a: bytes, b: bytes) -&gt; float:
+    &quot;&quot;&quot;Mean absolute per-pixel difference (0-255) between two grayscale
+    thumbnails. Mismatched lengths are treated as maximally different so a
+    decode hiccup never collapses distinct frames.&quot;&quot;&quot;
+    if not a or len(a) != len(b):
+        return float(&quot;inf&quot;)
+    return sum(abs(x - y) for x, y in zip(a, b)) / len(a)
+
+
+def _thumb_frames(paths: list[Path]) -&gt; list[bytes]:
+    &quot;&quot;&quot;Decode every frame in ``paths`` to a small grayscale thumbnail via one
+    ffmpeg pass over the JPEG sequence.
+
+    ffmpeg does the pixel decode (keeps us pure-stdlib); we slice the raw
+    grayscale stream into one ``DEDUP_THUMB``-square thumbnail per frame.
+    Fail-open: any ffmpeg error, an unrecognized name, or a byte-count mismatch
+    returns ``[]`` so the caller skips dedup rather than breaking extraction.
+    &quot;&quot;&quot;
+    if not paths:
+        return []
+    paths = [Path(p) for p in paths]
+    m = re.match(r&quot;(.*?)(\d+)(\.[A-Za-z0-9]+)$&quot;, paths[0].name)
+    if m is None:
+        return []
+    prefix, digits, ext = m.group(1), m.group(2), m.group(3)
+    pattern = str(paths[0].parent / f&quot;{prefix}%0{len(digits)}d{ext}&quot;)
+
+    cmd = [
+        &quot;ffmpeg&quot;,
+        &quot;-hide_banner&quot;,
+        &quot;-loglevel&quot;, &quot;error&quot;,
+        &quot;-start_number&quot;, str(int(digits)),
+        &quot;-i&quot;, pattern,
+        &quot;-vf&quot;, f&quot;scale={DEDUP_THUMB}:{DEDUP_THUMB},format=gray&quot;,
+        &quot;-f&quot;, &quot;rawvideo&quot;,
+        &quot;-&quot;,
+    ]
+    result = subprocess.run(cmd, capture_output=True)
+    if result.returncode != 0:
+        return []
+
+    chunk = DEDUP_THUMB * DEDUP_THUMB
+    data = result.stdout
+    if len(data) != chunk * len(paths):
+        return []
+    return [data[i * chunk:(i + 1) * chunk] for i in range(len(paths))]
+
+
+def dedupe_perceptual(
+    candidates: list[dict], threshold: float = DEDUP_THRESHOLD
+) -&gt; tuple[list[dict], int]:
+    &quot;&quot;&quot;Drop near-identical frames from a chronological candidate list.
+
+    Thumbnails the extracted JPEGs and greedily removes frames whose mean
+    per-pixel difference from the last kept one is within ``threshold``. Returns
+    ``(survivors, dropped_count)``; a no-op (unchanged list) when thumbnails are
+    unavailable or there are fewer than two candidates.
+    &quot;&quot;&quot;
+    if len(candidates) &lt;= 1:
+        return candidates, 0
+    thumbs = _thumb_frames([Path(c[&quot;path&quot;]) for c in candidates])
+    return _dedupe_by_deltas(candidates, thumbs, threshold)
+
+
+def _dedupe_by_deltas(
+    candidates: list[dict], thumbs: list[bytes], threshold: float = DEDUP_THRESHOLD
+) -&gt; tuple[list[dict], int]:
+    &quot;&quot;&quot;Greedily drop frames within ``threshold`` mean per-pixel difference of the
+    last *kept* frame. Deletes dropped JPEGs and reindexes survivors 0..n-1 (same
+    cleanup contract as :func:`_even_sample`). Fail-open: if ``thumbs`` does not
+    line up 1:1 with ``candidates``, return them unchanged.
+    &quot;&quot;&quot;
+    if len(thumbs) != len(candidates) or len(candidates) &lt;= 1:
+        return candidates, 0
+
+    kept = [candidates[0]]
+    last = thumbs[0]
+    dropped: list[dict] = []
+    for cand, thumb in zip(candidates[1:], thumbs[1:]):
+        if _frame_delta(thumb, last) &lt;= threshold:
+            dropped.append(cand)
+        else:
+            kept.append(cand)
+            last = thumb
+
+    for cand in dropped:
+        try:
+            Path(cand[&quot;path&quot;]).unlink()
+        except OSError:
+            pass
+    for i, frame in enumerate(kept):
+        frame[&quot;index&quot;] = i
+    return kept, len(dropped)
+
+
+def extract_scene_or_uniform(
+    video_path: str,
+    out_dir: Path,
+    fps: float,
+    target_frames: int,
+    resolution: int = 512,
+    max_frames: int | None = 100,
+    start_seconds: float | None = None,
+    end_seconds: float | None = None,
+    dedup: bool = True,
+) -&gt; tuple[list[dict], dict]:
+    &quot;&quot;&quot;Prefer scene selection, falling back to uniform only when the video is
+    effectively static (fewer than ``SCENE_MIN_FRAMES`` detected shots).
+
+    Scene cuts are detected across the *whole* range (uncapped), near-identical
+    frames are dropped (:func:`dedupe_perceptual`, unless ``dedup`` is False),
+    and the survivors are even-sampled down to ``max_frames`` via
+    :func:`_even_sample`, exactly like the keyframe engine. This costs a full
+    decode, but it guarantees coverage spans the entire clip — capping detection
+    with ``-frames:v`` instead would keep only the first ``max_frames`` cuts and
+    drop the tail of long videos (and could even fall below ``SCENE_MIN_FRAMES``
+    and misfire the uniform fallback on a cut-heavy clip).
+    &quot;&quot;&quot;
+    scene_frames = extract_scene_candidates(
+        video_path,
+        out_dir,
+        resolution=resolution,
+        max_frames=None,
+        start_seconds=start_seconds,
+        end_seconds=end_seconds,
+    )
+    scene_count = len(scene_frames)
+    if scene_count &gt;= SCENE_MIN_FRAMES:
+        deduped, n_dropped = dedupe_perceptual(scene_frames) if dedup else (scene_frames, 0)
+        cap = len(deduped) if max_frames is None else max_frames
+        selected = _even_sample(deduped, cap)
+        return selected, {
+            &quot;engine&quot;: &quot;scene&quot;,
+            &quot;candidate_count&quot;: scene_count,
+            &quot;deduped_count&quot;: n_dropped,
+            &quot;selected_count&quot;: len(selected),
+            &quot;fallback&quot;: False,
+        }
+
+    fallback_cap = target_frames if max_frames is None else min(max_frames, target_frames)
+    frames = extract(
+        video_path,
+        out_dir,
+        fps=fps,
+        resolution=resolution,
+        max_frames=fallback_cap,
+        start_seconds=start_seconds,
+        end_seconds=end_seconds,
+    )
+    n_dropped = 0
+    if dedup:
+        frames, n_dropped = dedupe_perceptual(frames)
+    return frames, {
+        &quot;engine&quot;: &quot;uniform&quot;,
+        &quot;candidate_count&quot;: scene_count,
+        &quot;deduped_count&quot;: n_dropped,
+        &quot;selected_count&quot;: len(frames),
+        &quot;fallback&quot;: True,
+    }
+
+
+def extract_keyframes(
+    video_path: str,
+    out_dir: Path,
+    resolution: int = 512,
+    max_frames: int | None = 50,
+    start_seconds: float | None = None,
+    end_seconds: float | None = None,
+    dedup: bool = True,
+) -&gt; tuple[list[dict], dict]:
+    &quot;&quot;&quot;Decode only keyframes (I-frames) — the cheap, near-instant tier.
+
+    ``-skip_frame nokey`` makes ffmpeg reconstruct only keyframes, skipping all
+    P/B frames. Encoders emit keyframes at scene cuts, so these already
+    approximate &quot;distinct moments&quot;. Near-identical frames are dropped
+    (:func:`dedupe_perceptual`, unless ``dedup`` is False); over-cap →
+    even-sample first→last; too few keyframes → uniform fallback.
+    &quot;&quot;&quot;
+    if shutil.which(&quot;ffmpeg&quot;) is None:
+        raise SystemExit(&quot;ffmpeg is not installed. Install with: brew install ffmpeg&quot;)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for existing in out_dir.glob(&quot;frame_*.jpg&quot;):
+        existing.unlink()
+
+    output_pattern = str(out_dir / &quot;frame_%04d.jpg&quot;)
+    cmd: list[str] = [
+        &quot;ffmpeg&quot;,
+        &quot;-hide_banner&quot;,
+        &quot;-loglevel&quot;, &quot;info&quot;,
+        &quot;-y&quot;,
+    ]
+    if start_seconds is not None:
+        cmd += [&quot;-ss&quot;, f&quot;{start_seconds:.3f}&quot;]
+    if end_seconds is not None:
+        cmd += [&quot;-to&quot;, f&quot;{end_seconds:.3f}&quot;]
+    cmd += [
+        &quot;-skip_frame&quot;, &quot;nokey&quot;,
+        &quot;-i&quot;, str(Path(video_path).resolve()),
+        &quot;-vf&quot;, f&quot;{_scale_filter(resolution)},showinfo&quot;,
+        &quot;-vsync&quot;, &quot;vfr&quot;,
+        &quot;-q:v&quot;, &quot;4&quot;,
+        output_pattern,
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(f&quot;ffmpeg keyframe extraction failed: {result.stderr.strip()}&quot;)
+
+    offset = start_seconds or 0.0
+    timestamps = [round(offset + float(m.group(1)), 2) for m in SHOWINFO_TS_RE.finditer(result.stderr)]
+    files = sorted(out_dir.glob(&quot;frame_*.jpg&quot;))
+    candidates: list[dict] = []
+    for i, path in enumerate(files):
+        ts = timestamps[i] if i &lt; len(timestamps) else offset
+        candidates.append({
+            &quot;index&quot;: i,
+            &quot;timestamp_seconds&quot;: ts,
+            &quot;path&quot;: str(path),
+            &quot;reason&quot;: &quot;keyframe&quot;,
+        })
+
+    # Too few keyframes → uniform fallback over the same range.
+    if len(candidates) &lt; KEYFRAME_MIN:
+        for cand in candidates:
+            try:
+                Path(cand[&quot;path&quot;]).unlink()
+            except OSError:
+                pass
+        meta = get_metadata(video_path)
+        full_duration = meta[&quot;duration_seconds&quot;]
+        eff_start = start_seconds or 0.0
+        eff_end = end_seconds if end_seconds is not None else full_duration
+        eff_duration = max(0.0, eff_end - eff_start)
+        budget = max_frames if max_frames is not None else 100
+        fps, _ = auto_fps(eff_duration, max_frames=budget)
+        frames_out = extract(
+            video_path,
+            out_dir,
+            fps=fps,
+            resolution=resolution,
+            max_frames=budget,
+            start_seconds=start_seconds,
+            end_seconds=end_seconds,
+        )
+        n_dropped = 0
+        if dedup:
+            frames_out, n_dropped = dedupe_perceptual(frames_out)
+        return frames_out, {
+            &quot;engine&quot;: &quot;uniform&quot;,
+            &quot;candidate_count&quot;: len(candidates),
+            &quot;deduped_count&quot;: n_dropped,
+            &quot;selected_count&quot;: len(frames_out),
+            &quot;fallback&quot;: True,
+        }
+
+    # Detect-all, drop near-duplicates, then even-sample down to the cap (first +
+    # last always kept). ``max_frames is None`` (uncapped) keeps every keyframe.
+    candidate_count = len(candidates)
+    deduped, n_dropped = dedupe_perceptual(candidates) if dedup else (candidates, 0)
+    cap = len(deduped) if max_frames is None else max_frames
+    selected = _even_sample(deduped, cap)
+    return selected, {
+        &quot;engine&quot;: &quot;keyframe&quot;,
+        &quot;candidate_count&quot;: candidate_count,
+        &quot;deduped_count&quot;: n_dropped,
+        &quot;selected_count&quot;: len(selected),
+        &quot;fallback&quot;: False,
+    }
+
+
+if __name__ == &quot;__main__&quot;:
+    if len(sys.argv) &lt; 3:
+        print(
+            &quot;usage: frames.py &lt;video-path&gt; &lt;out-dir&gt; [--fps F] [--resolution W] &quot;
+            &quot;[--max-frames N] [--start T] [--end T] [--no-dedup]&quot;,
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+
+    video = sys.argv[1]
+    out = Path(sys.argv[2])
+    args = sys.argv[3:]
+
+    fps_override = None
+    resolution = 512
+    max_frames = 100
+    start_arg = None
+    end_arg = None
+    dedup = True
+    i = 0
+    while i &lt; len(args):
+        if args[i] == &quot;--fps&quot;:
+            fps_override = float(args[i + 1]); i += 2
+        elif args[i] == &quot;--resolution&quot;:
+            resolution = int(args[i + 1]); i += 2
+        elif args[i] == &quot;--max-frames&quot;:
+            max_frames = int(args[i + 1]); i += 2
+        elif args[i] == &quot;--start&quot;:
+            start_arg = args[i + 1]; i += 2
+        elif args[i] == &quot;--end&quot;:
+            end_arg = args[i + 1]; i += 2
+        elif args[i] == &quot;--no-dedup&quot;:
+            dedup = False; i += 1
+        else:
+            i += 1
+
+    meta = get_metadata(video)
+    start_sec = parse_time(start_arg)
+    end_sec = parse_time(end_arg)
+    full_duration = meta[&quot;duration_seconds&quot;]
+
+    effective_start = start_sec if start_sec is not None else 0.0
+    effective_end = end_sec if end_sec is not None else full_duration
+    effective_duration = max(0.0, effective_end - effective_start)
+
+    focused = start_sec is not None or end_sec is not None
+    if focused:
+        fps, target = auto_fps_focus(effective_duration, max_frames=max_frames)
+    else:
+        fps, target = auto_fps(effective_duration, max_frames=max_frames)
+    if fps_override is not None:
+        fps = fps_override
+        target = max(1, int(round(fps * effective_duration)))
+
+    frames = extract(
+        video, out,
+        fps=fps,
+        resolution=resolution,
+        max_frames=max_frames,
+        start_seconds=start_sec,
+        end_seconds=end_sec,
+    )
+    deduped_count = 0
+    if dedup:
+        frames, deduped_count = dedupe_perceptual(frames)
+    print(json.dumps(
+        {
+            &quot;meta&quot;: meta, &quot;fps&quot;: fps, &quot;target&quot;: target, &quot;focused&quot;: focused,
+            &quot;deduped_count&quot;: deduped_count, &quot;frames&quot;: frames,
+        },
+        indent=2,
+    ))
+
+  </file>
+  <file path="skills/watch/scripts/setup.py">
+#!/usr/bin/env python3
+&quot;&quot;&quot;Setup / preflight for /watch.
+
+Modes:
+  setup.py --check      Silent preflight. Exit 0 if ready, 2/3/4 on failure.
+  setup.py --json       Machine-readable status for Claude to parse.
+  setup.py              Installer. Auto-installs deps, scaffolds .env, marks SETUP_COMPLETE.
+
+Design:
+- Silent on success: --check exits 0 with no output when everything&#x27;s ready so
+  that /watch doesn&#x27;t spam &quot;setup is complete&quot; on every turn.
+- Idempotent: re-running the installer is safe — it never clobbers existing
+  keys and only appends missing ones.
+- SETUP_COMPLETE=true in ~/.config/watch/.env tells us the user has been
+  through a successful installer run at least once.
+- Never sudo. On macOS, auto-install via brew. Elsewhere, print exact commands.
+- Never write an API key to disk automatically — only scaffold placeholders.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import json
+import os
+import platform
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+from config import get_config  # noqa: E402
+
+
+REQUIRED_BINARIES = [&quot;ffmpeg&quot;, &quot;ffprobe&quot;, &quot;yt-dlp&quot;]
+CONFIG_DIR = Path.home() / &quot;.config&quot; / &quot;watch&quot;
+CONFIG_FILE = CONFIG_DIR / &quot;.env&quot;
+ENV_TEMPLATE = &quot;&quot;&quot;# /watch API configuration
+#
+# Whisper transcription fallback — used only when yt-dlp cannot get captions
+# (or when you point /watch at a local file with no subtitles).
+#
+# Groq is preferred: it runs whisper-large-v3 at a fraction of OpenAI&#x27;s price
+# and is faster in practice. OpenAI is the compatible fallback.
+#
+# Get a Groq key:  https://console.groq.com/keys
+# Get an OpenAI key:  https://platform.openai.com/api-keys
+#
+# Leave both blank to disable Whisper — /watch will still work, but videos
+# without native captions will come back frames-only.
+
+GROQ_API_KEY=
+OPENAI_API_KEY=
+
+# Default watch behavior (the /watch first-run wizard sets this for you).
+# Allowed values: transcript | efficient | balanced | token-burner
+# Keep the value on its own line with no trailing comment.
+# WATCH_DETAIL=balanced
+&quot;&quot;&quot;
+
+
+def _which(name: str) -&gt; str | None:
+    return shutil.which(name)
+
+
+def _check_binaries() -&gt; list[str]:
+    return [b for b in REQUIRED_BINARIES if not _which(b)]
+
+
+_PERM_WARNED: set[str] = set()
+
+
+def _check_file_permissions(path: Path) -&gt; None:
+    &quot;&quot;&quot;Warn to stderr (once per path per process) if a secrets file is
+    world/group readable.&quot;&quot;&quot;
+    key = str(path)
+    if key in _PERM_WARNED:
+        return
+    try:
+        mode = path.stat().st_mode
+        if mode &amp; 0o044:
+            _PERM_WARNED.add(key)
+            sys.stderr.write(
+                f&quot;[watch] WARNING: {path} is readable by other users. &quot;
+                f&quot;Run: chmod 600 {path}\n&quot;
+            )
+            sys.stderr.flush()
+    except OSError:
+        pass
+
+
+def _read_env_key(name: str) -&gt; str | None:
+    value = os.environ.get(name)
+    if value and value.strip():
+        return value.strip()
+    if not CONFIG_FILE.exists():
+        return None
+    _check_file_permissions(CONFIG_FILE)
+    try:
+        for line in CONFIG_FILE.read_text(encoding=&quot;utf-8&quot;).splitlines():
+            line = line.strip()
+            if not line or line.startswith(&quot;#&quot;) or &quot;=&quot; not in line:
+                continue
+            key, _, raw = line.partition(&quot;=&quot;)
+            if key.strip() != name:
+                continue
+            raw = raw.strip()
+            if len(raw) &gt;= 2 and raw[0] in (&#x27;&quot;&#x27;, &quot;&#x27;&quot;) and raw[-1] == raw[0]:
+                raw = raw[1:-1]
+            return raw or None
+    except OSError:
+        return None
+    return None
+
+
+def _have_api_key() -&gt; tuple[bool, str | None]:
+    if _read_env_key(&quot;GROQ_API_KEY&quot;):
+        return True, &quot;groq&quot;
+    if _read_env_key(&quot;OPENAI_API_KEY&quot;):
+        return True, &quot;openai&quot;
+    return False, None
+
+
+def is_first_run() -&gt; bool:
+    &quot;&quot;&quot;True if the installer hasn&#x27;t completed successfully yet.&quot;&quot;&quot;
+    return _read_env_key(&quot;SETUP_COMPLETE&quot;) != &quot;true&quot;
+
+
+def _scaffold_env() -&gt; bool:
+    &quot;&quot;&quot;Create ~/.config/watch/.env with placeholders if missing.&quot;&quot;&quot;
+    if CONFIG_FILE.exists():
+        return False
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_FILE.write_text(ENV_TEMPLATE, encoding=&quot;utf-8&quot;)
+    try:
+        CONFIG_FILE.chmod(0o600)
+    except OSError:
+        pass
+    return True
+
+
+def _write_setup_complete() -&gt; None:
+    &quot;&quot;&quot;Idempotently append SETUP_COMPLETE=true to .env.
+
+    Used only after a fully successful install (deps + key). Future sessions
+    detect this marker to skip wizard-style UI and stay silent.
+    &quot;&quot;&quot;
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    existing = &quot;&quot;
+    if CONFIG_FILE.exists():
+        existing = CONFIG_FILE.read_text(encoding=&quot;utf-8&quot;)
+        for line in existing.splitlines():
+            if line.strip().startswith(&quot;SETUP_COMPLETE=&quot;):
+                return
+        if existing and not existing.endswith(&quot;\n&quot;):
+            existing += &quot;\n&quot;
+        CONFIG_FILE.write_text(existing + &quot;SETUP_COMPLETE=true\n&quot;, encoding=&quot;utf-8&quot;)
+    else:
+        CONFIG_FILE.write_text(ENV_TEMPLATE + &quot;\nSETUP_COMPLETE=true\n&quot;, encoding=&quot;utf-8&quot;)
+    try:
+        CONFIG_FILE.chmod(0o600)
+    except OSError:
+        pass
+
+
+def _brew_pkg(missing: list[str]) -&gt; list[str]:
+    pkgs: list[str] = []
+    for bin_name in missing:
+        if bin_name in (&quot;ffmpeg&quot;, &quot;ffprobe&quot;):
+            if &quot;ffmpeg&quot; not in pkgs:
+                pkgs.append(&quot;ffmpeg&quot;)
+        elif bin_name == &quot;yt-dlp&quot;:
+            if &quot;yt-dlp&quot; not in pkgs:
+                pkgs.append(&quot;yt-dlp&quot;)
+        else:
+            pkgs.append(bin_name)
+    return pkgs
+
+
+def _install_macos(missing: list[str]) -&gt; tuple[bool, str]:
+    if _which(&quot;brew&quot;) is None:
+        return False, (
+            &quot;Homebrew is not installed. Install it from https://brew.sh, then re-run setup. &quot;
+            &quot;Or install manually: `brew install &quot; + &quot; &quot;.join(_brew_pkg(missing)) + &quot;`&quot;
+        )
+    pkgs = _brew_pkg(missing)
+    if not pkgs:
+        return True, &quot;nothing to install&quot;
+    cmd = [&quot;brew&quot;, &quot;install&quot;, *pkgs]
+    print(f&quot;[setup] running: {&#x27; &#x27;.join(cmd)}&quot;, file=sys.stderr)
+    result = subprocess.run(cmd)
+    if result.returncode != 0:
+        return False, f&quot;brew install failed with exit code {result.returncode}&quot;
+    return True, f&quot;installed via brew: {&#x27;, &#x27;.join(pkgs)}&quot;
+
+
+def _install_hint_linux(missing: list[str]) -&gt; str:
+    pkgs = _brew_pkg(missing)
+    hints = []
+    if &quot;ffmpeg&quot; in pkgs:
+        hints.append(&quot;apt: `sudo apt install ffmpeg` or dnf: `sudo dnf install ffmpeg`&quot;)
+    if &quot;yt-dlp&quot; in pkgs:
+        hints.append(&quot;`pipx install yt-dlp` (recommended) or `pip install --user yt-dlp`&quot;)
+    return &quot;\n  &quot;.join(hints) if hints else &quot;nothing to install&quot;
+
+
+def _install_hint_windows(missing: list[str]) -&gt; str:
+    pkgs = _brew_pkg(missing)
+    hints = []
+    if &quot;ffmpeg&quot; in pkgs:
+        hints.append(&quot;winget: `winget install Gyan.FFmpeg`&quot;)
+    if &quot;yt-dlp&quot; in pkgs:
+        hints.append(&quot;winget: `winget install yt-dlp.yt-dlp` or pip: `pip install --user yt-dlp`&quot;)
+    return &quot;\n  &quot;.join(hints) if hints else &quot;nothing to install&quot;
+
+
+def _status() -&gt; dict:
+    &quot;&quot;&quot;Structured preflight snapshot.
+
+    `status` describes the *ideal* state (a Whisper key is encouraged), so a
+    keyless install still reports `needs_key` on the very first run — that&#x27;s
+    the agent&#x27;s cue to encourage adding one.
+
+    `can_proceed` is the operational gate: /watch can run as long as the
+    binaries are present AND the user has either set a key or already finished
+    setup (consciously opting out of Whisper). A keyless user who completed
+    setup is NOT nagged on every call.
+    &quot;&quot;&quot;
+    missing = _check_binaries()
+    has_key, backend = _have_api_key()
+    setup_complete = not is_first_run()
+
+    if not missing and has_key:
+        status = &quot;ready&quot;
+    elif missing and not has_key:
+        status = &quot;needs_install_and_key&quot;
+    elif missing:
+        status = &quot;needs_install&quot;
+    else:
+        status = &quot;needs_key&quot;
+
+    can_proceed = (not missing) and (has_key or setup_complete)
+
+    cfg = get_config()
+    return {
+        &quot;status&quot;: status,
+        &quot;can_proceed&quot;: can_proceed,
+        &quot;first_run&quot;: not setup_complete,
+        &quot;setup_complete&quot;: setup_complete,
+        &quot;missing_binaries&quot;: missing,
+        &quot;whisper_backend&quot;: backend,
+        &quot;has_api_key&quot;: has_key,
+        &quot;config_file&quot;: str(CONFIG_FILE),
+        &quot;watch_detail&quot;: cfg[&quot;detail&quot;],
+        &quot;platform&quot;: platform.system(),
+    }
+
+
+def cmd_check() -&gt; int:
+    &quot;&quot;&quot;Silent-on-success preflight.
+
+    Exit 0 with no output when /watch can run. A keyless user who already
+    finished setup (SETUP_COMPLETE=true) counts as ready — Whisper is
+    encouraged, not required — so they are never nagged on follow-up calls.
+
+    On a state that blocks /watch, print one actionable line to stderr:
+      2 → binaries missing
+      3 → genuine first run with no API key (encourage one)
+      4 → both missing
+    &quot;&quot;&quot;
+    s = _status()
+    if s[&quot;can_proceed&quot;]:
+        return 0
+
+    parts = []
+    if s[&quot;missing_binaries&quot;]:
+        parts.append(f&quot;missing binaries: {&#x27;, &#x27;.join(s[&#x27;missing_binaries&#x27;])}&quot;)
+    if not s[&quot;has_api_key&quot;] and not s[&quot;setup_complete&quot;]:
+        parts.append(&quot;no Whisper API key (GROQ_API_KEY or OPENAI_API_KEY)&quot;)
+    installer = Path(__file__).resolve()
+    sys.stderr.write(
+        f&quot;[watch] setup incomplete ({&#x27;; &#x27;.join(parts)}). &quot;
+        f&quot;Run: python3 {installer}\n&quot;
+    )
+    sys.stderr.flush()
+
+    if s[&quot;missing_binaries&quot;] and not s[&quot;has_api_key&quot;]:
+        return 4
+    if s[&quot;missing_binaries&quot;]:
+        return 2
+    return 3
+
+
+def cmd_json() -&gt; int:
+    json.dump(_status(), sys.stdout, indent=2)
+    sys.stdout.write(&quot;\n&quot;)
+    return 0
+
+
+def cmd_install() -&gt; int:
+    missing = _check_binaries()
+    installed_deps = False
+    if missing:
+        system = platform.system()
+        if system == &quot;Darwin&quot;:
+            ok, msg = _install_macos(missing)
+            print(f&quot;[setup] {msg}&quot;, file=sys.stderr)
+            if not ok:
+                return 2
+            still_missing = _check_binaries()
+            if still_missing:
+                print(f&quot;[setup] still missing after install: {&#x27;, &#x27;.join(still_missing)}&quot;, file=sys.stderr)
+                return 2
+            installed_deps = True
+        elif system == &quot;Linux&quot;:
+            print(&quot;[setup] dependencies missing on Linux — please install:&quot;, file=sys.stderr)
+            print(&quot;  &quot; + _install_hint_linux(missing), file=sys.stderr)
+            return 2
+        elif system == &quot;Windows&quot;:
+            print(&quot;[setup] dependencies missing on Windows — please install:&quot;, file=sys.stderr)
+            print(&quot;  &quot; + _install_hint_windows(missing), file=sys.stderr)
+            return 2
+        else:
+            print(f&quot;[setup] unsupported platform ({system}) for auto-install. Install manually:&quot;, file=sys.stderr)
+            print(f&quot;  missing: {&#x27;, &#x27;.join(missing)}&quot;, file=sys.stderr)
+            return 2
+
+    created = _scaffold_env()
+    if created:
+        print(f&quot;[setup] created config: {CONFIG_FILE}&quot;)
+    else:
+        print(f&quot;[setup] config exists: {CONFIG_FILE}&quot;)
+
+    has_key, backend = _have_api_key()
+    if has_key:
+        _write_setup_complete()
+        print(f&quot;[setup] ready. whisper backend: {backend}&quot;)
+        if installed_deps:
+            print(&quot;[setup] installed dependencies; /watch is fully set up.&quot;)
+        return 0
+
+    print(&quot;&quot;)
+    print(&quot;[setup] one step left: add a Whisper API key.&quot;)
+    print(&quot;&quot;)
+    print(f&quot;  Edit {CONFIG_FILE} and set either:&quot;)
+    print(&quot;    GROQ_API_KEY=...    (preferred — cheaper, faster; get one at console.groq.com/keys)&quot;)
+    print(&quot;    OPENAI_API_KEY=...  (fallback; get one at platform.openai.com/api-keys)&quot;)
+    print(&quot;&quot;)
+    print(&quot;  Without a key, /watch still works but videos without captions come back frames-only.&quot;)
+    return 3
+
+
+def main() -&gt; int:
+    if len(sys.argv) &gt; 1:
+        arg = sys.argv[1]
+        if arg == &quot;--check&quot;:
+            return cmd_check()
+        if arg == &quot;--json&quot;:
+            return cmd_json()
+    return cmd_install()
+
+
+if __name__ == &quot;__main__&quot;:
+    raise SystemExit(main())
+
+  </file>
+  <file path="skills/watch/scripts/transcribe.py">
+#!/usr/bin/env python3
+&quot;&quot;&quot;Parse a WebVTT subtitle file into a clean, timestamped transcript.
+
+YouTube auto-subs emit rolling-duplicate cues (each line appears 2-3 times as it
+scrolls). We dedupe consecutive identical cues and merge their time ranges.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+
+TS_RE = re.compile(
+    r&quot;(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s+--&gt;\s+(\d{2}):(\d{2}):(\d{2})[.,](\d{3})&quot;
+)
+TAG_RE = re.compile(r&quot;&lt;[^&gt;]+&gt;&quot;)
+
+
+def _to_seconds(h: str, m: str, s: str, ms: str) -&gt; float:
+    return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000.0
+
+
+def parse_vtt(path: str) -&gt; list[dict]:
+    text = Path(path).read_text(encoding=&quot;utf-8&quot;, errors=&quot;ignore&quot;)
+    lines = text.splitlines()
+
+    segments: list[dict] = []
+    i = 0
+    while i &lt; len(lines):
+        match = TS_RE.match(lines[i])
+        if not match:
+            i += 1
+            continue
+
+        start = _to_seconds(*match.groups()[:4])
+        end = _to_seconds(*match.groups()[4:])
+        i += 1
+
+        cue_lines: list[str] = []
+        while i &lt; len(lines) and lines[i].strip():
+            cleaned = TAG_RE.sub(&quot;&quot;, lines[i]).strip()
+            if cleaned:
+                cue_lines.append(cleaned)
+            i += 1
+
+        cue_text = &quot; &quot;.join(cue_lines).strip()
+        if cue_text:
+            segments.append({&quot;start&quot;: round(start, 2), &quot;end&quot;: round(end, 2), &quot;text&quot;: cue_text})
+        i += 1
+
+    return _dedupe(segments)
+
+
+def _dedupe(segments: list[dict]) -&gt; list[dict]:
+    &quot;&quot;&quot;Collapse rolling duplicates common in YouTube auto-subs.&quot;&quot;&quot;
+    out: list[dict] = []
+    for seg in segments:
+        if out and seg[&quot;text&quot;] == out[-1][&quot;text&quot;]:
+            out[-1][&quot;end&quot;] = seg[&quot;end&quot;]
+            continue
+        if out and seg[&quot;text&quot;].startswith(out[-1][&quot;text&quot;] + &quot; &quot;):
+            out[-1][&quot;text&quot;] = seg[&quot;text&quot;]
+            out[-1][&quot;end&quot;] = seg[&quot;end&quot;]
+            continue
+        out.append(seg)
+    return out
+
+
+def filter_range(
+    segments: list[dict],
+    start_seconds: float | None,
+    end_seconds: float | None,
+) -&gt; list[dict]:
+    &quot;&quot;&quot;Return segments whose time range overlaps [start, end].&quot;&quot;&quot;
+    if start_seconds is None and end_seconds is None:
+        return segments
+    lo = start_seconds if start_seconds is not None else float(&quot;-inf&quot;)
+    hi = end_seconds if end_seconds is not None else float(&quot;inf&quot;)
+    return [seg for seg in segments if seg[&quot;end&quot;] &gt;= lo and seg[&quot;start&quot;] &lt;= hi]
+
+
+def format_transcript(segments: list[dict]) -&gt; str:
+    lines = []
+    for seg in segments:
+        start = int(seg[&quot;start&quot;])
+        stamp = f&quot;[{start // 60:02d}:{start % 60:02d}]&quot;
+        lines.append(f&quot;{stamp} {seg[&#x27;text&#x27;]}&quot;)
+    return &quot;\n&quot;.join(lines)
+
+
+if __name__ == &quot;__main__&quot;:
+    if len(sys.argv) &lt; 2:
+        print(&quot;usage: transcribe.py &lt;vtt-path&gt;&quot;, file=sys.stderr)
+        raise SystemExit(2)
+    print(format_transcript(parse_vtt(sys.argv[1])))
+
+  </file>
+  <file path="skills/watch/scripts/watch.py">
+#!/usr/bin/env python3
+&quot;&quot;&quot;/watch entry point: download video, extract frames, parse transcript.
+
+Prints a markdown report to stdout listing frame paths + transcript. Claude
+then Reads each frame path to see the video.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import argparse
+import sys
+import tempfile
+from pathlib import Path
+
+
+SCRIPT_DIR = Path(__file__).parent.resolve()
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from config import frame_cap, get_config  # noqa: E402
+from download import download, fetch_captions, is_url  # noqa: E402
+from frames import MAX_FPS, auto_fps, auto_fps_focus, extract_at_timestamps, extract_keyframes, extract_scene_or_uniform, format_time, get_metadata, merge_frames, parse_time, parse_timestamps  # noqa: E402
+from transcribe import filter_range, format_transcript, parse_vtt  # noqa: E402
+from whisper import load_api_key, transcribe_video  # noqa: E402
+
+
+def main() -&gt; int:
+    ap = argparse.ArgumentParser(
+        prog=&quot;watch&quot;,
+        description=&quot;Download a video, extract auto-scaled frames, and surface the transcript.&quot;,
+    )
+    ap.add_argument(&quot;source&quot;, help=&quot;Video URL or local file path&quot;)
+    ap.add_argument(&quot;--max-frames&quot;, type=int, default=None, help=&quot;Override frame cap&quot;)
+    ap.add_argument(&quot;--resolution&quot;, type=int, default=512, help=&quot;Frame width in pixels (default 512)&quot;)
+    ap.add_argument(&quot;--fps&quot;, type=float, default=None, help=&quot;Override auto-fps&quot;)
+    ap.add_argument(
+        &quot;--detail&quot;,
+        choices=[&quot;transcript&quot;, &quot;efficient&quot;, &quot;balanced&quot;, &quot;token-burner&quot;],
+        default=None,
+        help=&quot;Fidelity/speed dial: transcript (no frames), efficient (fast keyframes, cap 50), &quot;
+             &quot;balanced (scene, cap 100), token-burner (scene, uncapped).&quot;,
+    )
+    ap.add_argument(
+        &quot;--timestamps&quot;,
+        type=str,
+        default=None,
+        help=&quot;Comma-separated absolute timestamps (SS, MM:SS, HH:MM:SS) to grab a frame at, &quot;
+             &quot;e.g. transcript-flagged &#x27;look here&#x27; moments. Added on top of the detail frames &quot;
+             &quot;(reserved against the cap); with --detail transcript these become the only frames.&quot;,
+    )
+    ap.add_argument(&quot;--start&quot;, type=str, default=None, help=&quot;Range start (SS, MM:SS, or HH:MM:SS)&quot;)
+    ap.add_argument(&quot;--end&quot;, type=str, default=None, help=&quot;Range end (SS, MM:SS, or HH:MM:SS)&quot;)
+    ap.add_argument(&quot;--out-dir&quot;, type=str, default=None, help=&quot;Working directory (default: tmp)&quot;)
+    ap.add_argument(
+        &quot;--no-whisper&quot;,
+        action=&quot;store_true&quot;,
+        help=&quot;Disable Whisper fallback. Report frames-only if no captions available.&quot;,
+    )
+    ap.add_argument(
+        &quot;--whisper&quot;,
+        choices=[&quot;groq&quot;, &quot;openai&quot;],
+        default=None,
+        help=&quot;Force a specific Whisper backend. Default: prefer Groq, fall back to OpenAI.&quot;,
+    )
+    ap.add_argument(
+        &quot;--no-dedup&quot;,
+        action=&quot;store_true&quot;,
+        help=&quot;Disable near-duplicate frame removal. Keeps visually identical &quot;
+             &quot;frames (static screen recordings, held slides) instead of collapsing them.&quot;,
+    )
+    args = ap.parse_args()
+
+    config = get_config()
+    detail = args.detail or str(config[&quot;detail&quot;])
+    configured_cap = frame_cap(detail)
+    if args.max_frames is not None:
+        max_frames = args.max_frames
+    else:
+        max_frames = configured_cap
+    if max_frames is not None and max_frames &lt; 1:
+        raise SystemExit(&quot;--max-frames must be greater than zero&quot;)
+    budget_cap = max_frames if max_frames is not None else 100
+    cue_timestamps = parse_timestamps(args.timestamps)
+
+    if args.out_dir:
+        work = Path(args.out_dir).expanduser().resolve()
+    else:
+        work = Path(tempfile.mkdtemp(prefix=&quot;watch-&quot;))
+    work.mkdir(parents=True, exist_ok=True)
+    print(f&quot;[watch] working dir: {work}&quot;, file=sys.stderr)
+
+    url_source = is_url(args.source)
+    dl: dict = {&quot;subtitle_path&quot;: None, &quot;info&quot;: {}, &quot;downloaded&quot;: False}
+    transcript_segments: list[dict] = []
+    transcript_text: str | None = None
+    transcript_source: str | None = None
+    video_path: str | None = None
+
+    if url_source:
+        print(&quot;[watch] checking metadata/captions via yt-dlp…&quot;, file=sys.stderr)
+        dl = fetch_captions(args.source, work / &quot;download&quot;)
+        if dl.get(&quot;subtitle_path&quot;):
+            try:
+                transcript_segments = parse_vtt(dl[&quot;subtitle_path&quot;])
+                transcript_text = format_transcript(transcript_segments)
+                transcript_source = &quot;captions&quot;
+            except Exception as exc:
+                print(f&quot;[watch] subtitle parse failed: {exc}&quot;, file=sys.stderr)
+                transcript_segments = []
+
+    # --timestamps needs the video for frame grabs, so it overrides the
+    # transcript-mode download skip (and forces a full, not audio-only, fetch).
+    audio_only = detail == &quot;transcript&quot; and not cue_timestamps
+    if detail == &quot;transcript&quot; and transcript_segments and not cue_timestamps:
+        video_path = None
+    else:
+        if url_source:
+            print(
+                &quot;[watch] downloading audio via yt-dlp…&quot; if audio_only
+                else &quot;[watch] downloading video via yt-dlp…&quot;,
+                file=sys.stderr,
+            )
+            dl = download(
+                args.source,
+                work / &quot;download&quot;,
+                audio_only=audio_only,
+            )
+        else:
+            print(&quot;[watch] using local file…&quot;, file=sys.stderr)
+            dl = download(args.source, work / &quot;download&quot;)
+        video_path = dl[&quot;video_path&quot;]
+
+    meta = get_metadata(video_path) if video_path else {
+        &quot;duration_seconds&quot;: float((dl.get(&quot;info&quot;) or {}).get(&quot;duration&quot;) or 0),
+        &quot;width&quot;: None,
+        &quot;height&quot;: None,
+        &quot;codec&quot;: None,
+        &quot;has_audio&quot;: False,
+    }
+    full_duration = meta[&quot;duration_seconds&quot;]
+
+    start_sec = parse_time(args.start)
+    end_sec = parse_time(args.end)
+
+    if start_sec is not None and start_sec &lt; 0:
+        raise SystemExit(&quot;--start must be non-negative&quot;)
+    if end_sec is not None and start_sec is not None and end_sec &lt;= start_sec:
+        raise SystemExit(&quot;--end must be greater than --start&quot;)
+    if full_duration &gt; 0 and start_sec is not None and start_sec &gt;= full_duration:
+        raise SystemExit(f&quot;--start {start_sec:.1f}s is past end of video ({full_duration:.1f}s)&quot;)
+
+    effective_start = start_sec if start_sec is not None else 0.0
+    effective_end = end_sec if end_sec is not None else full_duration
+    effective_duration = max(0.0, effective_end - effective_start)
+    focused = start_sec is not None or end_sec is not None
+
+    if focused:
+        fps, target = auto_fps_focus(effective_duration, max_frames=budget_cap)
+    else:
+        fps, target = auto_fps(effective_duration, max_frames=budget_cap)
+    if args.fps is not None:
+        fps = min(args.fps, MAX_FPS)
+        target = max(1, int(round(fps * effective_duration)))
+
+    if transcript_segments and focused:
+        transcript_segments = filter_range(transcript_segments, start_sec, end_sec)
+        transcript_text = format_transcript(transcript_segments)
+
+    scope = (
+        f&quot;{format_time(effective_start)}-{format_time(effective_end)} ({effective_duration:.1f}s)&quot;
+        if focused else f&quot;full {effective_duration:.1f}s&quot;
+    )
+    frames: list[dict] = []
+    frame_meta: dict = {&quot;engine&quot;: &quot;none&quot;, &quot;candidate_count&quot;: 0, &quot;selected_count&quot;: 0, &quot;fallback&quot;: False}
+    cue_frames: list[dict] = []
+    cue_meta: dict = {}
+
+    # Transcript cues are pinned: extracted first and counted against the cap so
+    # the detail engine never evicts the moments the user explicitly asked for.
+    if cue_timestamps and video_path:
+        cue_frames, cue_meta = extract_at_timestamps(
+            video_path,
+            work / &quot;frames&quot;,
+            cue_timestamps,
+            resolution=args.resolution,
+            max_frames=max_frames,
+            start_seconds=start_sec,
+            end_seconds=end_sec,
+        )
+        if cue_meta.get(&quot;dropped_out_of_window&quot;):
+            print(
+                f&quot;[watch] {cue_meta[&#x27;dropped_out_of_window&#x27;]} cue timestamp(s) outside the &quot;
+                &quot;focus range — dropped&quot;,
+                file=sys.stderr,
+            )
+
+    detail_budget = max_frames if max_frames is None else max(0, max_frames - len(cue_frames))
+    if detail != &quot;transcript&quot; and video_path and detail_budget != 0:
+        cap_label = &quot;unlimited&quot; if detail_budget is None else str(detail_budget)
+        engine_label = &quot;keyframes&quot; if detail == &quot;efficient&quot; else &quot;scene-aware frames&quot;
+        print(
+            f&quot;[watch] extracting {engine_label} over {scope} &quot;
+            f&quot;(target {target}, cap {cap_label})…&quot;,
+            file=sys.stderr,
+        )
+        if detail == &quot;efficient&quot;:
+            frames, frame_meta = extract_keyframes(
+                video_path,
+                work / &quot;frames&quot;,
+                resolution=args.resolution,
+                max_frames=detail_budget,
+                start_seconds=start_sec,
+                end_seconds=end_sec,
+                dedup=not args.no_dedup,
+            )
+        else:  # balanced, token-burner
+            frames, frame_meta = extract_scene_or_uniform(
+                video_path,
+                work / &quot;frames&quot;,
+                fps=fps,
+                target_frames=target,
+                resolution=args.resolution,
+                max_frames=detail_budget,
+                start_seconds=start_sec,
+                end_seconds=end_sec,
+                dedup=not args.no_dedup,
+            )
+
+    if cue_frames:
+        frames = merge_frames(frames, cue_frames)
+
+    if not transcript_segments and dl.get(&quot;subtitle_path&quot;):
+        try:
+            all_segments = parse_vtt(dl[&quot;subtitle_path&quot;])
+            transcript_segments = filter_range(all_segments, start_sec, end_sec) if focused else all_segments
+            transcript_text = format_transcript(transcript_segments)
+            transcript_source = &quot;captions&quot;
+        except Exception as exc:
+            print(f&quot;[watch] subtitle parse failed: {exc}&quot;, file=sys.stderr)
+
+    if not transcript_segments and not args.no_whisper and video_path and meta.get(&quot;has_audio&quot;):
+        backend, api_key = load_api_key(args.whisper)
+        if backend and api_key:
+            try:
+                all_segments, used_backend = transcribe_video(
+                    video_path,
+                    work / &quot;audio.mp3&quot;,
+                    backend=backend,
+                    api_key=api_key,
+                )
+                transcript_segments = filter_range(all_segments, start_sec, end_sec) if focused else all_segments
+                transcript_text = format_transcript(transcript_segments)
+                transcript_source = f&quot;whisper ({used_backend})&quot;
+            except SystemExit as exc:
+                print(f&quot;[watch] whisper fallback failed: {exc}&quot;, file=sys.stderr)
+        else:
+            hint = (
+                f&quot;--whisper {args.whisper} was set but the matching API key is missing&quot;
+                if args.whisper else
+                &quot;no subtitles and no Whisper API key found&quot;
+            )
+            setup_py = SCRIPT_DIR / &quot;setup.py&quot;
+            print(
+                f&quot;[watch] {hint} — run `python3 {setup_py}` to enable the Whisper fallback&quot;,
+                file=sys.stderr,
+            )
+    elif not transcript_segments and video_path and not meta.get(&quot;has_audio&quot;):
+        print(&quot;[watch] no audio stream found — proceeding without transcription&quot;, file=sys.stderr)
+
+    info = dl.get(&quot;info&quot;) or {}
+
+    print()
+    print(&quot;# watch: video report&quot;)
+    print()
+    print(f&quot;- **Source:** {args.source}&quot;)
+    if info.get(&quot;title&quot;):
+        print(f&quot;- **Title:** {info[&#x27;title&#x27;]}&quot;)
+    if info.get(&quot;uploader&quot;):
+        print(f&quot;- **Uploader:** {info[&#x27;uploader&#x27;]}&quot;)
+    print(f&quot;- **Duration:** {format_time(full_duration)} ({full_duration:.1f}s)&quot;)
+    if focused:
+        print(
+            f&quot;- **Focus range:** {format_time(effective_start)} → {format_time(effective_end)} &quot;
+            f&quot;({effective_duration:.1f}s)&quot;
+        )
+    if meta.get(&quot;width&quot;) and meta.get(&quot;height&quot;):
+        print(f&quot;- **Resolution:** {meta[&#x27;width&#x27;]}x{meta[&#x27;height&#x27;]} ({meta.get(&#x27;codec&#x27;) or &#x27;unknown codec&#x27;})&quot;)
+    range_mode = &quot;focused&quot; if focused else &quot;full&quot;
+    print(f&quot;- **Detail:** {detail}&quot;)
+    detail_count = frame_meta.get(&quot;selected_count&quot;, 0)
+    if detail != &quot;transcript&quot;:
+        cap_label = &quot;unlimited&quot; if detail_budget is None else str(detail_budget)
+        engine = frame_meta.get(&quot;engine&quot;, &quot;scene&quot;)
+        fallback = &quot; with uniform fallback&quot; if frame_meta.get(&quot;fallback&quot;) else &quot;&quot;
+        deduped = frame_meta.get(&quot;deduped_count&quot;, 0)
+        dedup_note = f&quot;, {deduped} near-duplicate{&#x27;s&#x27; if deduped != 1 else &#x27;&#x27;} dropped&quot; if deduped else &quot;&quot;
+        print(
+            f&quot;- **Frames:** {detail_count} selected from {frame_meta.get(&#x27;candidate_count&#x27;, detail_count)} &quot;
+            f&quot;candidates ({engine}{fallback}{dedup_note}, {range_mode} range, budget {target}, cap {cap_label})&quot;
+        )
+    elif not cue_frames:
+        print(&quot;- **Frames:** skipped (transcript detail)&quot;)
+    if cue_frames:
+        dropped = cue_meta.get(&quot;dropped_out_of_window&quot;, 0)
+        drop_note = f&quot;, {dropped} dropped outside range&quot; if dropped else &quot;&quot;
+        print(
+            f&quot;- **Cue frames:** {len(cue_frames)} at transcript-flagged timestamps &quot;
+            f&quot;(transcript-cue{drop_note})&quot;
+        )
+    if frames:
+        print(f&quot;- **Frame size:** max {args.resolution}px wide, max 1998px tall&quot;)
+    if transcript_segments:
+        in_range = &quot; in range&quot; if focused else &quot;&quot;
+        print(
+            f&quot;- **Transcript:** {len(transcript_segments)} segments{in_range} &quot;
+            f&quot;(via {transcript_source or &#x27;captions&#x27;})&quot;
+        )
+    else:
+        print(&quot;- **Transcript:** none available&quot;)
+
+    if detail == &quot;token-burner&quot; and len(frames) &gt; 250:
+        print()
+        print(
+            f&quot;&gt; **Warning:** token-burner detail selected {len(frames)} frames. &quot;
+            &quot;This may use a large number of image tokens.&quot;
+        )
+
+    if not focused and full_duration &gt; 600 and detail not in (&quot;transcript&quot;, &quot;token-burner&quot;):
+        mins = int(full_duration // 60)
+        print()
+        print(
+            f&quot;&gt; **Warning:** This is a {mins}-minute video. Frame coverage is sparse at this length &quot;
+            f&quot;under `{detail}` detail — its cap spreads thin across the full clip. For better results, &quot;
+            &quot;re-run with `--start HH:MM:SS --end HH:MM:SS` to zoom into a section, or use &quot;
+            &quot;`--detail token-burner` to keep every scene-change frame across the whole video.&quot;
+        )
+
+    print()
+    print(&quot;## Frames&quot;)
+    print()
+    if frames:
+        print(f&quot;Frames live at: `{work / &#x27;frames&#x27;}`&quot;)
+        print()
+        print(
+            &quot;**Read each frame path below with the Read tool to view the image.** &quot;
+            &quot;Frames are in chronological order; `t=MM:SS` is the absolute timestamp in the source video.&quot;
+        )
+        print()
+        for frame in frames:
+            print(
+                f&quot;- `{frame[&#x27;path&#x27;]}` &quot;
+                f&quot;(t={format_time(frame[&#x27;timestamp_seconds&#x27;])}, reason={frame.get(&#x27;reason&#x27;, &#x27;selected&#x27;)})&quot;
+            )
+    else:
+        print(&quot;_No frames extracted._&quot;)
+
+    print()
+    print(&quot;## Transcript&quot;)
+    print()
+    if transcript_text:
+        label = transcript_source or &quot;captions&quot;
+        if focused:
+            print(f&quot;_Source: {label}. Filtered to {format_time(effective_start)} → {format_time(effective_end)}:_&quot;)
+        else:
+            print(f&quot;_Source: {label}._&quot;)
+        print()
+        print(&quot;```&quot;)
+        print(transcript_text)
+        print(&quot;```&quot;)
+    elif detail == &quot;transcript&quot;:
+        print(
+            &quot;_No transcript available at transcript detail. Captions were missing and Whisper was &quot;
+            &quot;unavailable or failed, so there is no visual fallback here. Re-run with &quot;
+            &quot;`--detail balanced` for frames._&quot;
+        )
+    elif focused and dl.get(&quot;subtitle_path&quot;):
+        print(f&quot;_No transcript lines fell inside {format_time(effective_start)} → {format_time(effective_end)}._&quot;)
+    else:
+        setup_py = SCRIPT_DIR / &quot;setup.py&quot;
+        print(
+            &quot;_No transcript available — proceed with frames only. &quot;
+            &quot;Captions were missing and the Whisper fallback was unavailable &quot;
+            &quot;(no API key set, or `--no-whisper` was used). &quot;
+            f&quot;Run `python3 {setup_py}` to enable Whisper, then re-run._&quot;
+        )
+
+    print()
+    print(&quot;---&quot;)
+    print(f&quot;_Work dir: `{work}` — delete when done._&quot;)
+
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    raise SystemExit(main())
+
+  </file>
+  <file path="skills/watch/scripts/whisper.py">
+#!/usr/bin/env python3
+&quot;&quot;&quot;Transcribe a video via Groq or OpenAI Whisper API.
+
+Strategy: extract audio (mono 16kHz mp3, tiny payload), upload to whichever
+API has a key. Returns segments in the same shape as transcribe.parse_vtt so
+the rest of the pipeline (filter_range, format_transcript) doesn&#x27;t care where
+the transcript came from.
+
+Pure stdlib — no `pip install groq` or `pip install openai` needed.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import io
+import json
+import math
+import mimetypes
+import os
+import shutil
+import ssl
+import subprocess
+import sys
+import time
+import urllib.error
+import uuid
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+
+GROQ_ENDPOINT = &quot;https://api.groq.com/openai/v1/audio/transcriptions&quot;
+GROQ_MODEL = &quot;whisper-large-v3&quot;
+
+OPENAI_ENDPOINT = &quot;https://api.openai.com/v1/audio/transcriptions&quot;
+OPENAI_MODEL = &quot;whisper-1&quot;
+
+# Both Groq&#x27;s free tier and OpenAI whisper-1 cap uploads at 25 MB. We target a
+# margin under that so multipart framing overhead never pushes a chunk over.
+MAX_UPLOAD_BYTES = 24 * 1024 * 1024
+
+
+def plan_chunks(
+    total_seconds: float,
+    total_bytes: int,
+    max_bytes: int = MAX_UPLOAD_BYTES,
+) -&gt; list[tuple[float, float]]:
+    &quot;&quot;&quot;Split a duration into contiguous (offset, duration) chunks under max_bytes.
+
+    Size scales linearly with duration (constant-bitrate mono mp3), so an even
+    time split yields evenly-sized chunks. Returns a single full-length chunk
+    when the audio already fits.
+    &quot;&quot;&quot;
+    if total_bytes &lt;= max_bytes or total_seconds &lt;= 0:
+        return [(0.0, total_seconds)]
+
+    n = math.ceil(total_bytes / max_bytes)
+    chunk = total_seconds / n
+    plan: list[tuple[float, float]] = []
+    for i in range(n):
+        offset = i * chunk
+        # The last chunk absorbs any rounding remainder so durations sum exactly.
+        duration = (total_seconds - offset) if i == n - 1 else chunk
+        plan.append((round(offset, 3), round(duration, 3)))
+    return plan
+
+
+def load_api_key(preferred: str | None = None) -&gt; tuple[str, str] | tuple[None, None]:
+    &quot;&quot;&quot;Return (backend, api_key). Prefers Groq, falls back to OpenAI.
+
+    If `preferred` is &quot;groq&quot; or &quot;openai&quot;, only that backend&#x27;s key is considered.
+    &quot;&quot;&quot;
+    def _from_env(name: str) -&gt; str | None:
+        value = os.environ.get(name)
+        return value.strip() if value else None
+
+    def _from_dotenv(path: Path, name: str) -&gt; str | None:
+        if not path.exists():
+            return None
+        try:
+            for line in path.read_text(encoding=&quot;utf-8&quot;).splitlines():
+                line = line.strip()
+                if not line or line.startswith(&quot;#&quot;) or &quot;=&quot; not in line:
+                    continue
+                key, _, value = line.partition(&quot;=&quot;)
+                if key.strip() != name:
+                    continue
+                value = value.strip()
+                if len(value) &gt;= 2 and value[0] in (&#x27;&quot;&#x27;, &quot;&#x27;&quot;) and value[-1] == value[0]:
+                    value = value[1:-1]
+                return value or None
+        except OSError:
+            return None
+        return None
+
+    dotenv_paths = [
+        Path.home() / &quot;.config&quot; / &quot;watch&quot; / &quot;.env&quot;,
+        Path.cwd() / &quot;.env&quot;,
+    ]
+
+    candidates = ((&quot;GROQ_API_KEY&quot;, &quot;groq&quot;), (&quot;OPENAI_API_KEY&quot;, &quot;openai&quot;))
+    if preferred is not None:
+        candidates = tuple(c for c in candidates if c[1] == preferred)
+
+    for key_name, backend in candidates:
+        value = _from_env(key_name)
+        if not value:
+            for candidate in dotenv_paths:
+                value = _from_dotenv(candidate, key_name)
+                if value:
+                    break
+        if value:
+            return backend, value
+
+    return None, None
+
+
+def extract_audio(video_path: str, out_path: Path) -&gt; Path:
+    &quot;&quot;&quot;Extract mono 16kHz 64kbps mp3 — ~480 kB/min, fits any Whisper limit.&quot;&quot;&quot;
+    if shutil.which(&quot;ffmpeg&quot;) is None:
+        raise SystemExit(&quot;ffmpeg is not installed. Install with: brew install ffmpeg&quot;)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    cmd = [
+        &quot;ffmpeg&quot;,
+        &quot;-hide_banner&quot;,
+        &quot;-loglevel&quot;, &quot;error&quot;,
+        &quot;-y&quot;,
+        &quot;-i&quot;, str(Path(video_path).resolve()),
+        &quot;-vn&quot;,
+        &quot;-acodec&quot;, &quot;libmp3lame&quot;,
+        &quot;-ar&quot;, &quot;16000&quot;,
+        &quot;-ac&quot;, &quot;1&quot;,
+        &quot;-b:a&quot;, &quot;64k&quot;,
+        str(out_path.resolve()),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(f&quot;ffmpeg audio extraction failed: {result.stderr.strip()}&quot;)
+    if not out_path.exists() or out_path.stat().st_size == 0:
+        raise SystemExit(&quot;ffmpeg produced no audio — video may have no audio track&quot;)
+    return out_path
+
+
+def audio_duration(audio_path: Path) -&gt; float:
+    &quot;&quot;&quot;Return the duration of an audio file in seconds via ffprobe.&quot;&quot;&quot;
+    if shutil.which(&quot;ffprobe&quot;) is None:
+        raise SystemExit(&quot;ffprobe is not installed. Install with: brew install ffmpeg&quot;)
+
+    result = subprocess.run(
+        [
+            &quot;ffprobe&quot;,
+            &quot;-v&quot;, &quot;quiet&quot;,
+            &quot;-print_format&quot;, &quot;json&quot;,
+            &quot;-show_format&quot;,
+            str(audio_path.resolve()),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise SystemExit(f&quot;ffprobe failed: {result.stderr.strip()}&quot;)
+    fmt = json.loads(result.stdout or &quot;{}&quot;).get(&quot;format&quot;, {})
+    return float(fmt.get(&quot;duration&quot;) or 0.0)
+
+
+def split_audio(
+    full_audio: Path,
+    work_dir: Path,
+    plan: list[tuple[float, float]],
+) -&gt; list[tuple[Path, float]]:
+    &quot;&quot;&quot;Slice full_audio into per-plan chunk files, returning (path, offset) pairs.
+
+    Uses stream copy (`-c copy`) so there is no re-encode and no quality loss;
+    mp3 frame boundaries are close enough for transcription&#x27;s purposes.
+    &quot;&quot;&quot;
+    if shutil.which(&quot;ffmpeg&quot;) is None:
+        raise SystemExit(&quot;ffmpeg is not installed. Install with: brew install ffmpeg&quot;)
+
+    work_dir.mkdir(parents=True, exist_ok=True)
+    chunks: list[tuple[Path, float]] = []
+    for index, (offset, duration) in enumerate(plan):
+        out_path = work_dir / f&quot;chunk_{index:03d}.mp3&quot;
+        cmd = [
+            &quot;ffmpeg&quot;,
+            &quot;-hide_banner&quot;,
+            &quot;-loglevel&quot;, &quot;error&quot;,
+            &quot;-y&quot;,
+            &quot;-ss&quot;, f&quot;{offset:.3f}&quot;,
+            &quot;-i&quot;, str(full_audio.resolve()),
+            &quot;-t&quot;, f&quot;{duration:.3f}&quot;,
+            &quot;-c&quot;, &quot;copy&quot;,
+            str(out_path.resolve()),
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0 or not out_path.exists() or out_path.stat().st_size == 0:
+            raise SystemExit(
+                f&quot;ffmpeg failed to split audio chunk {index + 1}: {result.stderr.strip()}&quot;
+            )
+        chunks.append((out_path, offset))
+    return chunks
+
+
+def _build_multipart(fields: dict[str, str], file_path: Path) -&gt; tuple[bytes, str]:
+    &quot;&quot;&quot;Assemble a multipart/form-data body the Whisper APIs accept.
+
+    Whisper&#x27;s multipart upload is small and predictable — doing it by hand
+    keeps us on pure stdlib instead of pulling requests/groq/openai SDKs.
+    &quot;&quot;&quot;
+    boundary = f&quot;----WatchBoundary{uuid.uuid4().hex}&quot;
+    eol = b&quot;\r\n&quot;
+    buf = io.BytesIO()
+
+    for name, value in fields.items():
+        buf.write(f&quot;--{boundary}&quot;.encode()); buf.write(eol)
+        buf.write(f&#x27;Content-Disposition: form-data; name=&quot;{name}&quot;&#x27;.encode()); buf.write(eol)
+        buf.write(eol)
+        buf.write(str(value).encode()); buf.write(eol)
+
+    mimetype = mimetypes.guess_type(file_path.name)[0] or &quot;application/octet-stream&quot;
+    buf.write(f&quot;--{boundary}&quot;.encode()); buf.write(eol)
+    buf.write(
+        f&#x27;Content-Disposition: form-data; name=&quot;file&quot;; filename=&quot;{file_path.name}&quot;&#x27;.encode()
+    )
+    buf.write(eol)
+    buf.write(f&quot;Content-Type: {mimetype}&quot;.encode()); buf.write(eol)
+    buf.write(eol)
+    buf.write(file_path.read_bytes())
+    buf.write(eol)
+    buf.write(f&quot;--{boundary}--&quot;.encode()); buf.write(eol)
+
+    return buf.getvalue(), boundary
+
+
+MAX_ATTEMPTS = 4       # initial + 3 retries
+MAX_429_RETRIES = 2
+RETRY_BASE_DELAY = 2.0
+
+
+def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path) -&gt; dict:
+    fields = {
+        &quot;model&quot;: model,
+        &quot;response_format&quot;: &quot;verbose_json&quot;,
+        &quot;temperature&quot;: &quot;0&quot;,
+    }
+    body, boundary = _build_multipart(fields, audio_path)
+    headers = {
+        &quot;Authorization&quot;: f&quot;Bearer {api_key}&quot;,
+        &quot;Content-Type&quot;: f&quot;multipart/form-data; boundary={boundary}&quot;,
+        # Groq sits behind Cloudflare — the default `Python-urllib/3.x` UA
+        # trips WAF rule 1010 (403) before auth even runs. Any non-default
+        # UA clears it; we identify honestly.
+        &quot;User-Agent&quot;: &quot;watch-skill/1.0 (+claude-code; python-urllib)&quot;,
+    }
+
+    context = ssl.create_default_context()
+    rate_limit_hits = 0
+    last_exc: Exception | None = None
+    last_detail = &quot;&quot;
+
+    for attempt in range(MAX_ATTEMPTS):
+        request = Request(endpoint, data=body, headers=headers, method=&quot;POST&quot;)
+        try:
+            with urlopen(request, timeout=300, context=context) as response:
+                payload = response.read().decode(&quot;utf-8&quot;, errors=&quot;replace&quot;)
+        except urllib.error.HTTPError as exc:
+            detail = _read_error_body(exc)
+            last_exc, last_detail = exc, detail
+
+            # 4xx other than 429 are client errors — no retry will fix them.
+            if 400 &lt;= exc.code &lt; 500 and exc.code != 429:
+                raise SystemExit(f&quot;Whisper request failed: {exc}{detail}&quot;)
+
+            if exc.code == 429:
+                rate_limit_hits += 1
+                if rate_limit_hits &gt;= MAX_429_RETRIES:
+                    raise SystemExit(f&quot;Whisper request failed: {exc}{detail}&quot;)
+                delay = _retry_after(exc) or RETRY_BASE_DELAY * (2 ** attempt) + 1
+            else:
+                delay = RETRY_BASE_DELAY * (2 ** attempt)
+
+            if attempt &lt; MAX_ATTEMPTS - 1:
+                print(
+                    f&quot;[watch] whisper HTTP {exc.code} — retrying in {delay:.1f}s &quot;
+                    f&quot;(attempt {attempt + 2}/{MAX_ATTEMPTS})&quot;,
+                    file=sys.stderr,
+                )
+                time.sleep(delay)
+            continue
+        except (urllib.error.URLError, TimeoutError, ConnectionResetError, OSError) as exc:
+            last_exc, last_detail = exc, &quot;&quot;
+            if attempt &lt; MAX_ATTEMPTS - 1:
+                delay = RETRY_BASE_DELAY * (attempt + 1)
+                print(
+                    f&quot;[watch] whisper network error ({type(exc).__name__}: {exc}) — &quot;
+                    f&quot;retrying in {delay:.1f}s (attempt {attempt + 2}/{MAX_ATTEMPTS})&quot;,
+                    file=sys.stderr,
+                )
+                time.sleep(delay)
+            continue
+
+        try:
+            return json.loads(payload)
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f&quot;Whisper returned non-JSON response: {exc}: {payload[:200]}&quot;)
+
+    raise SystemExit(
+        f&quot;Whisper request failed after {MAX_ATTEMPTS} attempts: {last_exc}{last_detail}&quot;
+    )
+
+
+def _read_error_body(exc: urllib.error.HTTPError) -&gt; str:
+    try:
+        body = exc.read()
+    except Exception:
+        return &quot;&quot;
+    if not body:
+        return &quot;&quot;
+    try:
+        return f&quot; — {body.decode(&#x27;utf-8&#x27;, errors=&#x27;replace&#x27;)[:400]}&quot;
+    except Exception:
+        return &quot;&quot;
+
+
+def _retry_after(exc: urllib.error.HTTPError) -&gt; float | None:
+    header = exc.headers.get(&quot;Retry-After&quot;) if getattr(exc, &quot;headers&quot;, None) else None
+    if not header:
+        return None
+    try:
+        return float(header)
+    except ValueError:
+        return None
+
+
+def shift_segments(segments: list[dict], offset_seconds: float) -&gt; list[dict]:
+    &quot;&quot;&quot;Return a copy of segments with start/end shifted by offset_seconds.
+
+    Each chunk is transcribed in isolation, so Whisper returns 0-based timestamps
+    per chunk; shifting by the chunk&#x27;s offset stitches them into source time.
+    &quot;&quot;&quot;
+    if offset_seconds == 0:
+        return segments
+    return [
+        {
+            &quot;start&quot;: round(seg[&quot;start&quot;] + offset_seconds, 2),
+            &quot;end&quot;: round(seg[&quot;end&quot;] + offset_seconds, 2),
+            &quot;text&quot;: seg[&quot;text&quot;],
+        }
+        for seg in segments
+    ]
+
+
+def _segments_from_response(data: dict) -&gt; list[dict]:
+    &quot;&quot;&quot;Convert Whisper verbose_json into our {start, end, text} segment format.&quot;&quot;&quot;
+    out: list[dict] = []
+    for seg in data.get(&quot;segments&quot;) or []:
+        text = (seg.get(&quot;text&quot;) or &quot;&quot;).strip()
+        if not text:
+            continue
+        out.append({
+            &quot;start&quot;: round(float(seg.get(&quot;start&quot;) or 0.0), 2),
+            &quot;end&quot;: round(float(seg.get(&quot;end&quot;) or 0.0), 2),
+            &quot;text&quot;: text,
+        })
+
+    if not out:
+        full = (data.get(&quot;text&quot;) or &quot;&quot;).strip()
+        if full:
+            out.append({&quot;start&quot;: 0.0, &quot;end&quot;: 0.0, &quot;text&quot;: full})
+
+    return out
+
+
+def transcribe_chunks(
+    chunks: list[tuple[Path, float]],
+    transcribe_one,
+) -&gt; list[dict]:
+    &quot;&quot;&quot;Transcribe each chunk, shift its segments by the chunk offset, concatenate.
+
+    A chunk that fails after its own retries is logged and skipped so one bad
+    slice doesn&#x27;t discard the whole transcript. Raises only if every chunk fails.
+    &quot;&quot;&quot;
+    segments: list[dict] = []
+    failures = 0
+    for index, (path, offset) in enumerate(chunks):
+        try:
+            chunk_segments = transcribe_one(path)
+        except SystemExit as exc:
+            failures += 1
+            print(
+                f&quot;[watch] chunk {index + 1}/{len(chunks)} failed — skipping ({exc})&quot;,
+                file=sys.stderr,
+            )
+            continue
+        segments.extend(shift_segments(chunk_segments, offset))
+        print(
+            f&quot;[watch] chunk {index + 1}/{len(chunks)} → {len(chunk_segments)} segments&quot;,
+            file=sys.stderr,
+        )
+
+    if failures == len(chunks):
+        raise SystemExit(&quot;Whisper failed on every audio chunk&quot;)
+    return segments
+
+
+def _transcribe_file(backend: str, api_key: str, audio_path: Path) -&gt; list[dict]:
+    &quot;&quot;&quot;Upload one audio file and return its 0-based segments.&quot;&quot;&quot;
+    if backend == &quot;groq&quot;:
+        response = _post_whisper(GROQ_ENDPOINT, api_key, GROQ_MODEL, audio_path)
+    elif backend == &quot;openai&quot;:
+        response = _post_whisper(OPENAI_ENDPOINT, api_key, OPENAI_MODEL, audio_path)
+    else:
+        raise SystemExit(f&quot;Unknown whisper backend: {backend}&quot;)
+    return _segments_from_response(response)
+
+
+def transcribe_video(
+    video_path: str,
+    audio_out: Path,
+    backend: str | None = None,
+    api_key: str | None = None,
+) -&gt; tuple[list[dict], str]:
+    &quot;&quot;&quot;Run the full flow: extract audio → upload → parse segments.
+
+    Returns (segments, backend_used). Raises SystemExit on any failure.
+    &quot;&quot;&quot;
+    if backend is None or api_key is None:
+        detected_backend, detected_key = load_api_key()
+        backend = backend or detected_backend
+        api_key = api_key or detected_key
+
+    if not backend or not api_key:
+        setup_py = Path(__file__).resolve().parent / &quot;setup.py&quot;
+        raise SystemExit(
+            &quot;No Whisper API key available. Set GROQ_API_KEY (preferred) or OPENAI_API_KEY &quot;
+            &quot;in the environment or in ~/.config/watch/.env. &quot;
+            f&quot;Run `python3 {setup_py}` to configure.&quot;
+        )
+
+    print(f&quot;[watch] extracting audio for Whisper ({backend})…&quot;, file=sys.stderr)
+    audio_path = extract_audio(video_path, audio_out)
+    audio_bytes = audio_path.stat().st_size
+
+    def transcribe_one(path: Path) -&gt; list[dict]:
+        return _transcribe_file(backend, api_key, path)
+
+    if audio_bytes &lt;= MAX_UPLOAD_BYTES:
+        print(
+            f&quot;[watch] audio: {audio_bytes / 1024:.0f} kB — uploading to {backend} Whisper…&quot;,
+            file=sys.stderr,
+        )
+        segments = transcribe_one(audio_path)
+    else:
+        duration = audio_duration(audio_path)
+        plan = plan_chunks(duration, audio_bytes, MAX_UPLOAD_BYTES)
+        print(
+            f&quot;[watch] audio: {audio_bytes / (1024 * 1024):.0f} MB exceeds &quot;
+            f&quot;{MAX_UPLOAD_BYTES // (1024 * 1024)} MB — splitting into {len(plan)} chunks…&quot;,
+            file=sys.stderr,
+        )
+        chunks = split_audio(audio_path, audio_out.parent / &quot;chunks&quot;, plan)
+        segments = transcribe_chunks(chunks, transcribe_one)
+
+    if not segments:
+        raise SystemExit(&quot;Whisper returned no transcript segments&quot;)
+
+    print(f&quot;[watch] transcribed {len(segments)} segments via {backend}&quot;, file=sys.stderr)
+    return segments, backend
+
+
+if __name__ == &quot;__main__&quot;:
+    if len(sys.argv) &lt; 2:
+        print(&quot;usage: whisper.py &lt;video-path&gt; [&lt;audio-out.mp3&gt;] [--backend groq|openai]&quot;, file=sys.stderr)
+        raise SystemExit(2)
+
+    video = sys.argv[1]
+    audio_out = Path(sys.argv[2]) if len(sys.argv) &gt; 2 and not sys.argv[2].startswith(&quot;--&quot;) else Path(&quot;audio.mp3&quot;)
+    backend_override = None
+    if &quot;--backend&quot; in sys.argv:
+        backend_override = sys.argv[sys.argv.index(&quot;--backend&quot;) + 1]
+
+    segments, backend = transcribe_video(video, audio_out, backend=backend_override)
+    print(json.dumps({&quot;backend&quot;: backend, &quot;segments&quot;: segments}, indent=2))
+
+  </file>
+</slice>

@@ -1,0 +1,42 @@
+# 变更历史热点
+
+## 累计修改次数 Top50
+- 1 .agents/plugins/marketplace.json
+- 1 .claude-plugin/marketplace.json
+- 1 .claude-plugin/plugin.json
+- 1 .codex-plugin/plugin.json
+- 1 .gitattributes
+- 1 .github/workflows/release.yml
+- 1 .gitignore
+- 1 .skillignore
+- 1 AGENTS.md
+- 1 CHANGELOG.md
+- 1 CLAUDE.md
+- 1 LICENSE
+- 1 README.md
+- 1 dev-sync.sh
+- 1 hooks/hooks.json
+- 1 hooks/scripts/check-setup.sh
+- 1 skills/watch/.skillignore
+- 1 skills/watch/SKILL.md
+- 1 skills/watch/scripts/build-skill.sh
+- 1 skills/watch/scripts/config.py
+- 1 skills/watch/scripts/download.py
+- 1 skills/watch/scripts/frames.py
+- 1 skills/watch/scripts/setup.py
+- 1 skills/watch/scripts/transcribe.py
+- 1 skills/watch/scripts/watch.py
+- 1 skills/watch/scripts/whisper.py
+- 1 tests/conftest.py
+- 1 tests/test_config.py
+- 1 tests/test_dedup.py
+- 1 tests/test_download.py
+- 1 tests/test_fixtures.py
+- 1 tests/test_frames.py
+- 1 tests/test_setup.py
+- 1 tests/test_timestamps.py
+- 1 tests/test_watch.py
+- 1 tests/test_whisper.py
+
+## 最近 30 天提交
+83da59f | 2026-06-30 | Fix WATCH_DETAIL silently falling back to default

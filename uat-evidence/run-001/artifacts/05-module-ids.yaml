@@ -1,0 +1,41 @@
+modules:
+  - id: module_001
+    name: skills
+    tier: core
+    storyline_position: 1
+    file_count: 10
+  - id: module_002
+    name: tests
+    tier: core
+    storyline_position: 2
+    file_count: 10
+  - id: module_003
+    name: [root]
+    tier: core
+    storyline_position: 3
+    file_count: 9
+  - id: module_004
+    name: .claude-plugin
+    tier: minor
+    storyline_position: 4
+    file_count: 2
+  - id: module_005
+    name: hooks
+    tier: minor
+    storyline_position: 5
+    file_count: 2
+  - id: module_006
+    name: .agents
+    tier: minor
+    storyline_position: 6
+    file_count: 1
+  - id: module_007
+    name: .codex-plugin
+    tier: minor
+    storyline_position: 7
+    file_count: 1
+  - id: module_008
+    name: .github
+    tier: minor
+    storyline_position: 8
+    file_count: 1
