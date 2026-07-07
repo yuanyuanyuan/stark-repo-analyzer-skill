@@ -1,3 +1,5 @@
+- 生成/编辑文档的内容需要使用简体中文，专业领域术语内容除外。
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
