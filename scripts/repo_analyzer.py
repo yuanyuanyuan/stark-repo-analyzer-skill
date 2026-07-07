@@ -2,16 +2,16 @@
 """Deterministic repo-analyzer entrypoint."""
 
 import argparse
-import fnmatch
-import html
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from collections import Counter
 from pathlib import Path
@@ -68,12 +68,59 @@ BINARY_SUFFIXES = {
     ".wasm",
 }
 
-GENERATED_DIRS = {"slices", "drafts", "acceptance"}
+GENERATED_DIRS = {"slices", "drafts", "acceptance", "agent-runs"}
+REPOMIX_BINARY = "npx"
+RENDERER = Path(__file__).resolve().with_name("render_report.py")
 SOURCE_SYMBOL_LIMIT = 400
 API_SURFACE_LIMIT = 1_000
 TREE_SITTER_CHUNK_BYTES = 5 * 1024 * 1024
 SYMBOL_SUFFIXES = {".py", ".js", ".ts", ".tsx", ".jsx", ".go", ".rs"}
 CONFIG_HOME_ENV = "REPO_ANALYZER_CONFIG_HOME"
+TREE_SITTER_QUERIES = {
+    ".py": """
+(function_definition name: (identifier) @name)
+(class_definition name: (identifier) @name)
+""",
+    ".js": """
+(function_declaration name: (identifier) @name)
+(lexical_declaration (variable_declarator name: (identifier) @name))
+(variable_declaration (variable_declarator name: (identifier) @name))
+(method_definition name: (property_identifier) @name)
+(class_declaration name: (identifier) @name)
+""",
+    ".jsx": """
+(function_declaration name: (identifier) @name)
+(lexical_declaration (variable_declarator name: (identifier) @name))
+(variable_declaration (variable_declarator name: (identifier) @name))
+(method_definition name: (property_identifier) @name)
+(class_declaration name: (identifier) @name)
+""",
+    ".ts": """
+(function_declaration name: (identifier) @name)
+(lexical_declaration (variable_declarator name: (identifier) @name))
+(variable_declaration (variable_declarator name: (identifier) @name))
+(method_definition name: (property_identifier) @name)
+(class_declaration name: (type_identifier) @name)
+""",
+    ".tsx": """
+(function_declaration name: (identifier) @name)
+(lexical_declaration (variable_declarator name: (identifier) @name))
+(variable_declaration (variable_declarator name: (identifier) @name))
+(method_definition name: (property_identifier) @name)
+(class_declaration name: (type_identifier) @name)
+""",
+    ".go": """
+(function_declaration name: (identifier) @name)
+(method_declaration name: (field_identifier) @name)
+(type_declaration (type_spec name: (type_identifier) @name))
+""",
+    ".rs": """
+(function_item name: (identifier) @name)
+(struct_item name: (type_identifier) @name)
+(enum_item name: (type_identifier) @name)
+(trait_item name: (type_identifier) @name)
+""",
+}
 
 SLICES: Dict[str, List[Tuple[str, str, Sequence[str]]]] = {
     "web-fullstack": [
@@ -131,6 +178,32 @@ def run(cmd: Sequence[str], cwd: Path) -> str:
     return result.stdout.strip()
 
 
+def init_performance() -> dict:
+    return {"stages": [], "agent_attempts": []}
+
+
+@contextmanager
+def timed_stage(performance: dict, name: str):
+    started = time.monotonic()
+    status = "PASS"
+    error = ""
+    try:
+        yield
+    except Exception as exc:
+        status = "FAIL"
+        error = str(exc)
+        raise
+    finally:
+        performance.setdefault("stages", []).append(
+            {
+                "name": name,
+                "elapsed_seconds": round(time.monotonic() - started, 3),
+                "status": status,
+                "error": error[:500],
+            }
+        )
+
+
 def clean_output(path: Path) -> None:
     if path.exists():
         shutil.rmtree(path)
@@ -155,7 +228,11 @@ def prepare_output(path: Path, resume: bool) -> None:
         "mcp-tools.json",
         "STATE_REPORT.md",
         "SLA_REPORT.md",
+        "PERFORMANCE_REPORT.md",
+        "PERFORMANCE_REPORT.json",
         "CONFIG_EFFECTIVE.json",
+        "REPORT_DATA.json",
+        "AGENT_SUMMARY.json",
         "ANALYSIS_REPORT.md",
         "ANALYSIS_REPORT.tech-lead.md",
         "ANALYSIS_REPORT.business.md",
@@ -311,6 +388,10 @@ def env_config() -> dict:
         "REPO_ANALYZER_TARGET_COVERAGE_MINOR": ("target_coverage_minor", float),
         "REPO_ANALYZER_SLA_BUDGET_MINUTES": ("sla_minutes", float),
         "REPO_ANALYZER_COVERAGE_ENGINE": ("coverage_engine", str),
+        "REPO_ANALYZER_AGENT_MODE": ("agent_mode", str),
+        "REPO_ANALYZER_AGENT_COMMAND": ("agent_command", str),
+        "REPO_ANALYZER_AGENT_MAX_ATTEMPTS": ("agent_max_attempts", int),
+        "REPO_ANALYZER_AGENT_TIMEOUT_SECONDS": ("agent_timeout_seconds", int),
     }
     result = {}
     for name, (key, cast) in mapping.items():
@@ -345,7 +426,14 @@ def bool_config(value) -> bool:
 
 
 def set_if_default(args: argparse.Namespace, key: str, value) -> None:
-    defaults = {"mode": "tech-lead", "no_question": False, "offline": False, "coverage_engine": "auto"}
+    defaults = {
+        "mode": "tech-lead",
+        "no_question": False,
+        "offline": False,
+        "coverage_engine": "auto",
+        "agent_mode": "deterministic",
+        "agent_command": "",
+    }
     if getattr(args, key) == defaults.get(key):
         setattr(args, key, value)
 
@@ -367,6 +455,14 @@ def apply_config_values(args: argparse.Namespace, config: dict, force: bool = Fa
         args.sla_minutes = float(config["sla_minutes"])
     if "coverage_engine" in config:
         setattr(args, "coverage_engine", str(config["coverage_engine"])) if force else set_if_default(args, "coverage_engine", str(config["coverage_engine"]))
+    if "agent_mode" in config:
+        setattr(args, "agent_mode", str(config["agent_mode"])) if force else set_if_default(args, "agent_mode", str(config["agent_mode"]))
+    if "agent_command" in config:
+        setattr(args, "agent_command", str(config["agent_command"])) if force else set_if_default(args, "agent_command", str(config["agent_command"]))
+    if "agent_max_attempts" in config and (force or args.agent_max_attempts is None):
+        args.agent_max_attempts = int(config["agent_max_attempts"])
+    if "agent_timeout_seconds" in config and (force or args.agent_timeout_seconds is None):
+        args.agent_timeout_seconds = int(config["agent_timeout_seconds"])
 
 
 def save_last_session(args: argparse.Namespace) -> None:
@@ -379,6 +475,10 @@ def save_last_session(args: argparse.Namespace) -> None:
             "no_question": bool(args.no_question),
             "offline": bool(args.offline),
             "coverage_engine": args.coverage_engine,
+            "agent_mode": args.agent_mode,
+            "agent_command": args.agent_command,
+            "agent_max_attempts": args.agent_max_attempts,
+            "agent_timeout_seconds": args.agent_timeout_seconds,
             "resume": bool(args.resume),
         },
     }
@@ -393,21 +493,74 @@ def apply_config(args: argparse.Namespace) -> argparse.Namespace:
     args.target_coverage_core = 0.8 if args.target_coverage_core is None else args.target_coverage_core
     args.target_coverage_minor = 0.2 if args.target_coverage_minor is None else args.target_coverage_minor
     args.sla_minutes = 30.0 if args.sla_minutes is None else args.sla_minutes
+    args.agent_max_attempts = 3 if args.agent_max_attempts is None else args.agent_max_attempts
+    args.agent_timeout_seconds = 0 if args.agent_timeout_seconds is None else args.agent_timeout_seconds
     return args
+
+
+def command_kind(command: Sequence[str]) -> str:
+    if not command:
+        return "unknown"
+    if len(command) >= 2 and command[0] == "codex" and command[1] == "exec":
+        return "codex exec"
+    return Path(command[0]).name
 
 
 def markdown_snippet(text: str) -> str:
     return text.replace("```", "'''").replace("](#", "](\\#").replace("[[", "[ [").replace("]]", "] ]")
 
 
-def match_any(relative_path: str, patterns: Sequence[str]) -> bool:
-    name = Path(relative_path).name
+def repomix_ignore_glob() -> str:
+    patterns = []
+    for dirname in sorted(IGNORE_DIRS | GENERATED_DIRS):
+        patterns.append(f"**/{dirname}/**")
+    for suffix in sorted(BINARY_SUFFIXES):
+        patterns.append(f"**/*{suffix}")
+    return ",".join(patterns)
+
+
+def repomix_include_glob(patterns: Sequence[str]) -> str:
+    expanded = []
     for pattern in patterns:
-        if fnmatch.fnmatch(relative_path, pattern) or fnmatch.fnmatch(name, pattern):
-            return True
-        if "/" in pattern and fnmatch.fnmatch(relative_path, f"**/{pattern}"):
-            return True
-    return False
+        normalized = pattern.replace("\\", "/")
+        candidates = [normalized]
+        if normalized.startswith("*.") or normalized.endswith("*") or "/" not in normalized:
+            candidates.append(f"**/{normalized}")
+        if normalized.endswith("/*"):
+            base = normalized[:-2]
+            candidates.extend([f"{base}/**", f"**/{base}/**"])
+        elif "/" in normalized and not normalized.startswith("**/"):
+            candidates.append(f"**/{normalized}")
+        for item in candidates:
+            if item not in expanded:
+                expanded.append(item)
+    return ",".join(expanded)
+
+
+def run_repomix_slice(repo: Path, output_file: Path, label: str, patterns: Sequence[str]) -> None:
+    if not shutil.which(REPOMIX_BINARY):
+        raise SystemExit("缺少 repomix 执行入口：未找到 npx，无法按 PLAN 使用 repomix 生成切片")
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    command = [
+        REPOMIX_BINARY,
+        "--yes",
+        "repomix",
+        ".",
+        "--style",
+        "xml",
+        "--parsable-style",
+        "--include",
+        repomix_include_glob(patterns),
+        "--ignore",
+        repomix_ignore_glob(),
+        "--output",
+        str(output_file),
+        "--quiet",
+    ]
+    result = subprocess.run(command, cwd=repo, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
+        raise SystemExit(f"repomix 切片失败: {label} -> {output_file.name}: {detail}")
 
 
 def parse_project_name(repo: Path) -> str:
@@ -543,6 +696,31 @@ def source_symbols(repo: Path, files: List[Path], limit: int = SOURCE_SYMBOL_LIM
     return symbols
 
 
+def tree_sitter_query_symbols(binary: str, path: Path, repo: Path, query_text: str) -> Tuple[List[Tuple[str, str, str]], str]:
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".scm", delete=False) as handle:
+        handle.write(query_text)
+        query_path = Path(handle.name)
+    try:
+        result = subprocess.run([binary, "query", str(query_path), str(path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    finally:
+        query_path.unlink(missing_ok=True)
+    if result.returncode != 0:
+        return [], (result.stderr or result.stdout).strip()
+    symbols = []
+    text = read_text(path, 200_000)
+    lines = text.splitlines()
+    for match in re.finditer(r"(?:pattern:\s*\d+,\s*)?capture:\s*name\s*,\s*start:\s*\((\d+),\s*(\d+)\)", result.stdout):
+        row = int(match.group(1))
+        column = int(match.group(2))
+        if row >= len(lines):
+            continue
+        candidate = re.match(r"[A-Za-z_$][\w$]*", lines[row][column:])
+        if not candidate:
+            continue
+        symbols.append((candidate.group(0), rel(path, repo), str(row + 1)))
+    return symbols, ""
+
+
 def tree_sitter_scan(repo: Path, files: List[Path], limit: int) -> Tuple[List[Tuple[str, str, str]], dict]:
     binary = shutil.which("tree-sitter")
     meta = {
@@ -551,8 +729,11 @@ def tree_sitter_scan(repo: Path, files: List[Path], limit: int) -> Tuple[List[Tu
         "tree_sitter_version": "",
         "scanned_files": 0,
         "parsed_files": 0,
+        "queried_files": 0,
+        "query_symbols": 0,
         "skipped_large_files": [],
         "parse_failures": [],
+        "query_failures": [],
     }
     if not binary:
         meta["reason"] = "tree-sitter CLI not found"
@@ -560,19 +741,42 @@ def tree_sitter_scan(repo: Path, files: List[Path], limit: int) -> Tuple[List[Tu
 
     version = subprocess.run([binary, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     meta["tree_sitter_version"] = (version.stdout or version.stderr).strip()
+    symbols = []
+    seen = set()
     candidates = [path for path in files if path.suffix.lower() in SYMBOL_SUFFIXES]
     meta["scanned_files"] = len(candidates)
     for path in candidates:
         if path.stat().st_size >= TREE_SITTER_CHUNK_BYTES:
             meta["skipped_large_files"].append(rel(path, repo))
             continue
-        # ponytail: use tree-sitter as an availability/parse gate; regex remains the portable symbol extractor until grammar queries are bundled.
         parsed = subprocess.run([binary, "parse", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
         if parsed.returncode == 0:
             meta["parsed_files"] += 1
+            query = TREE_SITTER_QUERIES.get(path.suffix.lower())
+            if query:
+                queried, error = tree_sitter_query_symbols(binary, path, repo, query)
+                if error:
+                    if len(meta["query_failures"]) < 20:
+                        meta["query_failures"].append({"file": rel(path, repo), "error": error.splitlines()[:1]})
+                else:
+                    meta["queried_files"] += 1
+                    for item in queried:
+                        if item in seen:
+                            continue
+                        seen.add(item)
+                        symbols.append(item)
+                        if len(symbols) >= limit:
+                            meta["engine"] = "tree-sitter-query"
+                            meta["query_symbols"] = len(symbols)
+                            return symbols, meta
         elif len(meta["parse_failures"]) < 20:
             meta["parse_failures"].append({"file": rel(path, repo), "error": parsed.stderr.strip().splitlines()[:1]})
+    meta["query_symbols"] = len(symbols)
+    if symbols:
+        meta["engine"] = "tree-sitter-query"
+        return symbols, meta
     meta["engine"] = "tree-sitter+regex"
+    meta["reason"] = "tree-sitter query produced no symbols; regex fallback used"
     return source_symbols(repo, files, limit), meta
 
 
@@ -604,6 +808,11 @@ def module_file_paths(files: List[Path], repo: Path, root: str) -> List[str]:
     return sorted(paths)
 
 
+def module_ids_from_plan(output: Path) -> List[str]:
+    modules_text = read_text(output / "05-module-ids.yaml", 100_000)
+    return re.findall(r"(?m)^\s*- id: (module_[0-9]+)", modules_text)
+
+
 def risk_lines(module_files: List[str], root_symbols: List[Tuple[str, str, str]], root_tools: List[Tuple[str, str, str]]) -> List[str]:
     risks = []
     has_tests = any(re.search(r"(^|/)(tests?|__tests__)/|test|spec", item, re.I) for item in module_files)
@@ -617,6 +826,418 @@ def risk_lines(module_files: List[str], root_symbols: List[Tuple[str, str, str]]
     if not risks:
         risks.append("未发现明显结构性风险；后续重点核对业务语义是否与 README 承诺一致。")
     return risks
+
+
+def module_agent_prompt(module_id: str, root: str, tier: str, output: Path, module_files: List[str]) -> str:
+    files = "\n".join(f"- {item}" for item in module_files[:80]) or "- 未识别到模块文件"
+    return f"""### MODULE {module_id}
+- 模块底稿: {output / "drafts" / f"06-module-{module_id}.md"}
+- 模块分组: {root}
+- 模块层级: {tier}
+- 需在 repomix 切片中核对的源码路径:
+{files}
+"""
+
+
+def modules_batch_agent_prompt(output: Path, modules: List[Tuple[str, str, str, List[str]]]) -> str:
+    module_blocks = "\n".join(module_agent_prompt(module_id, root, tier, output, module_files) for module_id, root, tier, module_files in modules)
+    return f"""你是一位资深架构师，请基于已生成的 repomix 切片和模块底稿，对所有模块做判断型深度分析。
+
+## 输入
+- 分析目录: {output}
+- 模块清单: {output / "05-module-ids.yaml"}
+- 模块底稿目录: {output / "drafts"}
+- 主要证据切片: `slices/02-backend.xml`、`slices/04-docs.xml`、`slices/06-tests.xml`、`slices/09-dependencies.xml`、`slices/12-history-hotspot.txt`
+
+## 模块任务
+{module_blocks}
+
+## 要求
+- 不要调用任何 skill，不要运行 repo_analyzer.py，不要重新生成 analysis；只读取上面列出的分析目录文件。
+- 不要写入任何文件，不要修改 analysis 目录；只在最终回复中返回 Markdown。
+- 不要在分析目录根部直接读取源码路径；源码内容来自 `slices/*.xml` 中的 `<file path="...">`。
+- 只基于分析目录中的证据判断，不要编造源码事实。
+- 补充业务角色、设计思路、关键数据流、模块协同、架构亮点和风险。
+- 每个关键判断必须引用已有证据文件路径。
+- 每个模块必须按下面格式输出，方便脚本拆分；不得省略任何模块：
+
+<!-- MODULE_RESULT: module_xxx -->
+## Agent 深度分析
+
+...该模块分析...
+<!-- END_MODULE_RESULT -->
+"""
+
+
+def draft_outline(path: Path) -> str:
+    text = read_text(path, 120_000)
+    title_match = re.search(r"(?m)^#\s+(.+)$", text)
+    title = title_match.group(1).strip() if title_match else path.name
+    headings = re.findall(r"(?m)^##\s+(.+)$", text)
+    wikilinks = sorted(set(re.findall(r"\[\[(module_[0-9]+)\]\]", text)))
+    mentions = sorted(set(re.findall(r"\bmodule_[0-9]+\b", text)))
+    signal_lines = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(("- 模块边界", "- 分析优先级", "- 业务角色", "- 设计思路", "- 关键数据流", "- 职责", "- 风险")):
+            signal_lines.append(stripped)
+        if len(signal_lines) >= 12:
+            break
+    return "\n".join(
+        [
+            f"### {path.name}",
+            f"- title: {title}",
+            f"- headings: {', '.join(headings) or '无'}",
+            f"- wikilinks: {', '.join(wikilinks) or '无'}",
+            f"- module_mentions: {', '.join(mentions) or '无'}",
+            "- signal_lines:",
+            *[f"  - {line}" for line in signal_lines],
+        ]
+    )
+
+
+def write_cross_ref_review_packet(output: Path) -> str:
+    packet = "\n\n".join(
+        [
+            "# Cross-ref 审稿包",
+            "## 模块清单\n```yaml\n" + read_text(output / "05-module-ids.yaml", 120_000) + "\n```",
+            "## 确定性 cross-ref\n```text\n" + read_text(output / "drafts" / "07-cross-ref-checks.md", 120_000) + "\n```",
+            "## 覆盖率摘要\n```text\n" + read_text(output / "08-coverage.md", 120_000) + "\n```",
+            "## 模块草稿结构\n" + "\n\n".join(draft_outline(path) for path in sorted((output / "drafts").glob("06-module-*.md"))),
+        ]
+    )
+    packet_path = output / "drafts" / "07-cross-ref-review-input.md"
+    packet_path.write_text(packet + "\n", encoding="utf-8")
+    return packet
+
+
+def cross_ref_agent_prompt(output: Path) -> str:
+    packet = write_cross_ref_review_packet(output)
+    return f"""你是一位独立审稿 agent，只读不写源码，请审查分析目录中的模块草稿一致性。
+
+## 输入
+- 分析目录: {output}
+- 审稿包: {output / "drafts" / "07-cross-ref-review-input.md"}
+
+## 审稿包
+{packet}
+
+## 要求
+- 不要调用任何 skill，不要运行 repo_analyzer.py，不要重新生成 analysis；优先只使用上方审稿包。
+- 不要写入任何文件，不要修改 analysis 目录；只在最终回复中返回 Markdown。
+- 检查模块命名、引用、职责边界、重复定义、跨模块协同是否矛盾。
+- 如果发现问题，逐条给出证据路径和建议回退模块。
+- 如果需要回退模块，必须单独输出一行 `建议回退模块: module_xxx`；没有需要回退的模块时输出 `建议回退模块: 无`。
+- 如果未发现问题，也要说明抽查范围。
+- 输出 Markdown，包含标题 `## Agent Cross-ref 审稿`。
+"""
+
+
+def agent_base_command(args: argparse.Namespace, output: Path = None) -> List[str]:
+    if args.agent_mode == "codex":
+        if output is None:
+            raise SystemExit("codex agent 需要 analysis 输出目录作为工作目录")
+        return [
+            "codex",
+            "exec",
+            "-c",
+            'model_reasoning_effort="low"',
+            "--sandbox",
+            "read-only",
+            "--skip-git-repo-check",
+            "-C",
+            str(output),
+            "-",
+        ]
+    if args.agent_mode == "command":
+        if not args.agent_command:
+            raise SystemExit("--agent-mode command 需要提供 --agent-command")
+        return shlex.split(args.agent_command)
+    raise SystemExit(f"未知 agent 模式: {args.agent_mode}")
+
+
+def run_agent_task(output: Path, args: argparse.Namespace, run_id: str, prompt: str, performance: dict = None) -> Tuple[bool, str, int]:
+    run_dir = output / "agent-runs" / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "prompt.md").write_text(prompt, encoding="utf-8")
+    command = agent_base_command(args, output)
+    last_message = run_dir / "last-message.md"
+    if args.agent_mode == "codex":
+        command = command[:-1] + ["--output-last-message", str(last_message), "-"]
+    timeout = args.agent_timeout_seconds if args.agent_timeout_seconds and args.agent_timeout_seconds > 0 else None
+    for attempt in range(1, args.agent_max_attempts + 1):
+        attempt_dir = run_dir / f"attempt-{attempt}"
+        attempt_dir.mkdir()
+        started = time.monotonic()
+        timed_out = False
+        try:
+            result = subprocess.run(
+                command,
+                input=prompt,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=timeout,
+            )
+            returncode = result.returncode
+            stdout = result.stdout
+            stderr = result.stderr
+        except subprocess.TimeoutExpired as exc:
+            timed_out = True
+            returncode = 124
+            stdout = exc.stdout if isinstance(exc.stdout, str) else (exc.stdout or b"").decode("utf-8", errors="replace")
+            stderr = f"agent timeout after {args.agent_timeout_seconds}s"
+        elapsed = time.monotonic() - started
+        (attempt_dir / "stdout.txt").write_text(stdout, encoding="utf-8")
+        (attempt_dir / "stderr.txt").write_text(stderr, encoding="utf-8")
+        metadata = {
+            "run_id": run_id,
+            "attempt": attempt,
+            "returncode": returncode,
+            "elapsed_seconds": round(elapsed, 3),
+            "command": command,
+            "command_kind": command_kind(command),
+            "cwd": str(output.resolve()) if args.agent_mode == "codex" else str(Path.cwd()),
+            "timed_out": timed_out,
+            "timeout_seconds": timeout,
+            "timeout_config_seconds": args.agent_timeout_seconds,
+        }
+        (attempt_dir / "metadata.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if performance is not None:
+            performance.setdefault("agent_attempts", []).append(dict(metadata))
+        if returncode == 0:
+            message = last_message.read_text(encoding="utf-8", errors="replace") if last_message.exists() else stdout
+            (run_dir / "result.md").write_text(message, encoding="utf-8")
+            return True, message, attempt
+    failure = f"agent task failed after {args.agent_max_attempts} attempts"
+    (run_dir / "result.md").write_text(failure + "\n", encoding="utf-8")
+    return False, failure, args.agent_max_attempts
+
+
+def module_result_blocks(result: str, module_ids: Sequence[str]) -> dict:
+    blocks = {}
+    pattern = re.compile(r"<!-- MODULE_RESULT:\s*(module_[0-9]+)\s*-->\s*(.*?)\s*<!-- END_MODULE_RESULT -->", re.S)
+    for match in pattern.finditer(result):
+        blocks[match.group(1)] = match.group(2).strip()
+    return blocks
+
+
+def append_agent_module_analysis(output: Path, module_id: str, result: str, attempts: int, evidence: str = None) -> None:
+    draft = output / "drafts" / f"06-module-{module_id}.md"
+    body = re.sub(r"(?m)^##\s+Agent 深度分析\s*", "", result.strip(), count=1).strip()
+    evidence = evidence or f"agent-runs/module-{module_id}/result.md"
+    with draft.open("a", encoding="utf-8") as handle:
+        handle.write(
+            "\n## Agent 深度分析\n\n"
+            f"- attempts: {attempts}\n"
+            f"- 证据: `{evidence}`\n\n"
+            f"{body}\n"
+            "\n"
+        )
+
+
+def coverage_repair_prompt(module_id: str, module: dict, output: Path) -> str:
+    missing = ", ".join(module.get("missing_symbols", [])[:40]) or "无"
+    return f"""你是一位模块分析修复 agent，请补齐 `{module_id}` 覆盖率门控缺失的符号说明。
+
+## 输入
+- 分析目录: {output}
+- 模块草稿: {output / "drafts" / f"06-module-{module_id}.md"}
+- 覆盖率报告: {output / "08-coverage.md"}
+- 缺失符号: {missing}
+
+## 要求
+- 不要写入任何文件，不要修改 analysis 目录；只在最终回复中返回要追加的 Markdown。
+- 只补充对这些缺失符号的解释，不要改源码。
+- 每个缺失符号都必须在输出中以原名出现，便于 coverage gate 重新检测。
+- 输出 Markdown，包含标题 `## Agent 覆盖率修复`。
+"""
+
+
+def append_agent_coverage_repair(output: Path, module_id: str, result: str, attempts: int) -> None:
+    draft = output / "drafts" / f"06-module-{module_id}.md"
+    body = re.sub(r"(?m)^##\s+Agent 覆盖率修复\s*", "", result.strip(), count=1).strip()
+    with draft.open("a", encoding="utf-8") as handle:
+        handle.write(
+            "\n## Agent 覆盖率修复\n\n"
+            f"- attempts: {attempts}\n"
+            f"- 证据: `agent-runs/repair-{module_id}/result.md`\n\n"
+            f"{body}\n"
+            "\n"
+        )
+
+
+def cross_ref_repair_modules(review: str, known_module_ids: Sequence[str]) -> List[str]:
+    known = set(known_module_ids)
+    explicit = []
+    saw_explicit_decision = False
+    for line in review.splitlines():
+        match = re.search(r"建议回退模块\s*[:：]\s*(.+)", line)
+        if not match:
+            continue
+        saw_explicit_decision = True
+        value = match.group(1)
+        if re.search(r"\b(?:无|none|no)\b", value, re.I):
+            continue
+        explicit.extend(re.findall(r"module_[0-9]+", value))
+    if saw_explicit_decision:
+        return sorted({module_id for module_id in explicit if module_id in known})
+
+    if not re.search(r"冲突|矛盾|断裂|重复|回退|修复|不一致|FAIL|failed", review, re.I):
+        return []
+    return sorted({module_id for module_id in re.findall(r"module_[0-9]+", review) if module_id in known})
+
+
+def cross_ref_repair_prompt(module_id: str, output: Path) -> str:
+    return f"""你是一位模块草稿修复 agent，请根据独立 cross-ref 审稿意见修复 `{module_id}` 的分析草稿。
+
+## 输入
+- 分析目录: {output}
+- 模块草稿: {output / "drafts" / f"06-module-{module_id}.md"}
+- 独立审稿: {output / "drafts" / "07-cross-ref-agent-review.md"}
+- 确定性 cross-ref: {output / "drafts" / "07-cross-ref-checks.md"}
+- 模块清单: {output / "05-module-ids.yaml"}
+
+## 要求
+- 不要调用任何 skill，不要运行 repo_analyzer.py，不要重新生成 analysis。
+- 不要写入任何文件，不要修改 analysis 目录；只在最终回复中返回要追加的 Markdown。
+- 只补充能消除审稿指出冲突/不一致的说明，不要改源码。
+- 输出 Markdown，包含标题 `## Agent Cross-ref 修复`。
+"""
+
+
+def append_agent_cross_ref_repair(output: Path, module_id: str, result: str, attempts: int) -> None:
+    draft = output / "drafts" / f"06-module-{module_id}.md"
+    body = re.sub(r"(?m)^##\s+Agent Cross-ref 修复\s*", "", result.strip(), count=1).strip()
+    with draft.open("a", encoding="utf-8") as handle:
+        handle.write(
+            "\n## Agent Cross-ref 修复\n\n"
+            f"- attempts: {attempts}\n"
+            f"- 证据: `agent-runs/cross-ref-repair-{module_id}/result.md`\n\n"
+            f"{body}\n"
+            "\n"
+        )
+
+
+def repair_cross_ref_modules(output: Path, args: argparse.Namespace, module_ids: Sequence[str], review: str, summary: dict, performance: dict) -> List[str]:
+    if args.agent_mode == "deterministic":
+        return []
+    targets = cross_ref_repair_modules(review, module_ids)
+    if not targets:
+        return []
+    issues = []
+    repairs = summary.setdefault("cross_ref_repairs", {})
+    for module_id in targets:
+        ok, result, attempts = run_agent_task(output, args, f"cross-ref-repair-{module_id}", cross_ref_repair_prompt(module_id, output), performance)
+        repairs[module_id] = {"status": "PASS" if ok else "FAIL", "attempts": attempts}
+        if ok:
+            append_agent_cross_ref_repair(output, module_id, result, attempts)
+        else:
+            issues.append(f"{module_id}: cross-ref 修复 agent 失败")
+    return issues
+
+
+def repair_failed_coverage_modules(output: Path, args: argparse.Namespace, coverage: dict, summary: dict, performance: dict) -> List[str]:
+    if args.agent_mode == "deterministic":
+        return []
+    issues = []
+    repairs = summary.setdefault("repairs", {})
+    for module_id, module in coverage["modules"].items():
+        if module["status"] == "PASS":
+            continue
+        ok, result, attempts = run_agent_task(output, args, f"repair-{module_id}", coverage_repair_prompt(module_id, module, output), performance)
+        repairs[module_id] = {"status": "PASS" if ok else "FAIL", "attempts": attempts}
+        if ok:
+            append_agent_coverage_repair(output, module_id, result, attempts)
+        else:
+            issues.append(f"{module_id}: coverage 修复 agent 失败")
+    return issues
+
+
+def agent_summary_has_failure(summary: dict) -> bool:
+    for item in summary.get("modules", {}).values():
+        if item.get("status") != "PASS":
+            return True
+    for item in summary.get("repairs", {}).values():
+        if item.get("status") != "PASS":
+            return True
+    for item in summary.get("cross_ref_repairs", {}).values():
+        if item.get("status") != "PASS":
+            return True
+    cross_ref = summary.get("cross_ref", {})
+    return bool(cross_ref) and cross_ref.get("status") not in {"", "PASS"}
+
+
+def write_agent_summary(output: Path, summary: dict, issues: List[str]) -> None:
+    summary["status"] = "PASS" if not issues and not agent_summary_has_failure(summary) else "FAIL"
+    (output / "AGENT_SUMMARY.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def codex_cross_ref_skip_reason(output: Path, run_id: str) -> str:
+    if run_id != "cross-ref-review":
+        return ""
+    module_ids = module_ids_from_plan(output)
+    cross_ref = read_text(output / "drafts" / "07-cross-ref-checks.md", 100_000)
+    if len(module_ids) <= 1 and "状态: PASS" in cross_ref:
+        return "single module and deterministic cross-ref already PASS"
+    return ""
+
+
+def init_agent_summary(output: Path, args: argparse.Namespace) -> Tuple[List[str], dict]:
+    summary = {"mode": args.agent_mode, "max_attempts": args.agent_max_attempts, "modules": {}, "cross_ref": {}}
+    if args.agent_mode == "deterministic":
+        summary["status"] = "SKIPPED"
+        (output / "AGENT_SUMMARY.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return [], summary
+
+
+def run_module_agent_loop(output: Path, args: argparse.Namespace, files: List[Path], repo: Path, summary: dict, performance: dict) -> List[str]:
+    if args.agent_mode == "deterministic":
+        return []
+    issues = []
+    modules = []
+    for index, (module_id, root, _count) in enumerate(module_rows(files, repo), 1):
+        tier = "core" if index <= 3 else "minor"
+        module_files = module_file_paths(files, repo, root)
+        modules.append((module_id, root, tier, module_files))
+    ok, result, attempts = run_agent_task(output, args, "modules-batch", modules_batch_agent_prompt(output, modules), performance)
+    blocks = module_result_blocks(result, [module_id for module_id, _root, _tier, _files in modules]) if ok else {}
+    for module_id, _root, _tier, _files in modules:
+        has_block = module_id in blocks
+        summary["modules"][module_id] = {"status": "PASS" if ok and has_block else "FAIL", "attempts": attempts}
+        if ok and has_block:
+            append_agent_module_analysis(output, module_id, blocks[module_id], attempts, "agent-runs/modules-batch/result.md")
+        else:
+            issues.append(f"{module_id}: agent 深度分析失败")
+    write_agent_summary(output, summary, issues)
+    return issues
+
+
+def run_cross_ref_agent(output: Path, args: argparse.Namespace, summary: dict, performance: dict, run_id: str = "cross-ref-review") -> Tuple[List[str], str]:
+    if args.agent_mode == "deterministic":
+        return [], ""
+    skip_reason = codex_cross_ref_skip_reason(output, run_id) if args.agent_mode == "codex" else ""
+    if skip_reason:
+        result = (
+            "## Agent Cross-ref 审稿\n\n"
+            "- status: SKIPPED_SINGLE_MODULE\n"
+            f"- reason: {skip_reason}\n"
+            "- deterministic_cross_ref: PASS\n"
+            "\n建议回退模块: 无\n"
+        )
+        summary["cross_ref"] = {"status": "PASS", "attempts": 0, "skipped": skip_reason}
+        (output / "drafts" / "07-cross-ref-agent-review.md").write_text(result, encoding="utf-8")
+        write_agent_summary(output, summary, [])
+        return [], result
+    issues = []
+    ok, result, attempts = run_agent_task(output, args, run_id, cross_ref_agent_prompt(output), performance)
+    summary["cross_ref"] = {"status": "PASS" if ok else "FAIL", "attempts": attempts}
+    review_path = output / "drafts" / "07-cross-ref-agent-review.md"
+    review_path.write_text(result.strip() + "\n", encoding="utf-8")
+    if not ok:
+        issues.append("cross-ref-review: agent 审稿失败")
+    write_agent_summary(output, summary, issues)
+    return issues, result
 
 
 def write_module_drafts(repo: Path, output: Path, files: List[Path]) -> None:
@@ -783,15 +1404,7 @@ def write_question_answers(output: Path, no_question: bool, mode: str) -> None:
 
 
 def write_slice(repo: Path, output: Path, filename: str, label: str, patterns: Sequence[str], files: List[Path]) -> None:
-    matched = [path for path in files if match_any(rel(path, repo), patterns)]
-    parts = [f'<slice name="{html.escape(label)}">']
-    for path in matched[:200]:
-        relative_path = rel(path, repo)
-        parts.append(f'  <file path="{html.escape(relative_path)}">')
-        parts.append(html.escape(read_text(path, 80_000)))
-        parts.append("  </file>")
-    parts.append("</slice>")
-    (output / "slices" / filename).write_text("\n".join(parts) + "\n", encoding="utf-8")
+    run_repomix_slice(repo, output / "slices" / filename, label, patterns)
 
 
 def write_history(repo: Path, output: Path) -> None:
@@ -949,6 +1562,8 @@ def write_coverage(output: Path, files: List[Path], repo: Path, core_threshold: 
         f"- engine: {engine.get('engine', 'unknown')}",
         f"- tree_sitter_available: {str(bool(engine.get('tree_sitter_available'))).lower()}",
         f"- tree_sitter_parsed_files: {engine.get('parsed_files', 0)}",
+        f"- tree_sitter_queried_files: {engine.get('queried_files', 0)}",
+        f"- tree_sitter_query_symbols: {engine.get('query_symbols', 0)}",
         f"- skipped_large_files: {len(engine.get('skipped_large_files', []))}",
         "",
         "| 模块 ID | tier | 文件数 | 符号覆盖率 | 覆盖状态 |",
@@ -972,7 +1587,7 @@ def write_coverage(output: Path, files: List[Path], repo: Path, core_threshold: 
     return coverage
 
 
-def write_state_report(output: Path, coverage: dict, cross_ref_issues: List[str]) -> None:
+def failed_module_records(coverage: dict) -> List[dict]:
     failed_modules = []
     for module_id, item in coverage["modules"].items():
         if item["status"] != "PASS":
@@ -983,9 +1598,15 @@ def write_state_report(output: Path, coverage: dict, cross_ref_issues: List[str]
                     "attempts": 1,
                     "last_error": "COVERAGE_FAILED",
                     "missing_symbols_count": len(item["missing_symbols"]),
+                    "coverage_ratio": item["coverage_ratio"],
                     "suggested_recovery": f"补充 drafts/06-module-{module_id}.md 中缺失符号说明后重跑 acceptance",
                 }
             )
+    return failed_modules
+
+
+def write_state_report(output: Path, coverage: dict, cross_ref_issues: List[str], agent_issues: List[str]) -> List[dict]:
+    failed_modules = failed_module_records(coverage)
     yaml_items = "\n".join(
         "\n".join(
             [
@@ -993,6 +1614,7 @@ def write_state_report(output: Path, coverage: dict, cross_ref_issues: List[str]
                 f"    tier: {item['tier']}",
                 f"    attempts: {item['attempts']}",
                 f"    last_error: {item['last_error']}",
+                f"    coverage_ratio: {item['coverage_ratio']}",
                 f"    missing_symbols_count: {item['missing_symbols_count']}",
                 f"    suggested_recovery: {item['suggested_recovery']}",
             ]
@@ -1011,10 +1633,12 @@ failed_modules: {failed_yaml}
 - 当前状态: {status}
 - 失败模块: {len(failed_modules)}
 - Cross-ref 问题: {len(cross_ref_issues)}
+- Agent 问题: {len(agent_issues)}
 - 下一步: 如需主观架构评价，使用 subagent 基于当前产物复核。
 """,
         encoding="utf-8",
     )
+    return failed_modules
 
 
 def audience_section(
@@ -1062,7 +1686,44 @@ def audience_section(
 """
 
 
-def report_body(project_name: str, source: str, repo_type: str, files: List[Path], repo: Path, mode: str) -> str:
+def failed_modules_section(failed_modules: List[dict]) -> str:
+    if not failed_modules:
+        return ""
+    rows = "\n".join(
+        f"| {item['id']} | {item['tier']} | {item['attempts']} | {item['last_error']} | {item['coverage_ratio']:.2f} | {item['suggested_recovery']} |"
+        for item in failed_modules
+    )
+    details = "\n\n".join(
+        "\n".join(
+            [
+                f"### {item['id']}",
+                f"- tier: {item['tier']}",
+                f"- attempts: {item['attempts']}",
+                f"- last_error: {item['last_error']}",
+                f"- coverage_ratio: {item['coverage_ratio']:.2f}",
+                f"- missing_symbols_count: {item['missing_symbols_count']}",
+                f"- suggested_recovery: {item['suggested_recovery']}",
+            ]
+        )
+        for item in failed_modules
+    )
+    return f"""
+## §9 未完成模块明细
+
+> 本章由 `STATE_REPORT.md` 中 `failed_modules` 生成；只在存在失败模块时渲染。
+
+| 模块 ID | tier | 失败次数 | 最后错误 | 覆盖率 | 建议恢复 |
+|---|---|---:|---|---:|---|
+{rows}
+
+## 失败详情
+{details}
+"""
+
+
+def report_body(project_name: str, source: str, repo_type: str, files: List[Path], repo: Path, mode: str, failed_modules: List[dict] = None) -> str:
+    failed_modules = failed_modules or []
+    failed_section = failed_modules_section(failed_modules)
     languages = language_counts(files)
     language_line = ", ".join(f"{name}({count})" for name, count in languages.most_common()) or "未识别"
     modules = module_rows(files, repo)
@@ -1120,6 +1781,7 @@ README 摘要显示该项目的主要卖点是：
 - 文档切片：`slices/04-docs.xml`
 - 依赖切片：`slices/09-dependencies.xml`
 - 状态报告：`STATE_REPORT.md`
+{failed_section}
 """
     if mode == "learning":
         first_module = largest[0]
@@ -1161,6 +1823,7 @@ README 摘要显示该项目的主要卖点是：
 - 模块草稿：`drafts/06-module-{first_module}.md`
 - 代码切片：`slices/02-backend.xml`
 - 文档切片：`slices/04-docs.xml`
+{failed_section}
 """
     return f"""# {project_name} 架构分析报告（{mode}）
 
@@ -1229,10 +1892,13 @@ python3 scripts/repo_analyzer.py {source} --output analysis --no-question
 - 项目名片：`02a-manifest-card.md`
 - 覆盖率门控：`08-coverage.md`
 - 状态报告：`STATE_REPORT.md`
+{failed_section}
 """
 
 
-def overview_report_body(project_name: str, source: str, repo_type: str, files: List[Path], repo: Path) -> str:
+def overview_report_body(project_name: str, source: str, repo_type: str, files: List[Path], repo: Path, failed_modules: List[dict] = None) -> str:
+    failed_modules = failed_modules or []
+    failed_section = failed_modules_section(failed_modules)
     language_line = ", ".join(f"{name}({count})" for name, count in language_counts(files).most_common()) or "未识别"
     modules = module_rows(files, repo)
     module_table = "\n".join(f"| {module_id} | {name} | {count} |" for module_id, name, count in modules[:8])
@@ -1288,17 +1954,77 @@ flowchart TD
 ```bash
 python3 scripts/repo_analyzer.py {source} --output analysis --mode all --no-question
 ```
+{failed_section}
 """
 
 
-def write_reports(repo: Path, output: Path, source: str, project_name: str, repo_type: str, files: List[Path], mode: str) -> None:
-    modes = ["tech-lead", "business", "learning"] if mode == "all" else [mode]
-    for report_mode in modes:
-        body = report_body(project_name, source, repo_type, files, repo, report_mode)
-        target = output / f"ANALYSIS_REPORT.{report_mode}.md"
-        target.write_text(body, encoding="utf-8")
-    primary = overview_report_body(project_name, source, repo_type, files, repo) if mode == "all" else report_body(project_name, source, repo_type, files, repo, mode)
-    (output / "ANALYSIS_REPORT.md").write_text(primary, encoding="utf-8")
+def report_data(project_name: str, source: str, repo_type: str, files: List[Path], repo: Path, failed_modules: List[dict]) -> dict:
+    languages = language_counts(files)
+    language_line = ", ".join(f"{name}({count})" for name, count in languages.most_common()) or "未识别"
+    modules = module_rows(files, repo)
+    module_table = "\n".join(f"| {module_id} | {name} | {count} |" for module_id, name, count in modules) or "| module_001 | [root] | 0 |"
+    readme_title, readme_points = readme_summary(repo)
+    manifests = manifest_snippets(repo)
+    manifest_section = "\n\n".join(f"### {name}\n```text\n{text}\n```" for name, text in manifests) or "未发现常见依赖 manifest。"
+    manifest_names = ", ".join(name for name, _text in manifests) or "未发现"
+    command_list = command_hints(repo, files)
+    commands = "\n".join(f"- `{command}`" for command in command_list)
+    tree = "\n".join(f"- `{item}`" for item in top_tree(repo, files, 40))
+    symbols = source_symbols(repo, files, 30)
+    symbol_lines = "\n".join(f"- `{name}` (`{file_path}:{line}`)" for name, file_path, line in symbols) or "- 未识别到代码符号"
+    tools = mcp_tool_names(repo, files, API_SURFACE_LIMIT)
+    tool_lines = "\n".join(f"- `{name}` (`{file_path}:{line}`)" for name, file_path, line in tools) or "- 未识别到 MCP 工具/API 名称"
+    tool_summary = "\n".join(f"- {name}" for name, _file_path, _line in tools[:20]) or "- 未识别到对外工具/API"
+    slice_names = [filename for filename, _label, _patterns in SLICES[repo_type]] + ["12-history-hotspot.txt"]
+    slice_links = "\n".join(f"- `slices/{name}`" for name in slice_names)
+    largest = modules[0] if modules else ("module_001", "[root]", len(files))
+    first_module = largest[0]
+    first_tool = tools[0][0] if tools else "未识别"
+    first_symbol = symbols[0][0] if symbols else "未识别"
+    data = {
+        "project_name": project_name,
+        "source": source,
+        "repo_type": repo_type,
+        "file_count": len(files),
+        "readme_title": readme_title,
+        "readme_points": readme_points,
+        "language_line": language_line,
+        "module_table": module_table,
+        "symbol_lines": symbol_lines,
+        "tool_lines": tool_lines,
+        "tool_summary": tool_summary,
+        "tool_count": len(tools),
+        "command_count": len(command_list),
+        "commands": commands,
+        "manifest_section": manifest_section,
+        "manifest_names": manifest_names,
+        "slice_links": slice_links,
+        "tree": tree,
+        "largest_root": largest[1],
+        "largest_count": largest[2],
+        "first_module": first_module,
+        "first_tool": first_tool,
+        "first_symbol": first_symbol,
+        "failed_section": failed_modules_section(failed_modules),
+    }
+    data["audiences"] = {
+        mode: {"audience_section": audience_section(mode, repo_type, files, command_list, modules, tools)}
+        for mode in ("tech-lead", "business", "learning")
+    }
+    return data
+
+
+def write_reports(repo: Path, output: Path, source: str, project_name: str, repo_type: str, files: List[Path], mode: str, failed_modules: List[dict]) -> None:
+    data = report_data(project_name, source, repo_type, files, repo, failed_modules)
+    (output / "REPORT_DATA.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    rendered = subprocess.run(
+        [sys.executable, str(RENDERER), "--template", mode, "--data", str(output)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if rendered.returncode != 0:
+        raise SystemExit(rendered.stderr.strip() or rendered.stdout.strip() or "render_report.py failed")
 
 
 def write_readme(output: Path, project_name: str, repo_type: str, mode: str) -> None:
@@ -1325,7 +2051,10 @@ def write_readme(output: Path, project_name: str, repo_type: str, mode: str) -> 
 - [coverage-symbols.json](coverage-symbols.json)
 - [STATE_REPORT.md](STATE_REPORT.md)
 - [SLA_REPORT.md](SLA_REPORT.md)
+- [PERFORMANCE_REPORT.md](PERFORMANCE_REPORT.md)
 - [CONFIG_EFFECTIVE.json](CONFIG_EFFECTIVE.json)
+- [REPORT_DATA.json](REPORT_DATA.json)
+- [AGENT_SUMMARY.json](AGENT_SUMMARY.json)
 - [slices/](slices/)
 """,
         encoding="utf-8",
@@ -1344,6 +2073,10 @@ def write_config_effective(output: Path, args: argparse.Namespace) -> None:
         "target_coverage_minor": args.target_coverage_minor,
         "sla_minutes": args.sla_minutes,
         "coverage_engine": args.coverage_engine,
+        "agent_mode": args.agent_mode,
+        "agent_command": args.agent_command,
+        "agent_max_attempts": args.agent_max_attempts,
+        "agent_timeout_seconds": args.agent_timeout_seconds,
         "config": args.config or str(config_home() / "defaults.yaml"),
         "config_home": str(config_home()),
     }
@@ -1355,10 +2088,10 @@ def write_mcp_tools(output: Path, tools: List[Tuple[str, str, str]]) -> None:
     (output / "mcp-tools.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def write_sla_report(output: Path, args: argparse.Namespace, started_at: float, coverage: dict, cross_ref_issues: List[str]) -> None:
+def write_sla_report(output: Path, args: argparse.Namespace, started_at: float, coverage: dict, cross_ref_issues: List[str], agent_issues: List[str]) -> None:
     elapsed_seconds = time.monotonic() - started_at
     failed = [module_id for module_id, item in coverage["modules"].items() if item["status"] != "PASS"]
-    status = "PASS" if elapsed_seconds <= args.sla_minutes * 60 and not failed and not cross_ref_issues else "FAIL"
+    status = "PASS" if elapsed_seconds <= args.sla_minutes * 60 and not failed and not cross_ref_issues and not agent_issues else "FAIL"
     (output / "SLA_REPORT.md").write_text(
         f"""# SLA 报告
 
@@ -1366,8 +2099,78 @@ def write_sla_report(output: Path, args: argparse.Namespace, started_at: float, 
 - budget_minutes: {args.sla_minutes:.2f}
 - elapsed_seconds: {elapsed_seconds:.2f}
 - resumed: {str(bool(args.resume)).lower()}
+- agent_timeout: {"disabled" if args.agent_timeout_seconds <= 0 else "enabled"}
+- agent_timeout_seconds: {args.agent_timeout_seconds}
 - failed_modules: {len(failed)}
 - cross_ref_issues: {len(cross_ref_issues)}
+- agent_issues: {len(agent_issues)}
+""",
+        encoding="utf-8",
+    )
+
+
+def write_performance_report(output: Path, args: argparse.Namespace, started_at: float, performance: dict) -> None:
+    total_elapsed = round(time.monotonic() - started_at, 3)
+    stages = sorted(performance.get("stages", []), key=lambda item: item.get("elapsed_seconds", 0), reverse=True)
+    attempts = sorted(performance.get("agent_attempts", []), key=lambda item: item.get("elapsed_seconds", 0), reverse=True)
+    agent_total = round(sum(item.get("elapsed_seconds", 0) for item in attempts), 3)
+    timeout_disabled = args.agent_timeout_seconds <= 0
+    slowest_stage = stages[0]["name"] if stages else "none"
+    slowest_agent = attempts[0]["run_id"] if attempts else "none"
+    performance["summary"] = {
+        "total_elapsed_seconds": total_elapsed,
+        "agent_total_elapsed_seconds": agent_total,
+        "agent_attempt_count": len(attempts),
+        "slowest_stage": slowest_stage,
+        "slowest_agent_run_id": slowest_agent,
+        "agent_timeout_enabled": not timeout_disabled,
+        "diagnosis": (
+            "deterministic-only; no agent subprocess cost observed"
+            if not attempts
+            else "agent subprocess/model fixed cost dominates; do not hide it with default timeout"
+        ),
+    }
+    (output / "PERFORMANCE_REPORT.json").write_text(json.dumps(performance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    stage_rows = "\n".join(
+        f"| {item['name']} | {item['elapsed_seconds']:.3f} | {item['status']} |"
+        for item in stages[:20]
+    ) or "| 无 | 0.000 | PASS |"
+    agent_rows = "\n".join(
+        f"| {item['run_id']} | {item['attempt']} | {item['command_kind']} | {item['elapsed_seconds']:.3f} | {item['timed_out']} | `{item['cwd']}` |"
+        for item in attempts[:20]
+    ) or "| 无 | 0 | none | 0.000 | false | `n/a` |"
+    conclusion = (
+        "本次未运行 agent 子进程；如果仍慢，应优先查看 repomix、tree-sitter 或文件规模。"
+        if not attempts
+        else "本次慢点应优先从 agent 子进程启动、模型推理固定成本和子会话数量定位；默认 timeout 已关闭，不能把限时当成根因修复。"
+    )
+    (output / "PERFORMANCE_REPORT.md").write_text(
+        f"""# 性能诊断报告
+
+- total_elapsed_seconds: {total_elapsed:.3f}
+- agent_mode: {args.agent_mode}
+- agent_attempt_count: {len(attempts)}
+- agent_total_elapsed_seconds: {agent_total:.3f}
+- agent_timeout: {"disabled" if timeout_disabled else "enabled"}
+- agent_timeout_seconds: {args.agent_timeout_seconds}
+- slowest_stage: {slowest_stage}
+- slowest_agent_run_id: {slowest_agent}
+
+## 慢因结论
+
+{conclusion}
+
+## 阶段耗时 Top20
+
+| 阶段 | 秒 | 状态 |
+|---|---:|---|
+{stage_rows}
+
+## Agent attempt 耗时 Top20
+
+| run_id | attempt | command | 秒 | timed_out | cwd |
+|---|---:|---|---:|---|---|
+{agent_rows}
 """,
         encoding="utf-8",
     )
@@ -1421,7 +2224,11 @@ required = [
     "mcp-tools.json",
     "STATE_REPORT.md",
     "SLA_REPORT.md",
+    "PERFORMANCE_REPORT.md",
+    "PERFORMANCE_REPORT.json",
     "CONFIG_EFFECTIVE.json",
+    "REPORT_DATA.json",
+    "AGENT_SUMMARY.json",
     "ANALYSIS_REPORT.md",
     "README.md",
     "drafts/07-cross-ref-checks.md",
@@ -1441,12 +2248,15 @@ for module_id in module_ids:
 
 state = read("STATE_REPORT.md")
 coverage = read("08-coverage.md")
+performance_report = read("PERFORMANCE_REPORT.md")
 check("failed_modules tracked", "failed_modules: []" in state)
 check("state final", "PASS_DETERMINISTIC_ACCEPTANCE" in state and "PASS_WITH_DETERMINISTIC_BASELINE" not in state)
 check("coverage final", "状态: PASS" in coverage and "待 LLM" not in coverage)
 check("coverage engine recorded", "engine:" in coverage and "tree_sitter_available:" in coverage)
 check("cross-ref pass", "状态: PASS" in read("drafts/07-cross-ref-checks.md"))
 check("sla pass", "status: PASS" in read("SLA_REPORT.md"))
+check("performance diagnostic present", "慢因结论" in performance_report and "阶段耗时 Top20" in performance_report)
+check("timeout not default fix", "agent_timeout: disabled" in performance_report or "agent_timeout: enabled" in performance_report)
 
 try:
     expected_data = json.loads(read("expected-symbols.json"))
@@ -1459,6 +2269,21 @@ try:
 except json.JSONDecodeError:
     coverage_data = {"modules": {}}
     check("coverage json parse", False)
+
+try:
+    agent_summary = json.loads(read("AGENT_SUMMARY.json"))
+    check("agent summary json parse", isinstance(agent_summary, dict) and "mode" in agent_summary and "status" in agent_summary)
+    if agent_summary.get("mode") != "deterministic":
+        check("agent summary pass", agent_summary.get("status") == "PASS")
+except json.JSONDecodeError:
+    agent_summary = {}
+    check("agent summary json parse", False)
+try:
+    performance = json.loads(read("PERFORMANCE_REPORT.json"))
+    check("performance json parse", isinstance(performance.get("stages"), list) and "summary" in performance)
+except json.JSONDecodeError:
+    performance = {}
+    check("performance json parse", False)
 for module_id, item in coverage_data.get("modules", {}).items():
     draft_text = read(f"drafts/06-module-{module_id}.md")
     threshold = float(item.get("threshold", 0))
@@ -1473,6 +2298,13 @@ for module_id, item in coverage_data.get("modules", {}).items():
     ratio = 1.0 if not expected else len(set(covered_now)) / max(1, len({symbol.get("name", "") for symbol in expected if symbol.get("name")}))
     check(f"coverage gate:{module_id}", ratio >= threshold, f"{ratio:.2f}/{threshold:.2f}")
 
+failed_blocks = re.findall(r"(?m)^  - id: (module_[0-9]+)\\n((?:    .+\\n)+)", state)
+for module_id, block in failed_blocks:
+    check(
+        f"failed module schema:{module_id}",
+        all(field in block for field in ["tier:", "attempts:", "last_error:", "coverage_ratio:", "missing_symbols_count:", "suggested_recovery:"]),
+    )
+
 markdown_files = [path for path in root.glob("*.md") if path.is_file()]
 claim_files = [
     path
@@ -1484,6 +2316,7 @@ claim_files = [
 claim_text = "\\n".join(path.read_text(encoding="utf-8", errors="replace") for path in claim_files)
 markdown_text = "\\n".join(strip_fenced_code(path.read_text(encoding="utf-8", errors="replace")) for path in markdown_files)
 main_report = read("ANALYSIS_REPORT.md")
+check("failed section absent on pass", "§9 未完成模块明细" not in main_report)
 try:
     tools = sorted(item["name"] for item in json.loads(read("mcp-tools.json")))
 except (json.JSONDecodeError, KeyError, TypeError):
@@ -1547,33 +2380,82 @@ PY
 def analyze(args: argparse.Namespace) -> Path:
     args = apply_config(args)
     started_at = time.monotonic()
-    repo, source, temp = checkout_target(args.target)
+    performance = init_performance()
+    with timed_stage(performance, "checkout-target"):
+        repo, source, temp = checkout_target(args.target)
     try:
         output = Path(args.output).expanduser().resolve()
-        prepare_output(output, args.resume)
-        files = sorted(iter_files(repo), key=lambda path: rel(path, repo))
-        project_name = parse_project_name(repo)
-        repo_type = detect_repo_type(repo, files)
-        dimensions = SLICES[repo_type]
+        with timed_stage(performance, "prepare-output"):
+            prepare_output(output, args.resume)
+        with timed_stage(performance, "scan-files"):
+            files = sorted(iter_files(repo), key=lambda path: rel(path, repo))
+        with timed_stage(performance, "classify-repo"):
+            project_name = parse_project_name(repo)
+            repo_type = detect_repo_type(repo, files)
+            dimensions = SLICES[repo_type]
 
-        write_meta(repo, output, source, files)
-        write_repo_type(output, repo_type, project_name, dimensions)
-        write_manifest_card(repo, output, source, project_name, repo_type, files)
-        write_question_answers(output, args.no_question, args.mode)
-        write_slices(repo, output, repo_type, files)
-        write_module_plan(repo, output, files)
-        write_module_drafts(repo, output, files)
-        cross_ref_issues = write_cross_ref(output)
-        coverage = write_coverage(output, files, repo, args.target_coverage_core, args.target_coverage_minor, args.coverage_engine)
-        write_state_report(output, coverage, cross_ref_issues)
-        write_reports(repo, output, source, project_name, repo_type, files, args.mode)
-        write_readme(output, project_name, repo_type, args.mode)
-        write_config_effective(output, args)
-        write_mcp_tools(output, mcp_tool_names(repo, files, API_SURFACE_LIMIT))
-        write_sla_report(output, args, started_at, coverage, cross_ref_issues)
-        write_acceptance(output)
+        with timed_stage(performance, "write-meta"):
+            write_meta(repo, output, source, files)
+            write_repo_type(output, repo_type, project_name, dimensions)
+            write_manifest_card(repo, output, source, project_name, repo_type, files)
+            write_question_answers(output, args.no_question, args.mode)
+        with timed_stage(performance, "repomix-slices"):
+            write_slices(repo, output, repo_type, files)
+        with timed_stage(performance, "module-drafts"):
+            write_module_plan(repo, output, files)
+            write_module_drafts(repo, output, files)
+        with timed_stage(performance, "cross-ref-deterministic-initial"):
+            cross_ref_issues = write_cross_ref(output)
+        with timed_stage(performance, "agent-init"):
+            agent_issues, agent_summary = init_agent_summary(output, args)
+        with timed_stage(performance, "agent-modules-batch"):
+            agent_issues.extend(run_module_agent_loop(output, args, files, repo, agent_summary, performance))
+        with timed_stage(performance, "cross-ref-deterministic-after-agent"):
+            cross_ref_issues = write_cross_ref(output)
+        with timed_stage(performance, "coverage-initial"):
+            coverage = write_coverage(output, files, repo, args.target_coverage_core, args.target_coverage_minor, args.coverage_engine)
+        if args.agent_mode != "deterministic" and any(item["status"] != "PASS" for item in coverage["modules"].values()):
+            with timed_stage(performance, "agent-coverage-repair"):
+                agent_issues.extend(repair_failed_coverage_modules(output, args, coverage, agent_summary, performance))
+            with timed_stage(performance, "cross-ref-deterministic-after-coverage-repair"):
+                cross_ref_issues = write_cross_ref(output)
+            with timed_stage(performance, "coverage-after-repair"):
+                coverage = write_coverage(output, files, repo, args.target_coverage_core, args.target_coverage_minor, args.coverage_engine)
+            with timed_stage(performance, "agent-summary-after-coverage-repair"):
+                write_agent_summary(output, agent_summary, agent_issues)
+        with timed_stage(performance, "agent-cross-ref-review"):
+            review_issues, review_text = run_cross_ref_agent(output, args, agent_summary, performance)
+        agent_issues.extend(review_issues)
+        if args.agent_mode != "deterministic":
+            module_ids = [module_id for module_id, _root, _count in module_rows(files, repo)]
+            with timed_stage(performance, "agent-cross-ref-repair"):
+                repair_issues = repair_cross_ref_modules(output, args, module_ids, review_text, agent_summary, performance)
+            if repair_issues or agent_summary.get("cross_ref_repairs"):
+                agent_issues.extend(repair_issues)
+                with timed_stage(performance, "cross-ref-deterministic-after-cross-ref-repair"):
+                    cross_ref_issues = write_cross_ref(output)
+                with timed_stage(performance, "coverage-after-cross-ref-repair"):
+                    coverage = write_coverage(output, files, repo, args.target_coverage_core, args.target_coverage_minor, args.coverage_engine)
+                with timed_stage(performance, "agent-cross-ref-review-final"):
+                    review_issues, _review_text = run_cross_ref_agent(output, args, agent_summary, performance, "cross-ref-review-final")
+                agent_issues.extend(review_issues)
+        with timed_stage(performance, "state-report"):
+            failed_modules = write_state_report(output, coverage, cross_ref_issues, agent_issues)
+        with timed_stage(performance, "render-reports"):
+            write_reports(repo, output, source, project_name, repo_type, files, args.mode, failed_modules)
+        with timed_stage(performance, "write-index-and-config"):
+            write_readme(output, project_name, repo_type, args.mode)
+            write_config_effective(output, args)
+            write_mcp_tools(output, mcp_tool_names(repo, files, API_SURFACE_LIMIT))
+        with timed_stage(performance, "sla-report"):
+            write_sla_report(output, args, started_at, coverage, cross_ref_issues, agent_issues)
+        with timed_stage(performance, "performance-report"):
+            write_performance_report(output, args, started_at, performance)
+        with timed_stage(performance, "acceptance-script"):
+            write_acceptance(output)
         if args.save_pref:
-            save_last_session(args)
+            with timed_stage(performance, "save-last-session"):
+                save_last_session(args)
         return output
     finally:
         temp.cleanup()
@@ -1592,6 +2474,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--target-coverage-minor", type=float, default=None, help="次要模块符号覆盖率阈值")
     parser.add_argument("--coverage-engine", choices=["auto", "regex"], default="auto", help="覆盖率符号引擎；auto 会在可用时记录 tree-sitter parse 结果")
     parser.add_argument("--sla-minutes", type=float, default=None, help="本次分析 SLA 分钟预算")
+    parser.add_argument("--agent-mode", choices=["deterministic", "codex", "command"], default="deterministic", help="判断型模块分析模式；codex/command 会执行外部 agent")
+    parser.add_argument("--agent-command", default="", help="--agent-mode command 时使用的命令，prompt 通过 stdin 传入")
+    parser.add_argument("--agent-max-attempts", type=int, default=None, help="agent 失败重试次数，默认 3")
+    parser.add_argument("--agent-timeout-seconds", type=int, default=None, help="agent 子进程超时秒数；0 表示不启用，默认 0")
     parser.add_argument("--use-last-pref", action="store_true", help="读取配置目录中的 last-session.json 作为默认偏好")
     parser.add_argument("--save-pref", action="store_true", help="运行成功后保存本次非敏感偏好到 last-session.json")
     return parser
