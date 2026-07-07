@@ -13,9 +13,9 @@
 当前版本不是完整实现 `PLAN.md` 的 full-spec 方案，而是实现了一个 **v1 最小可用 skill**：
 
 - 已能被用户用短提示调用，分析 GitHub 或本地仓库。
-- 已能生成分析底料、模块候选、模块深度分析底稿、cross-ref 校验、符号覆盖率门控、受众报告、状态报告、SLA/配置记录和本地验收入口。
+- 已能生成分析底料、模块候选、模块深度分析底稿、cross-ref 校验、符号覆盖率门控、tree-sitter 可用性/parse 记录、受众报告、状态报告、SLA/配置记录和本地验收入口。
 - 已通过 `claude-video` 的 UAT 回路，并修复了主报告重复、prompt 过长、Markdown 验收等问题。
-- 尚未实现 PLAN 中成本最高的完整智能闭环：真正的模块 subagent 深挖、独立 cross-ref 审稿、tree-sitter 覆盖率门控、token/retry 预算、13 条硬断言里的 LLM judge / Mermaid / 外链检查。
+- 尚未实现 PLAN 中成本最高的完整智能闭环：真正的模块 subagent 深挖、独立 cross-ref 审稿、tree-sitter grammar query 符号提取、token/retry 预算、13 条硬断言里的 LLM judge / Mermaid / 外链检查。
 
 因此当前状态应标记为：
 
@@ -30,7 +30,7 @@ full PLAN 合规: PARTIAL
 |---|---:|---|
 | v1 必须实现 | 13 | 12 已实现，1 部分实现 |
 | 已废弃 / 已改写 | 5 | 5 已由 ADR 明确处理 |
-| 延后实现 | 14 | 5 已最小实现，9 延后 |
+| 延后实现 | 14 | 6 已最小实现，8 延后 |
 
 ## 1. v1 必须实现
 
@@ -48,7 +48,7 @@ full PLAN 合规: PARTIAL
 | 8 | 生成用户问题答案文件，支持无交互默认值 | 部分实现 | `03-question-answers.md` | 还没有真正的 `ask_user()` 运行时适配层 |
 | 9 | 生成模块候选清单 | 已实现 | `05-module-ids.yaml` | 文件名与原 PLAN 的 `05-modules-plan.md` 不一致，当前更适合机器读 |
 | 10 | 生成模块深度分析底稿 | 已实现 | `drafts/06-module-*.md` | 当前是确定性深度底稿，不是真 subagent 判断 |
-| 11 | 生成覆盖率、cross-ref 与状态报告 | 已实现 | `drafts/07-cross-ref-checks.md`、`08-coverage.md`、`coverage-symbols.json`、`STATE_REPORT.md` | 当前是正则符号门控，不是 tree-sitter |
+| 11 | 生成覆盖率、cross-ref 与状态报告 | 已实现 | `drafts/07-cross-ref-checks.md`、`08-coverage.md`、`expected-symbols.json`、`coverage-symbols.json`、`STATE_REPORT.md` | 当前 tree-sitter 负责 parse 可用性与大文件保护记录，符号提取仍用正则 fallback |
 | 12 | 生成最终报告和三类受众报告 | 已实现 | `ANALYSIS_REPORT.md`、`ANALYSIS_REPORT.tech-lead.md`、`ANALYSIS_REPORT.business.md`、`ANALYSIS_REPORT.learning.md` | 模板逻辑内嵌在脚本中 |
 | 13 | 提供本地验收入口 | 已实现 | `acceptance/check.sh` | 已覆盖产物、链接、受众差异、cross-ref、coverage、SLA；未含 LLM judge / Mermaid render / 外链检查 |
 
@@ -72,7 +72,7 @@ full PLAN 合规: PARTIAL
 |---|---|---|---|---|
 | P0 | 模块 subagent 深度分析 | `PLAN.md` 阶段五 | 部分实现 | 已生成确定性深度底稿；缺少真 subagent 判断型深挖 |
 | P0 | cross-ref 双层质检 | [ADR-0004](decisions/0004-cross-ref-two-stage.md) | 部分实现 | 已生成 `07-cross-ref-checks.md`；缺少独立审稿 subagent 和回退循环 |
-| P0 | tree-sitter + grep 覆盖率门控 | [ADR-0005](decisions/0005-coverage-tree-sitter.md) | 部分实现 | 已有正则符号覆盖门控；未接 tree-sitter |
+| P0 | tree-sitter + grep 覆盖率门控 | [ADR-0005](decisions/0005-coverage-tree-sitter.md) | 部分实现 | 已有 `auto` engine、`expected-symbols.json`、tree-sitter parse 统计和 5MiB 大文件跳过；未做 grammar query 级符号抽取 |
 | P0 | ADR-0011 全 13 条硬断言 | [ADR-0011](decisions/0011-acceptance-script-enforce.md) | 部分实现 | 已扩展本地硬断言；未实现 LLM judge / Mermaid render / 外链检查 |
 | P1 | `ask_user()` 三运行时适配器 | [ADR-0003](decisions/0003-ask-user-api.md) | 未实现 | 当前只支持默认答案与 `--no-question` 语义 |
 | P1 | `config/repo-types.yaml` 外置切片模板 | [ADR-0002](decisions/0002-phase-2a-dynamic.md) | 未实现 | 当前切片模板内嵌在 `SLICES` 常量里 |
@@ -81,7 +81,7 @@ full PLAN 合规: PARTIAL
 | P1 | 失败模块详细 schema 与报告 `§9` | [ADR-0015](decisions/0015-failed-module-section.md) | 部分实现 | `STATE_REPORT.md` 有 `failed_modules: []`，但无失败详情渲染 |
 | P2 | 外部调研 `03-research.md` | `PLAN.md` 阶段三半 | 未实现 | 原计划默认 OFF，v1 暂未接入 web research |
 | P2 | env 覆盖、`defaults.yaml extends:`、`last-session.json` | [ADR-0012](decisions/0012-compromise-config.md) | 部分实现 | 已支持 `--config` JSON；未做 env、extends、last-session |
-| P2 | tree-sitter chunked 5MB 与 benchmark | [ADR-0014](decisions/0014-treesitter-chunked.md) | 未实现 | 依赖 ADR-0005 先落地 |
+| P2 | tree-sitter chunked 5MB 与 benchmark | [ADR-0014](decisions/0014-treesitter-chunked.md) | 部分实现 | 已串行扫描并跳过 ≥5MiB 文件；未补三仓库 benchmark |
 | P2 | Mermaid 渲染、外链检查、LLM-judge | [ADR-0011](decisions/0011-acceptance-script-enforce.md) | 未实现 | 成本高，且需要额外运行依赖/模型预算 |
 | P2 | 原始 smart-search-mcp 终验收路径 | [`docs/goals/implement-plan-with-ponytail-tdd.md`](../docs/goals/implement-plan-with-ponytail-tdd.md) | 未完成到最新 UAT | 最新 UAT 改为 `claude-video`，不能替代原目标仓库验收 |
 
@@ -89,9 +89,9 @@ full PLAN 合规: PARTIAL
 
 如果继续补 full PLAN，不建议一次性补所有延后项。最小顺序如下：
 
-1. **升级到 tree-sitter coverage**
-   - 当前正则符号覆盖已经能挡住草稿漏写关键符号。
-   - 下一步再接 ADR-0005/0014 的 tree-sitter expected-symbols。
+1. **升级到 tree-sitter grammar query coverage**
+   - 当前 auto engine 已能记录 tree-sitter 是否可用、parse 文件数和大文件跳过情况。
+   - 下一步再把 expected-symbols 从正则提取升级为 grammar query 提取。
 
 2. **补真 subagent 审稿**
    - 当前 `07-cross-ref-checks.md` 是确定性校验。

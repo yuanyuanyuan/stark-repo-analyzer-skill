@@ -354,10 +354,23 @@ class RepoAnalyzerCliTest(TestCase):
             coverage_json = json.loads((output / "coverage-symbols.json").read_text(encoding="utf-8"))
             self.assertIn("module_001", coverage_json["modules"])
             self.assertEqual(coverage_json["modules"]["module_001"]["status"], "PASS")
+            self.assertIn(coverage_json["engine"]["engine"], {"regex-fallback", "tree-sitter+regex"})
+            expected_json = json.loads((output / "expected-symbols.json").read_text(encoding="utf-8"))
+            self.assertEqual(expected_json["engine"], coverage_json["engine"])
+            self.assertTrue(any(item["name"] == "search_docs" for item in expected_json["symbols"]))
+            coverage = (output / "08-coverage.md").read_text(encoding="utf-8")
+            self.assertIn("engine:", coverage)
+            self.assertIn("tree_sitter_available:", coverage)
 
             check = output / "acceptance" / "check.sh"
             passing = subprocess.run([str(check)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             self.assertEqual(passing.returncode, 0, passing.stdout + passing.stderr)
+
+            (output / "expected-symbols.json").unlink()
+            broken_expected = subprocess.run([str(check)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.assertNotEqual(broken_expected.returncode, 0, broken_expected.stdout + broken_expected.stderr)
+            self.assertIn("required:expected-symbols.json", broken_expected.stdout)
+            (output / "expected-symbols.json").write_text(json.dumps(expected_json), encoding="utf-8")
 
             draft_path = output / "drafts" / "06-module-module_001.md"
             draft_path.write_text(draft.replace("search_docs", "removed_symbol"), encoding="utf-8")
@@ -385,6 +398,7 @@ class RepoAnalyzerCliTest(TestCase):
                         "no_question": True,
                         "target_coverage_core": 0.8,
                         "target_coverage_minor": 0.2,
+                        "coverage_engine": "regex",
                         "sla_minutes": 30,
                     }
                 ),
@@ -404,6 +418,7 @@ class RepoAnalyzerCliTest(TestCase):
             effective = json.loads((output / "CONFIG_EFFECTIVE.json").read_text(encoding="utf-8"))
             self.assertEqual(effective["mode"], "all")
             self.assertTrue(effective["no_question"])
+            self.assertEqual(effective["coverage_engine"], "regex")
             sla = (output / "SLA_REPORT.md").read_text(encoding="utf-8")
             self.assertIn("resumed: true", sla)
             self.assertIn("status: PASS", sla)

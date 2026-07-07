@@ -70,6 +70,8 @@ BINARY_SUFFIXES = {
 GENERATED_DIRS = {"slices", "drafts", "acceptance"}
 SOURCE_SYMBOL_LIMIT = 400
 API_SURFACE_LIMIT = 1_000
+TREE_SITTER_CHUNK_BYTES = 5 * 1024 * 1024
+SYMBOL_SUFFIXES = {".py", ".js", ".ts", ".tsx", ".jsx", ".go", ".rs"}
 
 SLICES: Dict[str, List[Tuple[str, str, Sequence[str]]]] = {
     "web-fullstack": [
@@ -146,6 +148,7 @@ def prepare_output(path: Path, resume: bool) -> None:
         "05-module-ids.yaml",
         "08-coverage.md",
         "08-coverage-failure.md",
+        "expected-symbols.json",
         "coverage-symbols.json",
         "mcp-tools.json",
         "STATE_REPORT.md",
@@ -246,6 +249,8 @@ def apply_config(args: argparse.Namespace) -> argparse.Namespace:
             args.target_coverage_minor = float(config["target_coverage_minor"])
         if "sla_minutes" in config and args.sla_minutes is None:
             args.sla_minutes = float(config["sla_minutes"])
+        if "coverage_engine" in config and args.coverage_engine == "auto":
+            args.coverage_engine = str(config["coverage_engine"])
     args.target_coverage_core = 0.8 if args.target_coverage_core is None else args.target_coverage_core
     args.target_coverage_minor = 0.2 if args.target_coverage_minor is None else args.target_coverage_minor
     args.sla_minutes = 30.0 if args.sla_minutes is None else args.sla_minutes
@@ -384,7 +389,7 @@ def source_symbols(repo: Path, files: List[Path], limit: int = SOURCE_SYMBOL_LIM
         re.compile(r"^\s*class\s+([A-Za-z_][\w]*)\s*[:(]", re.MULTILINE),
     ]
     for path in files:
-        if path.suffix.lower() not in {".py", ".js", ".ts", ".tsx", ".jsx", ".go", ".rs"}:
+        if path.suffix.lower() not in SYMBOL_SUFFIXES:
             continue
         text = read_text(path, 200_000)
         for pattern in patterns:
@@ -397,6 +402,39 @@ def source_symbols(repo: Path, files: List[Path], limit: int = SOURCE_SYMBOL_LIM
                 if len(symbols) >= limit:
                     return symbols
     return symbols
+
+
+def tree_sitter_scan(repo: Path, files: List[Path], limit: int) -> Tuple[List[Tuple[str, str, str]], dict]:
+    binary = shutil.which("tree-sitter")
+    meta = {
+        "engine": "regex-fallback",
+        "tree_sitter_available": bool(binary),
+        "tree_sitter_version": "",
+        "scanned_files": 0,
+        "parsed_files": 0,
+        "skipped_large_files": [],
+        "parse_failures": [],
+    }
+    if not binary:
+        meta["reason"] = "tree-sitter CLI not found"
+        return source_symbols(repo, files, limit), meta
+
+    version = subprocess.run([binary, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    meta["tree_sitter_version"] = (version.stdout or version.stderr).strip()
+    candidates = [path for path in files if path.suffix.lower() in SYMBOL_SUFFIXES]
+    meta["scanned_files"] = len(candidates)
+    for path in candidates:
+        if path.stat().st_size >= TREE_SITTER_CHUNK_BYTES:
+            meta["skipped_large_files"].append(rel(path, repo))
+            continue
+        # ponytail: use tree-sitter as an availability/parse gate; regex remains the portable symbol extractor until grammar queries are bundled.
+        parsed = subprocess.run([binary, "parse", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        if parsed.returncode == 0:
+            meta["parsed_files"] += 1
+        elif len(meta["parse_failures"]) < 20:
+            meta["parse_failures"].append({"file": rel(path, repo), "error": parsed.stderr.strip().splitlines()[:1]})
+    meta["engine"] = "tree-sitter+regex"
+    return source_symbols(repo, files, limit), meta
 
 
 def mcp_tool_names(repo: Path, files: List[Path], limit: int = API_SURFACE_LIMIT) -> List[Tuple[str, str, str]]:
@@ -712,11 +750,20 @@ def symbol_coverage(
     repo: Path,
     core_threshold: float,
     minor_threshold: float,
+    coverage_engine: str,
 ) -> dict:
-    symbols = source_symbols(repo, files, 10_000)
+    if coverage_engine == "regex":
+        symbols = source_symbols(repo, files, 10_000)
+        engine_meta = {"engine": "regex", "tree_sitter_available": bool(shutil.which("tree-sitter"))}
+    else:
+        symbols, engine_meta = tree_sitter_scan(repo, files, 10_000)
     rows = module_rows(files, repo)
     draft_dir = output / "drafts"
-    result = {"thresholds": {"core": core_threshold, "minor": minor_threshold}, "modules": {}}
+    result = {
+        "thresholds": {"core": core_threshold, "minor": minor_threshold},
+        "engine": engine_meta,
+        "modules": {},
+    }
     for index, (module_id, root, count) in enumerate(rows, 1):
         tier = "core" if index <= 3 else "minor"
         expected = [
@@ -743,17 +790,27 @@ def symbol_coverage(
     return result
 
 
-def write_coverage(output: Path, files: List[Path], repo: Path, core_threshold: float, minor_threshold: float) -> dict:
+def write_coverage(output: Path, files: List[Path], repo: Path, core_threshold: float, minor_threshold: float, coverage_engine: str) -> dict:
     rows = module_rows(files, repo)
-    coverage = symbol_coverage(output, files, repo, core_threshold, minor_threshold)
+    coverage = symbol_coverage(output, files, repo, core_threshold, minor_threshold, coverage_engine)
+    expected_symbols = []
+    for module_id, item in coverage["modules"].items():
+        for symbol in item["expected_symbols"]:
+            expected_symbols.append({"module": module_id, **symbol})
+    (output / "expected-symbols.json").write_text(json.dumps({"engine": coverage["engine"], "symbols": expected_symbols}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (output / "coverage-symbols.json").write_text(json.dumps(coverage, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     failed = [module_id for module_id, item in coverage["modules"].items() if item["status"] != "PASS"]
+    engine = coverage["engine"]
     lines = [
         "# 覆盖率门控",
         "",
         f"- 状态: {'PASS' if not failed else 'FAIL'}",
         f"- 核心阈值: {core_threshold:.2f}",
         f"- 次要阈值: {minor_threshold:.2f}",
+        f"- engine: {engine.get('engine', 'unknown')}",
+        f"- tree_sitter_available: {str(bool(engine.get('tree_sitter_available'))).lower()}",
+        f"- tree_sitter_parsed_files: {engine.get('parsed_files', 0)}",
+        f"- skipped_large_files: {len(engine.get('skipped_large_files', []))}",
         "",
         "| 模块 ID | tier | 文件数 | 符号覆盖率 | 覆盖状态 |",
         "|---|---|---:|---:|---|",
@@ -761,7 +818,7 @@ def write_coverage(output: Path, files: List[Path], repo: Path, core_threshold: 
     for module_id, _name, _count in rows:
         item = coverage["modules"][module_id]
         lines.append(f"| {module_id} | {item['tier']} | {item['file_count']} | {item['coverage_ratio']:.2f} | {item['status']} |")
-    lines.extend(["", "> 覆盖率门控已用确定性符号提取核对模块草稿；业务语义评价可由后续 subagent 复核。"])
+    lines.extend(["", "> 覆盖率门控已用确定性符号提取核对模块草稿；tree-sitter 可用时先做串行 parse 与大文件保护记录，业务语义评价可由后续 subagent 复核。"])
     (output / "08-coverage.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     if failed:
         failure_lines = ["# 覆盖率失败明细", ""]
@@ -1145,6 +1202,7 @@ def write_config_effective(output: Path, args: argparse.Namespace) -> None:
         "target_coverage_core": args.target_coverage_core,
         "target_coverage_minor": args.target_coverage_minor,
         "sla_minutes": args.sla_minutes,
+        "coverage_engine": args.coverage_engine,
         "config": args.config or "",
     }
     (output / "CONFIG_EFFECTIVE.json").write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -1216,6 +1274,7 @@ required = [
     "03-question-answers.md",
     "05-module-ids.yaml",
     "08-coverage.md",
+    "expected-symbols.json",
     "coverage-symbols.json",
     "mcp-tools.json",
     "STATE_REPORT.md",
@@ -1243,8 +1302,15 @@ coverage = read("08-coverage.md")
 check("failed_modules tracked", "failed_modules: []" in state)
 check("state final", "PASS_DETERMINISTIC_ACCEPTANCE" in state and "PASS_WITH_DETERMINISTIC_BASELINE" not in state)
 check("coverage final", "状态: PASS" in coverage and "待 LLM" not in coverage)
+check("coverage engine recorded", "engine:" in coverage and "tree_sitter_available:" in coverage)
 check("cross-ref pass", "状态: PASS" in read("drafts/07-cross-ref-checks.md"))
 check("sla pass", "status: PASS" in read("SLA_REPORT.md"))
+
+try:
+    expected_data = json.loads(read("expected-symbols.json"))
+    check("expected symbols json parse", isinstance(expected_data.get("symbols"), list) and "engine" in expected_data)
+except json.JSONDecodeError:
+    check("expected symbols json parse", False)
 
 try:
     coverage_data = json.loads(read("coverage-symbols.json"))
@@ -1356,7 +1422,7 @@ def analyze(args: argparse.Namespace) -> Path:
         write_module_plan(repo, output, files)
         write_module_drafts(repo, output, files)
         cross_ref_issues = write_cross_ref(output)
-        coverage = write_coverage(output, files, repo, args.target_coverage_core, args.target_coverage_minor)
+        coverage = write_coverage(output, files, repo, args.target_coverage_core, args.target_coverage_minor, args.coverage_engine)
         write_state_report(output, coverage, cross_ref_issues)
         write_reports(repo, output, source, project_name, repo_type, files, args.mode)
         write_readme(output, project_name, repo_type, args.mode)
@@ -1380,6 +1446,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--resume", action="store_true", help="复用输出目录，清理本工具生成文件但保留用户手写文件")
     parser.add_argument("--target-coverage-core", type=float, default=None, help="核心模块符号覆盖率阈值")
     parser.add_argument("--target-coverage-minor", type=float, default=None, help="次要模块符号覆盖率阈值")
+    parser.add_argument("--coverage-engine", choices=["auto", "regex"], default="auto", help="覆盖率符号引擎；auto 会在可用时记录 tree-sitter parse 结果")
     parser.add_argument("--sla-minutes", type=float, default=None, help="本次分析 SLA 分钟预算")
     return parser
 
