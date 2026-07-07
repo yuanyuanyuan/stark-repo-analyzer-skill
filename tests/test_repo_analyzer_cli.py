@@ -3,6 +3,7 @@ import sys
 import tempfile
 import re
 import json
+import os
 from pathlib import Path
 from unittest import TestCase
 
@@ -425,3 +426,62 @@ class RepoAnalyzerCliTest(TestCase):
             self.assertTrue((output / "ANALYSIS_REPORT.business.md").exists())
             acceptance = subprocess.run([str(output / "acceptance" / "check.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             self.assertEqual(acceptance.returncode, 0, acceptance.stdout + acceptance.stderr)
+
+    def test_defaults_extends_env_and_last_session_preferences(self):
+        with tempfile.TemporaryDirectory() as repo_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            repo = Path(repo_tmp)
+            output = Path(out_tmp) / "analysis"
+            config_home = Path(out_tmp) / "config-home"
+            config_home.mkdir()
+            team = config_home / "team.yaml"
+            defaults = config_home / "defaults.yaml"
+
+            (repo / "README.md").write_text("# Demo Tool\n", encoding="utf-8")
+            (repo / "main.py").write_text("def run():\n    return 'ok'\n", encoding="utf-8")
+            subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run(["git", "add", "."], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run(["git", "commit", "-m", "initial"], cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+            team.write_text("mode: business\nsla_budget:\n  minutes: 12\ntarget_coverage:\n  core: 0.7\n", encoding="utf-8")
+            defaults.write_text(f"extends:\n  - {team}\ncoverage_engine: regex\ntarget_coverage:\n  minor: 0.3\n", encoding="utf-8")
+            env = {
+                **os.environ,
+                "REPO_ANALYZER_CONFIG_HOME": str(config_home),
+                "REPO_ANALYZER_SLA_BUDGET_MINUTES": "22",
+            }
+
+            result = subprocess.run(
+                [sys.executable, str(CLI), str(repo), "--output", str(output), "--no-question", "--save-pref"],
+                cwd=ROOT,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            effective = json.loads((output / "CONFIG_EFFECTIVE.json").read_text(encoding="utf-8"))
+            self.assertEqual(effective["mode"], "business")
+            self.assertEqual(effective["coverage_engine"], "regex")
+            self.assertEqual(effective["target_coverage_core"], 0.7)
+            self.assertEqual(effective["target_coverage_minor"], 0.3)
+            self.assertEqual(effective["sla_minutes"], 22.0)
+            last_session = json.loads((config_home / "last-session.json").read_text(encoding="utf-8"))
+            self.assertEqual(last_session["flags_used"]["mode"], "business")
+
+            defaults.unlink()
+            second = Path(out_tmp) / "analysis-2"
+            env.pop("REPO_ANALYZER_SLA_BUDGET_MINUTES")
+            rerun = subprocess.run(
+                [sys.executable, str(CLI), str(repo), "--output", str(second), "--use-last-pref"],
+                cwd=ROOT,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+
+            self.assertEqual(rerun.returncode, 0, rerun.stderr)
+            second_effective = json.loads((second / "CONFIG_EFFECTIVE.json").read_text(encoding="utf-8"))
+            self.assertEqual(second_effective["mode"], "business")
+            self.assertEqual(second_effective["coverage_engine"], "regex")

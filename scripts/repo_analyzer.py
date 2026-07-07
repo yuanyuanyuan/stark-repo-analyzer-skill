@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from datetime import datetime, timezone
 from collections import Counter
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
@@ -72,6 +73,7 @@ SOURCE_SYMBOL_LIMIT = 400
 API_SURFACE_LIMIT = 1_000
 TREE_SITTER_CHUNK_BYTES = 5 * 1024 * 1024
 SYMBOL_SUFFIXES = {".py", ".js", ".ts", ".tsx", ".jsx", ".go", ".rs"}
+CONFIG_HOME_ENV = "REPO_ANALYZER_CONFIG_HOME"
 
 SLICES: Dict[str, List[Tuple[str, str, Sequence[str]]]] = {
     "web-fullstack": [
@@ -216,14 +218,122 @@ def read_text(path: Path, limit: int = 200_000) -> str:
         return ""
 
 
-def load_config(path: str) -> dict:
-    if not path:
-        return {}
-    config_path = Path(path).expanduser()
+def config_home() -> Path:
+    return Path(os.environ.get(CONFIG_HOME_ENV, "~/.config/repo-analyzer")).expanduser()
+
+
+def parse_scalar(value: str):
+    value = value.strip().strip('"').strip("'")
+    if value.lower() in {"true", "false"}:
+        return value.lower() == "true"
     try:
-        return json.loads(config_path.read_text(encoding="utf-8"))
+        return float(value) if "." in value else int(value)
+    except ValueError:
+        return value
+
+
+def parse_simple_yaml(text: str) -> dict:
+    result = {}
+    current = None
+    for raw in text.splitlines():
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        if not raw.startswith(" ") and ":" in raw:
+            key, value = raw.split(":", 1)
+            key = key.strip()
+            if value.strip():
+                result[key] = parse_scalar(value)
+                current = None
+            else:
+                result[key] = [] if key == "extends" else {}
+                current = key
+            continue
+        if current == "extends" and raw.strip().startswith("- "):
+            result[current].append(parse_scalar(raw.strip()[2:]))
+        elif current and ":" in raw:
+            key, value = raw.strip().split(":", 1)
+            result[current][key.strip()] = parse_scalar(value)
+    return result
+
+
+def merge_config(base: dict, override: dict) -> dict:
+    merged = dict(base)
+    for key, value in override.items():
+        if key == "extends":
+            continue
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = merge_config(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
+def flatten_config(config: dict) -> dict:
+    flat = dict(config)
+    if isinstance(config.get("target_coverage"), dict):
+        flat["target_coverage_core"] = config["target_coverage"].get("core", flat.get("target_coverage_core"))
+        flat["target_coverage_minor"] = config["target_coverage"].get("minor", flat.get("target_coverage_minor"))
+    if isinstance(config.get("sla_budget"), dict):
+        flat["sla_minutes"] = config["sla_budget"].get("minutes", flat.get("sla_minutes"))
+    return flat
+
+
+def load_config_file(path: Path, seen=None) -> dict:
+    seen = seen or set()
+    config_path = path.expanduser().resolve()
+    if config_path in seen:
+        raise SystemExit(f"配置文件继承循环: {config_path}")
+    if not config_path.exists():
+        return {}
+    seen.add(config_path)
+    try:
+        text = config_path.read_text(encoding="utf-8")
+        config = json.loads(text) if config_path.suffix == ".json" else parse_simple_yaml(text)
     except (OSError, json.JSONDecodeError) as exc:
         raise SystemExit(f"配置文件读取失败: {config_path}: {exc}") from exc
+    merged = {}
+    for parent in config.get("extends", []) if isinstance(config.get("extends"), list) else []:
+        merged = merge_config(merged, load_config_file(Path(str(parent)), seen))
+    return merge_config(merged, config)
+
+
+def load_config(path: str) -> dict:
+    explicit = Path(path).expanduser() if path else config_home() / "defaults.yaml"
+    return flatten_config(load_config_file(explicit))
+
+
+def env_config() -> dict:
+    mapping = {
+        "REPO_ANALYZER_MODE": ("mode", str),
+        "REPO_ANALYZER_NO_QUESTION": ("no_question", bool_config),
+        "REPO_ANALYZER_OFFLINE": ("offline", bool_config),
+        "REPO_ANALYZER_TARGET_COVERAGE_CORE": ("target_coverage_core", float),
+        "REPO_ANALYZER_TARGET_COVERAGE_MINOR": ("target_coverage_minor", float),
+        "REPO_ANALYZER_SLA_BUDGET_MINUTES": ("sla_minutes", float),
+        "REPO_ANALYZER_COVERAGE_ENGINE": ("coverage_engine", str),
+    }
+    result = {}
+    for name, (key, cast) in mapping.items():
+        if name in os.environ:
+            result[key] = cast(os.environ[name])
+    return result
+
+
+def last_session_path() -> Path:
+    return config_home() / "last-session.json"
+
+
+def load_last_session(use_last_pref: bool) -> dict:
+    path = last_session_path()
+    if not use_last_pref or not path.exists():
+        return {}
+    if time.time() - path.stat().st_mtime > 30 * 24 * 60 * 60:
+        path.unlink()
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8")).get("flags_used", {})
+    except (OSError, json.JSONDecodeError):
+        return {}
 
 
 def bool_config(value) -> bool:
@@ -234,23 +344,52 @@ def bool_config(value) -> bool:
     return bool(value)
 
 
+def set_if_default(args: argparse.Namespace, key: str, value) -> None:
+    defaults = {"mode": "tech-lead", "no_question": False, "offline": False, "coverage_engine": "auto"}
+    if getattr(args, key) == defaults.get(key):
+        setattr(args, key, value)
+
+
+def apply_config_values(args: argparse.Namespace, config: dict, force: bool = False) -> None:
+    if not config:
+        return
+    if "mode" in config:
+        setattr(args, "mode", str(config["mode"])) if force else set_if_default(args, "mode", str(config["mode"]))
+    if "no_question" in config:
+        setattr(args, "no_question", bool_config(config["no_question"])) if force else set_if_default(args, "no_question", bool_config(config["no_question"]))
+    if "offline" in config:
+        setattr(args, "offline", bool_config(config["offline"])) if force else set_if_default(args, "offline", bool_config(config["offline"]))
+    if "target_coverage_core" in config and (force or args.target_coverage_core is None):
+        args.target_coverage_core = float(config["target_coverage_core"])
+    if "target_coverage_minor" in config and (force or args.target_coverage_minor is None):
+        args.target_coverage_minor = float(config["target_coverage_minor"])
+    if "sla_minutes" in config and (force or args.sla_minutes is None):
+        args.sla_minutes = float(config["sla_minutes"])
+    if "coverage_engine" in config:
+        setattr(args, "coverage_engine", str(config["coverage_engine"])) if force else set_if_default(args, "coverage_engine", str(config["coverage_engine"]))
+
+
+def save_last_session(args: argparse.Namespace) -> None:
+    path = last_session_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "flags_used": {
+            "mode": args.mode,
+            "no_question": bool(args.no_question),
+            "offline": bool(args.offline),
+            "coverage_engine": args.coverage_engine,
+            "resume": bool(args.resume),
+        },
+    }
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.chmod(0o600)
+
+
 def apply_config(args: argparse.Namespace) -> argparse.Namespace:
-    config = load_config(args.config)
-    if config:
-        if "mode" in config and args.mode == "tech-lead":
-            args.mode = str(config["mode"])
-        if "no_question" in config and not args.no_question:
-            args.no_question = bool_config(config["no_question"])
-        if "offline" in config and not args.offline:
-            args.offline = bool_config(config["offline"])
-        if "target_coverage_core" in config and args.target_coverage_core is None:
-            args.target_coverage_core = float(config["target_coverage_core"])
-        if "target_coverage_minor" in config and args.target_coverage_minor is None:
-            args.target_coverage_minor = float(config["target_coverage_minor"])
-        if "sla_minutes" in config and args.sla_minutes is None:
-            args.sla_minutes = float(config["sla_minutes"])
-        if "coverage_engine" in config and args.coverage_engine == "auto":
-            args.coverage_engine = str(config["coverage_engine"])
+    apply_config_values(args, load_config(args.config))
+    apply_config_values(args, load_last_session(args.use_last_pref))
+    apply_config_values(args, env_config(), force=True)
     args.target_coverage_core = 0.8 if args.target_coverage_core is None else args.target_coverage_core
     args.target_coverage_minor = 0.2 if args.target_coverage_minor is None else args.target_coverage_minor
     args.sla_minutes = 30.0 if args.sla_minutes is None else args.sla_minutes
@@ -1199,11 +1338,14 @@ def write_config_effective(output: Path, args: argparse.Namespace) -> None:
         "no_question": bool(args.no_question),
         "offline": bool(args.offline),
         "resume": bool(args.resume),
+        "use_last_pref": bool(args.use_last_pref),
+        "save_pref": bool(args.save_pref),
         "target_coverage_core": args.target_coverage_core,
         "target_coverage_minor": args.target_coverage_minor,
         "sla_minutes": args.sla_minutes,
         "coverage_engine": args.coverage_engine,
-        "config": args.config or "",
+        "config": args.config or str(config_home() / "defaults.yaml"),
+        "config_home": str(config_home()),
     }
     (output / "CONFIG_EFFECTIVE.json").write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -1430,6 +1572,8 @@ def analyze(args: argparse.Namespace) -> Path:
         write_mcp_tools(output, mcp_tool_names(repo, files, API_SURFACE_LIMIT))
         write_sla_report(output, args, started_at, coverage, cross_ref_issues)
         write_acceptance(output)
+        if args.save_pref:
+            save_last_session(args)
         return output
     finally:
         temp.cleanup()
@@ -1448,6 +1592,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--target-coverage-minor", type=float, default=None, help="次要模块符号覆盖率阈值")
     parser.add_argument("--coverage-engine", choices=["auto", "regex"], default="auto", help="覆盖率符号引擎；auto 会在可用时记录 tree-sitter parse 结果")
     parser.add_argument("--sla-minutes", type=float, default=None, help="本次分析 SLA 分钟预算")
+    parser.add_argument("--use-last-pref", action="store_true", help="读取配置目录中的 last-session.json 作为默认偏好")
+    parser.add_argument("--save-pref", action="store_true", help="运行成功后保存本次非敏感偏好到 last-session.json")
     return parser
 
 

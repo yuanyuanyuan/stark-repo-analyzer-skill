@@ -13,7 +13,7 @@
 当前版本不是完整实现 `PLAN.md` 的 full-spec 方案，而是实现了一个 **v1 最小可用 skill**：
 
 - 已能被用户用短提示调用，分析 GitHub 或本地仓库。
-- 已能生成分析底料、模块候选、模块深度分析底稿、cross-ref 校验、符号覆盖率门控、tree-sitter 可用性/parse 记录、受众报告、状态报告、SLA/配置记录和本地验收入口。
+- 已能生成分析底料、模块候选、模块深度分析底稿、cross-ref 校验、符号覆盖率门控、tree-sitter 可用性/parse 记录、受众报告、状态报告、SLA/配置记录、env/defaults/last-session 配置链和本地验收入口。
 - 已通过 `claude-video` 的 UAT 回路，并修复了主报告重复、prompt 过长、Markdown 验收等问题。
 - 尚未实现 PLAN 中成本最高的完整智能闭环：真正的模块 subagent 深挖、独立 cross-ref 审稿、tree-sitter grammar query 符号提取、token/retry 预算、13 条硬断言里的 LLM judge / Mermaid / 外链检查。
 
@@ -30,7 +30,7 @@ full PLAN 合规: PARTIAL
 |---|---:|---|
 | v1 必须实现 | 13 | 12 已实现，1 部分实现 |
 | 已废弃 / 已改写 | 5 | 5 已由 ADR 明确处理 |
-| 延后实现 | 14 | 6 已最小实现，8 延后 |
+| 延后实现 | 14 | 7 已最小实现，7 延后 |
 
 ## 1. v1 必须实现
 
@@ -80,7 +80,7 @@ full PLAN 合规: PARTIAL
 | P1 | SLA 预算、token/time 统计、3 次重试 | [ADR-0007](decisions/0007-sla-budget.md) | 部分实现 | 已记录时间 SLA 和 resume；未统计 token 或自动重试 |
 | P1 | 失败模块详细 schema 与报告 `§9` | [ADR-0015](decisions/0015-failed-module-section.md) | 部分实现 | `STATE_REPORT.md` 有 `failed_modules: []`，但无失败详情渲染 |
 | P2 | 外部调研 `03-research.md` | `PLAN.md` 阶段三半 | 未实现 | 原计划默认 OFF，v1 暂未接入 web research |
-| P2 | env 覆盖、`defaults.yaml extends:`、`last-session.json` | [ADR-0012](decisions/0012-compromise-config.md) | 部分实现 | 已支持 `--config` JSON；未做 env、extends、last-session |
+| P2 | env 覆盖、`defaults.yaml extends:`、`last-session.json` | [ADR-0012](decisions/0012-compromise-config.md) | 已实现 | 已支持默认配置、显式 `--config`、`REPO_ANALYZER_*` 覆盖、`extends:` 继承、`--save-pref` / `--use-last-pref` |
 | P2 | tree-sitter chunked 5MB 与 benchmark | [ADR-0014](decisions/0014-treesitter-chunked.md) | 部分实现 | 已串行扫描并跳过 ≥5MiB 文件；未补三仓库 benchmark |
 | P2 | Mermaid 渲染、外链检查、LLM-judge | [ADR-0011](decisions/0011-acceptance-script-enforce.md) | 未实现 | 成本高，且需要额外运行依赖/模型预算 |
 | P2 | 原始 smart-search-mcp 终验收路径 | [`docs/goals/implement-plan-with-ponytail-tdd.md`](../docs/goals/implement-plan-with-ponytail-tdd.md) | 未完成到最新 UAT | 最新 UAT 改为 `claude-video`，不能替代原目标仓库验收 |
@@ -97,9 +97,9 @@ full PLAN 合规: PARTIAL
    - 当前 `07-cross-ref-checks.md` 是确定性校验。
    - 下一步再接独立审稿 subagent 和失败回退循环。
 
-3. **补完整工程配置**
-   - 当前已有 `--config` JSON、`--resume`、`SLA_REPORT.md`。
-   - 下一步再补 env 覆盖、`defaults.yaml extends:`、`last-session.json`。
+3. **补失败模块 §9**
+   - 当前 `STATE_REPORT.md` 已有 `failed_modules`，但最终报告没有条件渲染失败模块专章。
+   - 下一步补 ADR-0015 的报告章节和验收 schema。
 
 4. **补高成本 acceptance**
    - 当前已覆盖本地硬断言。
