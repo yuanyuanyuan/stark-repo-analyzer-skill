@@ -86,11 +86,13 @@ After scanning the codebase, the skill asks you to choose a depth level:
 1. **Clone & Scan** — Clones the repo (or uses a local path), counts effective lines of code by module
 2. **External Research** — Web searches for reviews, comparisons, and architecture discussions; crawls the official website
 3. **Adaptive Q&A** — Generates targeted questions based on project characteristics, not a fixed checklist
-4. **Dynamic Report Structure** — Designs chapter layout based on your answers and project traits
-5. **Parallel Deep Analysis** — Spawns subagents for each core module, analyzing them concurrently
-6. **Cross-Validation** — Verifies conclusions across modules, checks source anchors on core judgments
+4. **Dynamic Report Structure** — Designs chapter layout and writes a lightweight Evidence Plan for each core module before deep reading, including architecture questions, candidate entry points, required evidence types, risk paths, and expected judgment scope
+5. **Parallel Deep Analysis** — Spawns subagents for each core module with its Evidence Plan, so analysis starts from questions and evidence scope instead of a mechanical file list
+6. **Cross-Validation** — Verifies conclusions across modules, checks source anchors on core judgments and whether module drafts answer their Evidence Plan
 7. **Multi-Source Fusion** — Merges research, module analyses, and insights into a cohesive narrative
 8. **Final Report** — Outputs a single Markdown file with Mermaid diagrams
+
+Evidence Plan is a planning-layer Markdown artifact embedded in the existing module plan. It does not add a CLI, JSON schema, Evidence Matrix, automatic generation, or a hard quality gate.
 
 ## Report Output
 
