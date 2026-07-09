@@ -44,6 +44,7 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 - **Evidence Matrix module drafts** — Requires each core module draft to start with a Markdown evidence structure before narrative analysis
 - **Unsupported claims check** — Before the final report, downgrades evidence-free judgments to assumptions, open questions, limitations, or unsupported areas
 - **Risk-path sampling** — Requires each core module to sample relevant risk paths such as error handling, configuration, extension points, cache, concurrency, security boundaries, and generated/vendor/test boundaries
+- **Budget profiles** — Defines Quick, Standard, and Deep modes by evidence depth, risk sampling strength, report length, subagent limits, and research intensity instead of source-line coverage
 - **Competitive positioning** — Compares design philosophy and technical trade-offs against similar projects
 - **Mermaid diagrams** — Architecture overviews, data flows, and per-module sequence diagrams throughout the report
 - **Interactive workflow** — Asks targeted questions based on project traits before diving into analysis
@@ -76,26 +77,28 @@ The skill activates automatically when you mention:
 
 ## Analysis Modes
 
-After scanning the codebase, the skill asks you to choose a depth level:
+After scanning the codebase, the skill asks you to choose a depth level. The modes are cost boundaries, not source-line coverage targets: deeper modes spend more work on evidence, risk paths, secondary modules, alternatives, and research.
 
-| Mode | Source-Anchor Depth (guidance, not a gate) | Best For |
-|------|---------------------------------------------|----------|
-| **Quick** | Key judgments of core modules anchored; secondary modules sampled | Getting a high-level overview |
-| **Standard** (default) | All key judgments of core modules anchored; representative anchors for secondary | Regular architecture analysis |
-| **Deep** | Every design decision anchored, including secondary modules | Studying every design decision |
+| Mode | Evidence Depth | Risk Sampling | Report Length | Subagent Limit | Research Intensity | Best For |
+|------|----------------|---------------|---------------|----------------|--------------------|----------|
+| **Quick** | Core paths and a small set of core modules; representative secondary evidence only | Minimal: at least one most relevant risk path per core module | Short report focused on overview and key conclusions | 2-3 core module subagents; secondary modules may be merged or skipped | Minimal: README/docs first, light search only when needed | Getting a high-level overview |
+| **Standard** (default) | Core modules, key boundaries, and main design decisions | Standard: at least one risk path per core module, with extra samples for important boundaries | Full report with main trade-offs and critical evaluation | 4-6 core module subagents; secondary modules handled in batch | Standard: 3-5 searches plus official site/core docs | Regular architecture analysis |
+| **Deep** | Secondary modules, edge paths, and alternatives in addition to core modules | Enhanced: multiple risk samples where useful, including edge paths and alternative-design risks | Longer report with richer alternatives and engineering maturity analysis | Around 8 subagents; split or merge modules when needed | Full: competitors, official docs, design docs, and first-hand sources | Studying every design decision |
+
+Each run records the selected budget target and an execution summary: actual subagent count, module scope, risk samples, research scope, report length, and any scope reductions. v1.6 does not provide exact token billing or automatic token interruption.
 
 ## How It Works
 
 1. **Clone & Scan** — Clones the repo (or uses a local path), counts effective lines of code by module
 2. **External Research** — Web searches for reviews, comparisons, and architecture discussions; crawls the official website
 3. **Adaptive Q&A** — Generates targeted questions based on project characteristics, not a fixed checklist
-4. **Dynamic Report Structure** — Designs chapter layout and writes a lightweight Evidence Plan for each core module before deep reading, including architecture questions, candidate entry points, required evidence types, risk paths, and expected judgment scope
-5. **Parallel Deep Analysis** — Spawns subagents for each core module with its Evidence Plan, and requires each core module draft to start with a Markdown Evidence Matrix covering role, entry points, data structures, main flow, dependencies, design decisions, risk-path samples, source evidence, and open questions
-6. **Cross-Validation** — Verifies conclusions across modules, checks source anchors, checks whether module drafts answer their Evidence Plan, and uses Evidence Matrix plus risk-path samples to spot gaps or conflicts before synthesis
-7. **Multi-Source Fusion** — Merges research, module analyses, insights, Evidence Matrix comparisons, and risk-path findings into a cohesive narrative; runs a final unsupported-claims check so evidence-free judgments stay out of certain claims
+4. **Dynamic Report Structure** — Designs chapter layout and writes a lightweight Evidence Plan for each core module before deep reading, including architecture questions, candidate entry points, required evidence types, risk paths, expected judgment scope, and the selected budget profile
+5. **Parallel Deep Analysis** — Spawns subagents for each core module with its Evidence Plan and budget profile, and requires each core module draft to start with a Markdown Evidence Matrix covering role, entry points, data structures, main flow, dependencies, design decisions, risk-path samples, source evidence, and open questions
+6. **Cross-Validation** — Verifies conclusions across modules, checks source anchors, checks whether module drafts answer their Evidence Plan, checks budget execution, and uses Evidence Matrix plus risk-path samples to spot gaps or conflicts before synthesis
+7. **Multi-Source Fusion** — Merges research, module analyses, insights, Evidence Matrix comparisons, risk-path findings, and the budget execution summary into a cohesive narrative; runs a final unsupported-claims check so evidence-free judgments stay out of certain claims
 8. **Final Report** — Outputs a single Markdown file with Mermaid diagrams that distinguishes verified conclusions from assumptions, open questions, limitations, and unsupported areas
 
-Evidence Plan is a planning-layer Markdown artifact embedded in the existing module plan. Evidence Matrix is a Markdown structure inside module drafts, used for comparison and synthesis before the final report. Risk-path sampling is a manual module-analysis rule: each core module samples at least one relevant boundary or failure path with source anchors, and final critical evaluation cites those findings. Unsupported Claims is a process-level final-report check: missing evidence is downgraded rather than auto-scored. This v1 workflow does not add a CLI, JSON schema, `module-evidence/*.json`, automatic parsing, automatic generation, automatic risk scanners, LLM judge, or a hard quality gate.
+Evidence Plan is a planning-layer Markdown artifact embedded in the existing module plan. Evidence Matrix is a Markdown structure inside module drafts, used for comparison and synthesis before the final report. Risk-path sampling is a manual module-analysis rule: each core module samples at least one relevant boundary or failure path with source anchors, and final critical evaluation cites those findings. Budget Profiles make Quick, Standard, and Deep differ by evidence depth and cost boundary rather than line coverage. Unsupported Claims is a process-level final-report check: missing evidence is downgraded rather than auto-scored. This v1 workflow does not add a CLI, JSON schema, `module-evidence/*.json`, automatic parsing, automatic generation, automatic risk scanners, exact token metering, automatic token interruption, LLM judge, or a hard quality gate.
 
 ## Report Output
 

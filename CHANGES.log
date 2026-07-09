@@ -1,5 +1,13 @@
 # Changes
 
+## v1.6.0 - 2026-07-09
+
+- Redefined Quick, Standard, and Deep modes as Budget Profiles based on evidence depth, risk sampling strength, report length, subagent limits, and research intensity.
+- Required each analysis to record budget targets and actual execution summaries without introducing exact token accounting or automatic token interruption.
+- Updated the main workflow and subagent prompts so the selected mode drives Evidence Plan scope, evidence reading budget, risk sampling intensity, and report boundaries.
+- Added a v1.6 manual acceptance checklist for comparing the same repository across Quick, Standard, and Deep modes.
+- Updated user documentation to explain where extra analysis cost is spent and kept the workflow free of new CLI, JSON gate, or hard quality gate behavior.
+
 ## v1.5.0 - 2026-07-09
 
 - Added Risk Sampling as a required core-module analysis step.
