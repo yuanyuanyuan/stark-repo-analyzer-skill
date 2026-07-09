@@ -321,11 +321,11 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 **Blocked by:** 补齐 v1.6 验收清单并同步用户文档.
 
-- [ ] Repo Map 被描述为深读前的轻量仓库地图，而不是最终架构结论。
-- [ ] Repo Map 最小字段覆盖目录结构、语言分布、入口候选、manifest、核心文档、测试/generated/vendor 候选和高风险区域候选。
-- [ ] Repo Map 只能提供候选信号，不能直接写最终架构结论。
-- [ ] 明确使用现有系统命令和人工整理，不执行生态命令。
-- [ ] 明确不引入 scan CLI、JSON schema、graphify 硬依赖或符号枚举器。
+- [x] Repo Map 被描述为深读前的轻量仓库地图，而不是最终架构结论。
+- [x] Repo Map 最小字段覆盖目录结构、语言分布、入口候选、manifest、核心文档、测试/generated/vendor 候选和高风险区域候选。
+- [x] Repo Map 只能提供候选信号，不能直接写最终架构结论。
+- [x] 明确使用现有系统命令和人工整理，不执行生态命令。
+- [x] 明确不引入 scan CLI、JSON schema、graphify 硬依赖或符号枚举器。
 
 ## 用 Repo Map 驱动 Evidence Plan 与阅读范围
 
@@ -333,10 +333,10 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 **Blocked by:** 确立 Markdown Repo Map 最小行为契约.
 
-- [ ] 分析前生成 Repo Map，并作为 Evidence Plan 的输入。
-- [ ] Evidence Plan 引用 Repo Map 的候选入口和模块信息。
-- [ ] generated/vendor/test 候选影响后续阅读范围，避免把低价值区域当核心源码。
-- [ ] Repo Map 不越权写成最终架构结论。
+- [x] 分析前生成 Repo Map，并作为 Evidence Plan 的输入。
+- [x] Evidence Plan 引用 Repo Map 的候选入口和模块信息。
+- [x] generated/vendor/test 候选影响后续阅读范围，避免把低价值区域当核心源码。
+- [x] Repo Map 不越权写成最终架构结论。
 
 ## 补齐 v1.7 验收清单并同步用户文档
 
@@ -344,12 +344,12 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 **Blocked by:** 用 Repo Map 驱动 Evidence Plan 与阅读范围.
 
-- [ ] 验收清单覆盖 Repo Map 是否存在并包含必要字段。
-- [ ] 验收清单覆盖 Repo Map 是否只写候选信号，不写最终架构结论。
-- [ ] 验收清单覆盖 Evidence Plan 是否引用 Repo Map 候选入口和模块信息。
-- [ ] 验收清单覆盖 generated/vendor/test 候选是否影响后续阅读范围。
-- [ ] 用户文档说明分析前会生成 Markdown Repo Map。
-- [ ] 用户文档说明 Repo Map 不引入新 CLI、JSON schema 或生态命令。
+- [x] 验收清单覆盖 Repo Map 是否存在并包含必要字段。
+- [x] 验收清单覆盖 Repo Map 是否只写候选信号，不写最终架构结论。
+- [x] 验收清单覆盖 Evidence Plan 是否引用 Repo Map 候选入口和模块信息。
+- [x] 验收清单覆盖 generated/vendor/test 候选是否影响后续阅读范围。
+- [x] 用户文档说明分析前会生成 Markdown Repo Map。
+- [x] 用户文档说明 Repo Map 不引入新 CLI、JSON schema 或生态命令。
 
 ---
 
