@@ -1,0 +1,9 @@
+# Changes
+
+## v1.2.0 - 2026-07-09
+
+- Added the Evidence Plan workflow to repo-analyzer module planning.
+- Required each core module plan to state architecture questions, candidate entry points, required evidence types, risk paths, and expected judgment scope before subagent deep reading.
+- Updated subagent guidance so module drafts answer their Evidence Plan and downgrade unsupported findings to limitations, assumptions, or open questions.
+- Added a v1.2 manual acceptance checklist for validating Evidence Plan behavior.
+- Updated user documentation to describe Evidence Plan as a lightweight Markdown planning-layer enhancement, without adding a CLI, JSON schema, Evidence Matrix, or hard quality gate.
