@@ -1,0 +1,10 @@
+Tue Jul  7 17:55:48 CST 2026
+cwd=/Users/chuzu/projests/stark-repo-analyzer-skill
+codex=/Users/chuzu/.local/bin/codex
+codex_sandbox=danger-full-access
+skill_link=/Users/chuzu/projests/stark-repo-analyzer-skill
+git_head=49d4d8bc3c69c1e1a093c73625045b7938ab6dbc
+?? .workbuddy/
+?? docs/RULES-SOP.md
+?? uat-evidence/run-004/
+?? uat-evidence/run-005/

@@ -21,6 +21,8 @@
 - 运行命令候选：
 {{ commands }}
 
+{{ agent_learning_insights }}
+
 ## 3. 练习题
 - 解释 `{{ first_module }}` 为什么被排在模块清单第一位。
 - 找到 `{{ first_tool }}` 在源码中的文件和行号。
@@ -35,3 +37,5 @@
 - 代码切片：`slices/02-backend.xml`
 - 文档切片：`slices/04-docs.xml`
 {{ failed_section }}
+
+{{ research_section }}

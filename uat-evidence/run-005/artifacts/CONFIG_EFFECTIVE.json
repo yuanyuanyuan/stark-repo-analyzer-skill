@@ -1,0 +1,18 @@
+{
+  "mode": "all",
+  "no_question": true,
+  "offline": false,
+  "resume": false,
+  "use_last_pref": false,
+  "save_pref": false,
+  "target_coverage_core": 0.8,
+  "target_coverage_minor": 0.2,
+  "sla_minutes": 30.0,
+  "coverage_engine": "auto",
+  "agent_mode": "codex",
+  "agent_command": "",
+  "agent_max_attempts": 3,
+  "agent_timeout_seconds": 0,
+  "config": "/Users/chuzu/.config/repo-analyzer/defaults.yaml",
+  "config_home": "/Users/chuzu/.config/repo-analyzer"
+}

@@ -1,0 +1,37 @@
+{
+  "project_name": "/watch",
+  "source": "https://github.com/bradautomates/claude-video",
+  "repo_type": "multi-agent-config",
+  "file_count": 36,
+  "readme_title": "/watch",
+  "readme_points": "- **Give Claude the ability to watch any video.**\n- Claude Code (recommended — auto-updates via marketplace):\n- '''\n- /plugin marketplace add bradautomates/claude-video\n- /plugin install watch@claude-video",
+  "language_line": "Python(17)",
+  "module_table": "| module_001 | skills | 10 |\n| module_002 | tests | 10 |\n| module_003 | [root] | 9 |\n| module_004 | .claude-plugin | 2 |\n| module_005 | hooks | 2 |\n| module_006 | .agents | 1 |\n| module_007 | .codex-plugin | 1 |\n| module_008 | .github | 1 |",
+  "symbol_lines": "- `read_env_file` (`skills/watch/scripts/config.py:15`)\n- `get_config` (`skills/watch/scripts/config.py:46`)\n- `frame_cap` (`skills/watch/scripts/config.py:63`)\n- `is_url` (`skills/watch/scripts/download.py:18`)\n- `resolve_local` (`skills/watch/scripts/download.py:25`)\n- `_pick_subtitle` (`skills/watch/scripts/download.py:42`)\n- `_pick_video` (`skills/watch/scripts/download.py:53`)\n- `fetch_captions` (`skills/watch/scripts/download.py:63`)\n- `_read_info` (`skills/watch/scripts/download.py:96`)\n- `download_url` (`skills/watch/scripts/download.py:113`)\n- `download` (`skills/watch/scripts/download.py:163`)\n- `_scale_filter` (`skills/watch/scripts/frames.py:40`)\n- `_clamp_fps` (`skills/watch/scripts/frames.py:47`)\n- `parse_time` (`skills/watch/scripts/frames.py:53`)\n- `format_time` (`skills/watch/scripts/frames.py:75`)\n- `get_metadata` (`skills/watch/scripts/frames.py:84`)\n- `auto_fps` (`skills/watch/scripts/frames.py:120`)\n- `auto_fps_focus` (`skills/watch/scripts/frames.py:139`)\n- `extract` (`skills/watch/scripts/frames.py:160`)\n- `extract_scene_candidates` (`skills/watch/scripts/frames.py:215`)\n- `_even_indices` (`skills/watch/scripts/frames.py:281`)\n- `parse_timestamps` (`skills/watch/scripts/frames.py:293`)\n- `merge_frames` (`skills/watch/scripts/frames.py:310`)\n- `extract_at_timestamps` (`skills/watch/scripts/frames.py:322`)\n- `_even_sample` (`skills/watch/scripts/frames.py:391`)\n- `_frame_delta` (`skills/watch/scripts/frames.py:413`)\n- `_thumb_frames` (`skills/watch/scripts/frames.py:422`)\n- `dedupe_perceptual` (`skills/watch/scripts/frames.py:461`)\n- `_dedupe_by_deltas` (`skills/watch/scripts/frames.py:477`)\n- `extract_scene_or_uniform` (`skills/watch/scripts/frames.py:508`)",
+  "tool_lines": "- 未识别到 MCP 工具/API 名称",
+  "tool_summary": "- 未识别到对外工具/API",
+  "tool_count": 0,
+  "command_count": 1,
+  "commands": "- `未从常见入口识别到运行命令`",
+  "manifest_section": "未发现常见依赖 manifest。",
+  "manifest_names": "未发现",
+  "slice_links": "- `slices/04-docs.xml`\n- `slices/05-agent-config.xml`\n- `slices/06-tests.xml`\n- `slices/07-config-scripts.xml`\n- `slices/09-dependencies.xml`\n- `slices/12-history-hotspot.txt`",
+  "tree": "- `.agents/plugins/marketplace.json`\n- `.claude-plugin/marketplace.json`\n- `.claude-plugin/plugin.json`\n- `.codex-plugin/plugin.json`\n- `.gitattributes`\n- `.github/workflows/release.yml`\n- `.gitignore`\n- `.skillignore`\n- `AGENTS.md`\n- `CHANGELOG.md`\n- `CLAUDE.md`\n- `LICENSE`\n- `README.md`\n- `dev-sync.sh`\n- `hooks/hooks.json`\n- `hooks/scripts/check-setup.sh`\n- `skills/watch/.skillignore`\n- `skills/watch/SKILL.md`\n- `skills/watch/scripts/build-skill.sh`\n- `skills/watch/scripts/config.py`\n- `skills/watch/scripts/download.py`\n- `skills/watch/scripts/frames.py`\n- `skills/watch/scripts/setup.py`\n- `skills/watch/scripts/transcribe.py`\n- `skills/watch/scripts/watch.py`\n- `skills/watch/scripts/whisper.py`\n- `tests/conftest.py`\n- `tests/test_config.py`\n- `tests/test_dedup.py`\n- `tests/test_download.py`\n- `tests/test_fixtures.py`\n- `tests/test_frames.py`\n- `tests/test_setup.py`\n- `tests/test_timestamps.py`\n- `tests/test_watch.py`\n- `tests/test_whisper.py`",
+  "largest_root": "skills",
+  "largest_count": 10,
+  "first_module": "module_001",
+  "first_tool": "未识别",
+  "first_symbol": "read_env_file",
+  "failed_section": "",
+  "audiences": {
+    "tech-lead": {
+      "audience_section": "## 6. 技术负责人关注\n- 架构形态：`multi-agent-config`，当前实现把类型识别、切片、模块计划、覆盖门控和报告生成放在一条可复现 CLI 中。\n- 维护焦点：最大文件组 `skills` 有 10 个文件，优先审查该组的边界和测试覆盖。\n- API 表面：识别到 0 个对外工具/API，报告已把名称回链到文件和行号。\n- 验收入口：`acceptance/check.sh` 会检查产物完整性、报告差异、引用链、API 名称和门控状态。\n\n### 技术复核动作\n- `未从常见入口识别到运行命令`\n"
+    },
+    "business": {
+      "audience_section": "## 6. 业务负责人关注\n- 可交付能力：当前仓库暴露 0 个对外工具/API，直接决定可包装给用户的能力范围。\n- 采用成本：识别到 1 个运行命令候选，优先从最短可复现路径验证部署和演示。\n- 主要风险：最大模块 `skills` 覆盖 10 个文件，后续业务评审应先确认它是否承载核心价值。\n- 证据入口：先读 `02a-manifest-card.md` 和 `ANALYSIS_REPORT.business.md`，再按需查看 `slices/04-docs.xml`。\n\n### 业务验证动作\n- `未从常见入口识别到运行命令`\n"
+    },
+    "learning": {
+      "audience_section": "## 6. 学习路径\n1. 先读 `README.md` 和 `02a-manifest-card.md`，建立项目用途、语言和入口的第一印象。\n2. 再读 `05-module-ids.yaml`，把 `module_001` 作为第一批学习对象。\n3. 接着打开 `drafts/06-module-module_001.md`，只看关键符号和 MCP 工具/API 表面。\n4. 最后用 `slices/04-docs.xml` 对照文档，用 `slices/02-backend.xml` 对照实现。\n\n### 初学者检查点\n- 能说清项目提供什么能力。\n- 能找到一个运行命令。\n- 能指出一个公开工具/API 来自哪个文件和行号。\n"
+    }
+  }
+}

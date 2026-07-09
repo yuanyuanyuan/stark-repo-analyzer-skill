@@ -1,0 +1,210 @@
+# stark-repo-analyzer 切片维度外置配置
+#
+# 该文件取代原 scripts/repo_analyzer.py 内嵌的 SLICES 常量。
+# version 与 SKILL.md 的 version: 0.1.0 绑定（数字 1），加载时校验，
+# 不一致会 SystemExit。解析由 scripts/repo_types_loader.py 的受限 YAML
+# 子集解析器完成，不依赖 PyYAML（保持 stdlib-only 约束）。
+version: 1
+
+# 未知 repo 类型或类型识别失败时的硬套回退（12 维）
+fallback_dimensions:
+  - name: frontend
+    file: 01-frontend.xml
+    label: 前端代码
+    patterns: ["*.tsx", "*.jsx", "*.vue", "*.svelte", "*.css", "*.scss", "*.html"]
+  - name: backend
+    file: 02-backend.xml
+    label: 后端代码
+    patterns: ["*.py", "*.go", "*.rs", "*.java", "*.ts", "*.js"]
+  - name: database
+    file: 03-database.xml
+    label: 数据库设计
+    patterns: ["*.sql", "*.prisma", "migrations/*", "schema/*"]
+  - name: docs
+    file: 04-docs.xml
+    label: 文档
+    patterns: ["*.md", "*.mdx", "*.rst", "docs/*", "README*"]
+  - name: agent-config
+    file: 05-agent-config.xml
+    label: AI Agent 配置
+    patterns: [".claude/*", ".codex/*", ".cursor/*", ".agents/*", "AGENTS.md", "CLAUDE.md"]
+  - name: tests
+    file: 06-tests.xml
+    label: 测试
+    patterns: ["test/*", "tests/*", "*test.*", "*.spec.*"]
+  - name: config-scripts
+    file: 07-config-scripts.xml
+    label: 配置与脚本
+    patterns: ["Dockerfile*", "docker-compose*", "Makefile", "*.sh", ".github/*", "scripts/*"]
+  - name: api
+    file: 08-api.xml
+    label: 对外 API 表面
+    patterns: ["*.ts", "*.py", "openapi.*", "swagger.*"]
+  - name: build
+    file: 08-build.xml
+    label: 构建配置
+    patterns: ["CMakeLists.txt", "BUILD", "*.gradle", "*.toml", "Makefile"]
+  - name: dependencies
+    file: 09-dependencies.xml
+    label: 第三方依赖清单
+    patterns: ["package.json", "pyproject.toml", "requirements*.txt", "go.mod", "Cargo.toml"]
+  - name: examples
+    file: 10-examples.xml
+    label: 示例与 demo
+    patterns: ["examples/*", "samples/*", "demo/*", "notebooks/*"]
+  - name: assets
+    file: 11-assets.xml
+    label: 静态资源
+    patterns: ["*.png", "*.svg", "*.json", "locales/*", "i18n/*"]
+
+repo_types:
+  web-fullstack:
+    dimension_count: 7
+    dimensions:
+      - name: frontend
+        file: 01-frontend.xml
+        label: 前端代码
+        patterns: ["*.tsx", "*.jsx", "*.vue", "*.svelte", "*.css", "*.scss", "*.html"]
+      - name: backend
+        file: 02-backend.xml
+        label: 后端代码
+        patterns: ["*.py", "*.go", "*.rs", "*.java", "*.ts", "*.js"]
+      - name: database
+        file: 03-database.xml
+        label: 数据库设计
+        patterns: ["*.sql", "*.prisma", "migrations/*", "schema/*"]
+      - name: docs
+        file: 04-docs.xml
+        label: 文档
+        patterns: ["*.md", "*.mdx", "*.rst", "docs/*", "README*"]
+      - name: tests
+        file: 06-tests.xml
+        label: 测试
+        patterns: ["test/*", "tests/*", "*test.*", "*.spec.*"]
+      - name: config-scripts
+        file: 07-config-scripts.xml
+        label: 配置与脚本
+        patterns: ["Dockerfile*", "docker-compose*", "Makefile", "*.sh", ".github/*", "scripts/*"]
+      - name: dependencies
+        file: 09-dependencies.xml
+        label: 第三方依赖清单
+        patterns: ["package.json", "pyproject.toml", "requirements*.txt", "go.mod", "Cargo.toml"]
+  single-lang-CLI:
+    dimension_count: 6
+    dimensions:
+      - name: backend
+        file: 02-backend.xml
+        label: 代码
+        patterns: ["*.py", "*.go", "*.rs", "*.java", "*.ts", "*.js"]
+      - name: docs
+        file: 04-docs.xml
+        label: 文档
+        patterns: ["*.md", "*.mdx", "*.rst", "docs/*", "README*"]
+      - name: tests
+        file: 06-tests.xml
+        label: 测试
+        patterns: ["test/*", "tests/*", "*test.*", "*.spec.*"]
+      - name: config-scripts
+        file: 07-config-scripts.xml
+        label: 配置与脚本
+        patterns: ["Dockerfile*", "Makefile", "*.sh", "scripts/*", ".github/*"]
+      - name: dependencies
+        file: 09-dependencies.xml
+        label: 第三方依赖清单
+        patterns: ["package.json", "pyproject.toml", "requirements*.txt", "go.mod", "Cargo.toml"]
+      - name: examples
+        file: 10-examples.xml
+        label: 示例与 demo
+        patterns: ["examples/*", "samples/*", "demo/*", "notebooks/*"]
+  single-lang-lib:
+    dimension_count: 5
+    dimensions:
+      - name: backend
+        file: 02-backend.xml
+        label: 库代码
+        patterns: ["*.py", "*.go", "*.rs", "*.java", "*.ts", "*.js"]
+      - name: docs
+        file: 04-docs.xml
+        label: 文档
+        patterns: ["*.md", "*.mdx", "*.rst", "docs/*", "README*"]
+      - name: tests
+        file: 06-tests.xml
+        label: 测试
+        patterns: ["test/*", "tests/*", "*test.*", "*.spec.*"]
+      - name: dependencies
+        file: 09-dependencies.xml
+        label: 第三方依赖清单
+        patterns: ["package.json", "pyproject.toml", "requirements*.txt", "go.mod", "Cargo.toml"]
+      - name: examples
+        file: 10-examples.xml
+        label: 示例与 demo
+        patterns: ["examples/*", "samples/*", "demo/*"]
+  multi-agent-config:
+    dimension_count: 5
+    dimensions:
+      - name: docs
+        file: 04-docs.xml
+        label: 文档
+        patterns: ["*.md", "*.mdx", "*.rst", "docs/*", "README*"]
+      - name: agent-config
+        file: 05-agent-config.xml
+        label: AI Agent 配置
+        patterns: [".claude/*", ".codex/*", ".cursor/*", ".agents/*", "AGENTS.md", "CLAUDE.md"]
+      - name: tests
+        file: 06-tests.xml
+        label: 测试
+        patterns: ["test/*", "tests/*", "*test.*", "*.spec.*"]
+      - name: config-scripts
+        file: 07-config-scripts.xml
+        label: 配置与脚本
+        patterns: ["Dockerfile*", "Makefile", "*.sh", "scripts/*", ".github/*"]
+      - name: dependencies
+        file: 09-dependencies.xml
+        label: 第三方依赖清单
+        patterns: ["package.json", "pyproject.toml", "requirements*.txt", "go.mod", "Cargo.toml"]
+  monorepo:
+    dimension_count: 5
+    dimensions:
+      - name: backend
+        file: 02-backend.xml
+        label: 包代码
+        patterns: ["*.py", "*.go", "*.rs", "*.java", "*.ts", "*.js"]
+      - name: docs
+        file: 04-docs.xml
+        label: 文档
+        patterns: ["*.md", "*.mdx", "*.rst", "docs/*", "README*"]
+      - name: tests
+        file: 06-tests.xml
+        label: 测试
+        patterns: ["test/*", "tests/*", "*test.*", "*.spec.*"]
+      - name: config-scripts
+        file: 07-config-scripts.xml
+        label: 配置与脚本
+        patterns: ["Dockerfile*", "Makefile", "*.sh", "scripts/*", ".github/*"]
+      - name: dependencies
+        file: 09-dependencies.xml
+        label: 第三方依赖清单
+        patterns: ["package.json", "pnpm-workspace.yaml", "pyproject.toml", "go.mod", "Cargo.toml"]
+  embedded-kernel:
+    dimension_count: 5
+    dimensions:
+      - name: backend
+        file: 02-backend.xml
+        label: 系统代码
+        patterns: ["*.c", "*.h", "*.cc", "*.cpp", "*.rs"]
+      - name: docs
+        file: 04-docs.xml
+        label: 文档
+        patterns: ["*.md", "*.rst", "docs/*", "README*"]
+      - name: tests
+        file: 06-tests.xml
+        label: 测试
+        patterns: ["test/*", "tests/*", "*test.*"]
+      - name: config-scripts
+        file: 07-config-scripts.xml
+        label: 配置与脚本
+        patterns: ["Makefile", "*.sh", "CMakeLists.txt"]
+      - name: dependencies
+        file: 09-dependencies.xml
+        label: 第三方依赖清单
+        patterns: ["Cargo.toml", "go.mod", "requirements*.txt"]

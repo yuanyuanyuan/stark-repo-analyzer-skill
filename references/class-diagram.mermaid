@@ -1,0 +1,114 @@
+classDiagram
+    %% ===== A 组：配置外置 =====
+    class RepoTypeLoader {
+        +VERSION_BIND: str  %% 绑定 SKILL.md version (0.1.0)
+        +load(repo_type: str) List~Tuple[str,str,Sequence[str]]~
+        +load_all() Dict
+        +fallback() List~Tuple[str,str,Sequence[str]]~
+        +version() int
+        -_parse(text: str) Dict
+        -_validate(data: Dict)
+    }
+
+    %% ===== A 组：ask_user 适配器 =====
+    class AskUserAPI {
+        <<interface>>
+        +ask(questions: List~Question~, timeout_sec: int = 60) List~Answer~
+    }
+    class Question {
+        +key: str
+        +header: str
+        +prompt: str
+        +options: List~Option~
+        +multi_select: bool
+    }
+    class Option {
+        +label: str
+        +description: str
+    }
+    class Answer {
+        +key: str
+        +selected: List~str~
+        +notes: str
+    }
+    class ClaudeCodeAskAdapter {
+        +ask(questions, timeout_sec) List~Answer~
+    }
+    class CodexAskAdapter {
+        +ask(questions, timeout_sec) List~Answer~
+    }
+    class CursorAskAdapter {
+        +ask(questions, timeout_sec) List~Answer~
+    }
+    class RuntimeDetector {
+        +detect() str  %% claude-code | codex | cursor | unknown
+    }
+    class AskUserOrchestrator {
+        +ask_user(questions, no_question: bool, runtime_hint: str) List~Answer~
+        -_degrade_to_defaults() List~Answer~
+        -_read_defaults_yaml() Dict
+    }
+
+    AskUserAPI <|.. ClaudeCodeAskAdapter
+    AskUserAPI <|.. CodexAskAdapter
+    AskUserAPI <|.. CursorAskAdapter
+    AskUserOrchestrator ..> AskUserAPI : uses
+    AskUserOrchestrator ..> RuntimeDetector : detect
+    AskUserOrchestrator ..> Answer : produces
+    Question *-- Option
+    AskUserAPI ..> Question : consumes
+    AskUserAPI ..> Answer : returns
+
+    %% ===== B 组：token 采集 =====
+    class TokenCollector {
+        +record(run_id: str, tokens_in: int, tokens_out: int)
+        +record_attempt(metadata: Dict)
+        +summary() Dict  %% {total_in,total_out,total,budget,per_attempt:[]}
+    }
+
+    %% ===== C 组：研究阶段 =====
+    class ResearchStage {
+        +run(output: Path, args, repo: Path) Optional~Path~
+        -_is_online() bool
+        -_write_report(output, findings) Path
+    }
+
+    %% ===== D 组：acceptance 执行器契约 =====
+    class AcceptanceExecutor {
+        <<interface>>
+        +run(root: Path, strict: bool) List~str~  %% 返回 PASS|.../FAIL|.../WARN|.../SKIP|... 行
+    }
+    class LinkChecker {
+        +run(root, strict) List~str~
+    }
+    class MermaidJudge {
+        +run(root, strict) List~str~
+    }
+    class LLMJudge {
+        +run(root, strict) List~str~
+    }
+    class CheckAggregator {
+        +aggregate(lines: List~str~) Dict  %% {total,pass,fail,warn,skip}
+        +emit_summary()
+    }
+    AcceptanceExecutor <|.. LinkChecker
+    AcceptanceExecutor <|.. MermaidJudge
+    AcceptanceExecutor <|.. LLMJudge
+    CheckAggregator ..> AcceptanceExecutor : invokes
+
+    %% ===== 既有被改动类（标注 Modify） =====
+    class RepoAnalyzer {
+        +SLICES: Dict  %% 【删除】
+        +write_question_answers(output, no_question, mode)  %% 【改为调 ask_user】
+        +write_slices(repo, output, repo_type, files)  %% 【SLICES -> loader】
+        +write_research(output, args, repo)  %% 【新增】
+        +write_acceptance(output)  %% 【调 3 执行器 + 汇总】
+        +write_sla_report(...)  %% 【+token】
+        +write_performance_report(...)  %% 【+token】
+        +run_agent_task(...)  %% 【+TOKENS 标记解析】
+    }
+    RepoAnalyzer ..> RepoTypeLoader : load()
+    RepoAnalyzer ..> AskUserOrchestrator : ask_user()
+    RepoAnalyzer ..> TokenCollector : record()
+    RepoAnalyzer ..> ResearchStage : run()
+    RepoAnalyzer ..> CheckAggregator : aggregate()

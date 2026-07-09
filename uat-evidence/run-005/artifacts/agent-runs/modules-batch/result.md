@@ -1,0 +1,127 @@
+<!-- MODULE_RESULT: module_001 -->
+## Agent 深度分析
+
+**业务角色**：`skills/watch` 是产品核心模块，承担 `/watch <url-or-path>` 的真实执行能力：把视频 URL 或本地视频转成 agent 可消费的“帧路径 + 时间戳转录 + 元信息报告”。这一判断来自 `AGENTS.md` 对模块结构的说明，以及 README 中“paste a URL or local path → captions/download → frames/transcript → Claude reads frames”的工作流描述（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**设计思路**：模块采用“自包含 skill 文件夹”设计，`SKILL.md` 与 `scripts/` 同级，运行时通过 `SKILL_DIR/scripts/...` 定位脚本，避免绑定 Claude Code 专属环境变量。这是跨 Claude Code、Codex、Cursor、Copilot 等宿主安装的关键设计约束（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。实现层面拆成 `watch.py` 编排入口、`download.py` 处理 yt-dlp、本地文件与字幕、`frames.py` 处理 ffmpeg 抽帧、`transcribe.py` 处理 VTT、`whisper.py` 处理 Whisper fallback、`setup.py/config.py` 处理运行前置条件和用户配置（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。
+
+**关键数据流**：主链路是 source → `download.download()` 判断 URL/本地路径 → URL 走 `yt-dlp` 下载视频与英文 VTT，本地路径直接 resolve → `frames.py` 生成 keyframe/scene/uniform/cue frames → `transcribe.py` 优先解析 VTT → 无字幕且允许时进入 Whisper fallback → `watch.py` 输出 Markdown 报告、帧路径和 transcript（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`）。`config.py` 提供 `WATCH_DETAIL` 默认值与 frame cap 映射，`setup.py --check/--json/install` 提供运行前依赖和 API key 状态（证据：`slices/07-config-scripts.xml`）。
+
+**模块协同**：它与测试模块形成强耦合回归关系：`tests/test_watch.py` 直接运行 `skills/watch/scripts/watch.py`，验证 detail 路由、timestamp cue、dedup 默认行为；`tests/test_whisper.py` 覆盖 chunk plan、split、timestamp shift 和部分失败容忍（证据：`slices/06-tests.xml`）。它也与发布/安装模块协同：`build-skill.sh` 只归档 `skills/watch`，GitHub release workflow 调用该脚本生成 `dist/watch.skill`（证据：`slices/07-config-scripts.xml`）。
+
+**架构亮点**：亮点是把复杂视频理解拆成确定性工具链，而不是让模型直接猜：`yt-dlp` 负责获取素材，`ffmpeg` 负责抽帧，VTT/Whisper 负责转录，模型只消费结果。这符合“确定性环节用代码，判断环节交给模型”的项目原则（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。另一个亮点是 token 成本意识很强：detail 模式、frame cap、dedup、focused range 都围绕“让帧预算花在有信息量的位置”设计（证据：`slices/04-docs.xml`、`slices/06-tests.xml`）。
+
+**主要风险**：第一，核心源码的完整后端切片 `slices/02-backend.xml` 在当前目录缺失，模块底稿中大量函数符号只能通过 `slices/07-config-scripts.xml` 和测试切片交叉验证，不能宣称已核对全部源码细节（证据：当前可用切片列表、`slices/07-config-scripts.xml`）。第二，模块依赖外部二进制与网络服务，`ffmpeg`、`yt-dlp`、Groq/OpenAI API 的环境差异会成为主要运行风险；`setup.py` 和 hook 已做前置检测，但这仍是产品可靠性的外部边界（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`）。第三，历史热点显示所有核心文件修改次数均为 1，说明当前历史信号不足，不能用热点判断成熟度或稳定性（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_002 -->
+## Agent 深度分析
+
+**业务角色**：`tests` 是核心质量闸门，不是普通附属测试。它覆盖配置解析、下载参数、抽帧策略、去重、timestamp cue、setup 状态、watch 端到端路由和 Whisper 分块，是保障 `/watch` 跨宿主可用性的主要确定性验证层（证据：`drafts/06-module-module_002.md`、`slices/06-tests.xml`）。
+
+**设计思路**：测试设计明显偏“无网络、可重复、工具链模拟”。`conftest.py` 使用 ffmpeg 合成测试视频，`test_download.py` 捕获 yt-dlp argv 而不是访问真实网络，`test_watch.py` 对本地 clip 跑 `watch.py --no-whisper`，`test_whisper.py` 用合成 mp3 验证分块与时间戳拼接（证据：`slices/06-tests.xml`）。这使测试关注确定性逻辑，而不是被外部网站、API 或网络状态污染。
+
+**关键数据流**：测试数据流从 fixture 合成视频开始，进入 `watch.py` 或底层函数，再断言输出报告中的 detail、engine、frame path、dedup、cue frame 等可观察结果（证据：`slices/06-tests.xml`）。Whisper 测试则从音频大小与时长推导 chunk plan，再验证 split 后 chunk 文件、offset 保留、segment shift 和部分 chunk 失败策略（证据：`slices/06-tests.xml`）。
+
+**模块协同**：该模块直接绑定 `skills/watch/scripts` 的公开行为。`test_config.py` 保护 `WATCH_DETAIL` 和 `frame_cap`；`test_frames.py/test_dedup.py/test_timestamps.py` 保护 frame selection 与 cue merge；`test_setup.py` 保护 `setup.py --json` 的结构化状态；`test_watch.py` 保护入口脚本的用户可见输出（证据：`slices/06-tests.xml`、`drafts/06-module-module_002.md`）。
+
+**架构亮点**：测试覆盖的是产品行为，而不只是函数返回值。例如 `test_default_is_balanced`、`test_transcript_skips_frames`、`test_timestamps_add_cue_frames_to_detail` 直接验证用户会看到的报告语义；这对 agent skill 很重要，因为最终契约是“模型读到什么输出”，不是内部函数如何命名（证据：`slices/06-tests.xml`）。另外，下载测试验证 `--sub-langs en.*`，能防止字幕语言策略回退成不确定行为（证据：`slices/06-tests.xml`）。
+
+**主要风险**：第一，测试 suite 仍依赖本机 ffmpeg，环境缺失会导致测试不可跑；README 也明确测试需要 ffmpeg（证据：`slices/04-docs.xml`、`slices/06-tests.xml`）。第二，网络真实行为、yt-dlp 网站兼容性、Groq/OpenAI API 错误体等并未从当前测试切片看到完整集成覆盖；这是合理取舍，但发布前不能把它等同于端到端线上验证（证据：`slices/06-tests.xml`、`slices/07-config-scripts.xml`）。第三，历史热点只有一次提交记录，无法从历史数据判断哪些测试长期稳定或经常失败（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_003 -->
+## Agent 深度分析
+
+**业务角色**：根模块是项目的产品说明、开发约束和发布协作中枢。`README.md` 面向用户解释 `/watch` 的安装、使用、限制和工作原理；`AGENTS.md` 面向 agent/维护者定义结构、宿主兼容原则和发布规则；`CLAUDE.md` 转向 `AGENTS.md` 作为 Claude 入口（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**设计思路**：根文档把产品定位明确为“slash-command-invoked skill，不是 CLI”。这会反向约束代码组织：`scripts/watch.py` 是实现细节，`skills/watch/SKILL.md` 是跨宿主 contract，`skills/watch` 必须保持自包含，不能把脚本移回 repo root（证据：`slices/05-agent-config.xml`）。README 则以用户工作流组织，从“为什么需要视频输入”到 install、first run、detail modes、limits、develop/release，形成从使用到维护的完整路径（证据：`slices/04-docs.xml`）。
+
+**关键数据流**：根模块不处理运行时数据，但定义了安装与发布数据流：用户通过 Claude Code marketplace、Agent Skills CLI、claude.ai `.skill` bundle 或手动 symlink 安装；开发者通过 `build-skill.sh` 生成 bundle，通过 tag 触发 GitHub release（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`slices/07-config-scripts.xml`）。`dev-sync.sh` 的角色是把工作树同步到 Claude Code plugin cache，用于开发验证（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。
+
+**模块协同**：根模块是所有 minor 配置模块的解释层：它说明 `.claude-plugin`、`.codex-plugin`、`.agents/plugins`、`hooks`、`.github/workflows` 各自服务的安装面和发布面（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。它也与核心 skill 模块保持版本约束：发布时需同步 `SKILL.md`、`.claude-plugin/plugin.json`、`.codex-plugin/plugin.json`（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**架构亮点**：根文档将“跨宿主兼容性”写成硬规则，而不是隐含知识，例如禁止重引入 `${CLAUDE_SKILL_DIR}`、禁止额外 `commands/` wrapper、保持 `SKILL.md + scripts/` 同级。这类文档约束能显著降低 agent 修改时破坏安装面的概率（证据：`slices/05-agent-config.xml`）。
+
+**主要风险**：第一，根模块承载多安装面的事实来源，版本同步依赖人工遵守；虽然文档提示同步版本，但当前证据未显示自动校验版本一致性的测试或 CI（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`slices/07-config-scripts.xml`）。第二，`.gitattributes`、`.gitignore`、`.skillignore` 的具体内容未在当前读取到的主要切片中展开，不能进一步判断打包排除策略是否完备（证据：`drafts/06-module-module_003.md`、`slices/04-docs.xml`）。第三，历史热点信号全部为 1 次，不能识别根文档中真正的维护热点（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_004 -->
+## Agent 深度分析
+
+**业务角色**：`.claude-plugin` 是 Claude Code 安装面的适配模块，负责把同一个 `/watch` skill 暴露到 Claude Code plugin/marketplace 体系中。该角色来自项目结构说明：`.claude-plugin/` 包含 `plugin.json` 与 `marketplace.json`，用于 Claude Code plugin 和 local marketplace（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`drafts/06-module-module_004.md`）。
+
+**设计思路**：该模块不是业务逻辑，而是分发元数据。核心设计是让 Claude Code 安装路径与 self-contained `skills/watch` 运行模型保持一致：文档强调产品 contract 在 `skills/watch/SKILL.md`，Claude Code 只是安装面之一，不能把实现绑定到 Claude Code 专属变量（证据：`slices/05-agent-config.xml`）。
+
+**关键数据流**：用户通过 `/plugin marketplace add bradautomates/claude-video` 和 `/plugin install watch@claude-video` 安装，Claude Code plugin 元数据把仓库中的 watch skill 暴露给宿主；实际运行仍回到 `skills/watch/SKILL.md` 和 `scripts/watch.py`（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**模块协同**：它与 `hooks` 模块协同提供 Claude Code 专属体验：plugin 负责安装入口，SessionStart hook 负责首次/部分配置时的一行状态提示（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。它还与 root/release 协同，发布规则要求 `.claude-plugin/plugin.json` 版本与 `SKILL.md`、`.codex-plugin/plugin.json` 同步（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**架构亮点**：将 Claude Code 适配隔离在 `.claude-plugin`，而不是污染核心 `skills/watch`，有利于保持核心 skill 对 Codex/Cursor/其他 Agent Skills host 的可移植性（证据：`slices/05-agent-config.xml`）。
+
+**主要风险**：当前可读切片没有展开 `.claude-plugin/marketplace.json` 和 `.claude-plugin/plugin.json` 的完整内容，只能确认其存在与职责，不能判断字段、版本号、路径指向是否正确（证据：`drafts/06-module-module_004.md`、`slices/04-docs.xml`、`slices/05-agent-config.xml`）。另外，版本同步是文档规则，当前证据未显示 CI 自动检查该规则（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_005 -->
+## Agent 深度分析
+
+**业务角色**：`hooks` 是 Claude Code 专属的运行前状态提示模块，用于 SessionStart 时检测 `/watch` 的依赖、API key 与配置权限，并在未就绪时给用户一行可执行提示（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`、`drafts/06-module-module_005.md`）。
+
+**设计思路**：hook 的设计重点是“ready 时静默，异常时提示”。`check-setup.sh` 检查 `~/.config/watch/.env` 权限、读取 `GROQ_API_KEY`/`OPENAI_API_KEY`/`SETUP_COMPLETE`、检查 `ffmpeg` 和 `yt-dlp`，完全配置时直接 `exit 0`，否则输出安装或 key 提示（证据：`slices/07-config-scripts.xml`）。这与 `setup.py --check` 的 silent-on-success 设计保持一致（证据：`slices/07-config-scripts.xml`）。
+
+**关键数据流**：SessionStart → hook 读取本机配置文件和 PATH → 判定二进制、API key、setup marker → 输出“需要 ffmpeg + yt-dlp”“ready for videos with native captions”“ready”等状态；真正安装仍交给 `skills/watch/scripts/setup.py`（证据：`slices/07-config-scripts.xml`）。
+
+**模块协同**：hook 与 `setup.py/config.py` 共享同一个运行状态模型：`~/.config/watch/.env`、`SETUP_COMPLETE`、Groq/OpenAI key、ffmpeg/yt-dlp。它服务 Claude Code 安装面，但不影响 Codex/其他宿主的核心执行路径（证据：`slices/07-config-scripts.xml`、`slices/05-agent-config.xml`）。
+
+**架构亮点**：hook 把用户体验问题前置解决：缺依赖、缺 key、权限过宽不会等到 `/watch` 执行中才失败。并且 ready 时静默，避免每次会话噪音（证据：`slices/07-config-scripts.xml`）。
+
+**主要风险**：第一，hook 是 shell 脚本，存在平台命令差异；它用 GNU/BSD `stat` 双路径处理权限，但仍主要服务 Claude Code 本地环境（证据：`slices/07-config-scripts.xml`）。第二，hook 与 Python `setup.py` 各自实现读取 env/key 的逻辑，若未来状态字段变化，可能出现判断分叉；当前证据显示二者都读取同一 `.env` 和 key，但没有看到共享库机制（证据：`slices/07-config-scripts.xml`）。第三，当前底稿未显示 hook 的独立测试文件，测试覆盖主要集中在 Python `setup.py`（证据：`drafts/06-module-module_005.md`、`slices/06-tests.xml`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_006 -->
+## Agent 深度分析
+
+**业务角色**：`.agents` 模块是 Agent Skills marketplace 列表入口，用于让 Codex/Cursor/Copilot/Gemini CLI 等 Agent Skills host 通过 marketplace 发现并安装该仓库中的 watch 插件（证据：`slices/05-agent-config.xml`、`slices/04-docs.xml`、`drafts/06-module-module_006.md`）。
+
+**设计思路**：`.agents/plugins/marketplace.json` 是轻量注册表，而不是执行逻辑。它声明 marketplace 名称 `claude-video`、展示名 `watch`、插件源为 GitHub URL，并标注安装可用、认证在安装时处理、分类为 Productivity（证据：`slices/05-agent-config.xml`）。这与项目“一个 self-contained skill folder 被不同宿主复制/链接”的设计一致（证据：`slices/05-agent-config.xml`、`slices/04-docs.xml`）。
+
+**关键数据流**：Agent Skills CLI 或 host marketplace 读取 `.agents/plugins/marketplace.json` → 定位 GitHub repo → 安装 watch plugin/skill → 最终执行仍进入 `skills/watch/SKILL.md` 与 `scripts/watch.py`（证据：`slices/05-agent-config.xml`、`slices/04-docs.xml`）。
+
+**模块协同**：它与 `.codex-plugin` 一起服务非 Claude Code 安装面；与 root README/AGENTS 协同说明 `npx skills add bradautomates/claude-video -g` 的安装路径；与 core skill 协同要求 `skills/watch` 自包含，避免 marketplace 复制时丢失脚本（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**架构亮点**：该模块把多宿主分发能力降到一个小而稳定的 JSON manifest，业务实现不需要感知具体 host。这种分层能降低对单一平台的耦合（证据：`slices/05-agent-config.xml`）。
+
+**主要风险**：manifest 指向 GitHub URL，安装成功依赖远端仓库可达和 host 对该 marketplace schema 的兼容；当前证据不能验证外部 marketplace 实际解析结果（证据：`slices/05-agent-config.xml`）。历史热点仅显示该文件修改 1 次，不能判断其 schema 是否经历过兼容性修正（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_007 -->
+## Agent 深度分析
+
+**业务角色**：`.codex-plugin` 是 Codex/agents 安装面的 manifest 模块，作用是把 Agent Skills CLI 指向 `./skills/`，让 watch skill 以 self-contained folder 形式被发现和安装（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`drafts/06-module-module_007.md`）。
+
+**设计思路**：它的架构职责是“声明入口，不承载实现”。项目文档明确 `.codex-plugin/plugin.json` 是 Codex/agents manifest，`"skills": "./skills/"` 指向自包含 skill 目录；运行时 path resolution 仍由 `SKILL.md` 基于自身目录完成（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**关键数据流**：Codex 或 Agent Skills CLI 读取 `.codex-plugin/plugin.json` → 发现 `skills/watch/SKILL.md` → 复制/链接整个 `skills/watch` 目录 → 用户调用 `/watch` → `SKILL.md` 启动 `scripts/watch.py`（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**模块协同**：该模块与 core skill 的目录布局强绑定：如果 `SKILL.md` 与 `scripts/` 不再同级，Codex/agents 安装面会复制到不完整 skill。AGENTS 明确禁止把 `SKILL.md` 或 scripts 移回 repo root，这正是在保护 `.codex-plugin` 的安装契约（证据：`slices/05-agent-config.xml`）。发布时它还需要与 `SKILL.md` 和 `.claude-plugin/plugin.json` 版本同步（证据：`slices/04-docs.xml`）。
+
+**架构亮点**：Codex 适配层保持极薄，有助于核心能力在多个 agent runtime 中复用；跨平台差异被限制在 manifest 层，而不是散落到 Python 运行逻辑中（证据：`slices/05-agent-config.xml`）。
+
+**主要风险**：当前可读切片未展开 `.codex-plugin/plugin.json` 的完整 JSON 内容，只能依据 README/AGENTS 判断其职责，不能核对实际字段值和版本号（证据：`drafts/06-module-module_007.md`、`slices/04-docs.xml`、`slices/05-agent-config.xml`）。此外，版本同步缺少当前证据中的自动校验，仍是发布流程风险（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_008 -->
+## Agent 深度分析
+
+**业务角色**：`.github` 模块承担发布自动化职责：当推送 `v*` tag 时，构建 claude.ai 可上传的 `dist/watch.skill`，并将其附加到 GitHub Release（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`、`drafts/06-module-module_008.md`）。
+
+**设计思路**：workflow 很窄，只做 release build，不跑完整测试。它 checkout 仓库，执行 `bash skills/watch/scripts/build-skill.sh`，确认 `dist/watch.skill` 存在，再用 `softprops/action-gh-release@v2` 创建 release 并上传文件（证据：`slices/07-config-scripts.xml`）。这与 `build-skill.sh` 的“只归档 `skills/watch`、限制 200 文件、确保唯一 SKILL.md”形成发布闭环（证据：`slices/07-config-scripts.xml`）。
+
+**关键数据流**：开发者 tag push → GitHub Actions 触发 → `build-skill.sh` 从 `HEAD:skills/watch` 生成 zip → workflow 校验 artifact → GitHub Release 附件发布 → claude.ai 用户下载 `watch.skill` 安装（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`）。
+
+**模块协同**：它与 module_001 的 `build-skill.sh` 紧密协同，发布产物只包含 `skills/watch`；与 root 文档协同，README/AGENTS 均说明 tag 发布流程和版本同步要求（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`slices/07-config-scripts.xml`）。
+
+**架构亮点**：发布动作保持可审计和可复现：同一个本地 build 脚本既供开发者手动构建，也供 CI release 调用，避免 CI 与本地打包逻辑分叉（证据：`slices/07-config-scripts.xml`）。
+
+**主要风险**：第一，workflow 当前证据显示只构建并上传 release artifact，未在发布前运行 pytest，因此 release tag 可能绕过测试质量门（证据：`slices/07-config-scripts.xml`、`slices/06-tests.xml`）。第二，`build-skill.sh` 要求工作树干净，但在 GitHub Actions checkout 后通常满足；本地手动发布时该约束能防止脏构建，但不能替代版本一致性检查（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`）。第三，历史热点只有一次修改，不能判断 release workflow 是否经历过真实发布压力测试（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->

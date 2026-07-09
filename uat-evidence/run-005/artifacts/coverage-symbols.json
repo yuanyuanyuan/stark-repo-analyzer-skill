@@ -1,0 +1,1112 @@
+{
+  "thresholds": {
+    "core": 0.8,
+    "minor": 0.2
+  },
+  "engine": {
+    "engine": "regex-fallback",
+    "tree_sitter_available": false,
+    "tree_sitter_version": "",
+    "scanned_files": 0,
+    "parsed_files": 0,
+    "queried_files": 0,
+    "query_symbols": 0,
+    "skipped_large_files": [],
+    "parse_failures": [],
+    "query_failures": [],
+    "reason": "tree-sitter CLI not found"
+  },
+  "modules": {
+    "module_001": {
+      "root": "skills",
+      "tier": "core",
+      "file_count": 10,
+      "expected_symbols": [
+        {
+          "name": "read_env_file",
+          "file": "skills/watch/scripts/config.py",
+          "line": "15"
+        },
+        {
+          "name": "get_config",
+          "file": "skills/watch/scripts/config.py",
+          "line": "46"
+        },
+        {
+          "name": "frame_cap",
+          "file": "skills/watch/scripts/config.py",
+          "line": "63"
+        },
+        {
+          "name": "is_url",
+          "file": "skills/watch/scripts/download.py",
+          "line": "18"
+        },
+        {
+          "name": "resolve_local",
+          "file": "skills/watch/scripts/download.py",
+          "line": "25"
+        },
+        {
+          "name": "_pick_subtitle",
+          "file": "skills/watch/scripts/download.py",
+          "line": "42"
+        },
+        {
+          "name": "_pick_video",
+          "file": "skills/watch/scripts/download.py",
+          "line": "53"
+        },
+        {
+          "name": "fetch_captions",
+          "file": "skills/watch/scripts/download.py",
+          "line": "63"
+        },
+        {
+          "name": "_read_info",
+          "file": "skills/watch/scripts/download.py",
+          "line": "96"
+        },
+        {
+          "name": "download_url",
+          "file": "skills/watch/scripts/download.py",
+          "line": "113"
+        },
+        {
+          "name": "download",
+          "file": "skills/watch/scripts/download.py",
+          "line": "163"
+        },
+        {
+          "name": "_scale_filter",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "40"
+        },
+        {
+          "name": "_clamp_fps",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "47"
+        },
+        {
+          "name": "parse_time",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "53"
+        },
+        {
+          "name": "format_time",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "75"
+        },
+        {
+          "name": "get_metadata",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "84"
+        },
+        {
+          "name": "auto_fps",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "120"
+        },
+        {
+          "name": "auto_fps_focus",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "139"
+        },
+        {
+          "name": "extract",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "160"
+        },
+        {
+          "name": "extract_scene_candidates",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "215"
+        },
+        {
+          "name": "_even_indices",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "281"
+        },
+        {
+          "name": "parse_timestamps",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "293"
+        },
+        {
+          "name": "merge_frames",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "310"
+        },
+        {
+          "name": "extract_at_timestamps",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "322"
+        },
+        {
+          "name": "_even_sample",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "391"
+        },
+        {
+          "name": "_frame_delta",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "413"
+        },
+        {
+          "name": "_thumb_frames",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "422"
+        },
+        {
+          "name": "dedupe_perceptual",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "461"
+        },
+        {
+          "name": "_dedupe_by_deltas",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "477"
+        },
+        {
+          "name": "extract_scene_or_uniform",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "508"
+        },
+        {
+          "name": "extract_keyframes",
+          "file": "skills/watch/scripts/frames.py",
+          "line": "574"
+        },
+        {
+          "name": "_which",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "60"
+        },
+        {
+          "name": "_check_binaries",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "64"
+        },
+        {
+          "name": "_check_file_permissions",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "71"
+        },
+        {
+          "name": "_read_env_key",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "90"
+        },
+        {
+          "name": "_have_api_key",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "114"
+        },
+        {
+          "name": "is_first_run",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "122"
+        },
+        {
+          "name": "_scaffold_env",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "127"
+        },
+        {
+          "name": "_write_setup_complete",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "140"
+        },
+        {
+          "name": "_brew_pkg",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "164"
+        },
+        {
+          "name": "_install_macos",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "178"
+        },
+        {
+          "name": "_install_hint_linux",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "195"
+        },
+        {
+          "name": "_install_hint_windows",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "205"
+        },
+        {
+          "name": "_status",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "215"
+        },
+        {
+          "name": "cmd_check",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "257"
+        },
+        {
+          "name": "cmd_json",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "292"
+        },
+        {
+          "name": "cmd_install",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "298"
+        },
+        {
+          "name": "main",
+          "file": "skills/watch/scripts/setup.py",
+          "line": "351"
+        },
+        {
+          "name": "_to_seconds",
+          "file": "skills/watch/scripts/transcribe.py",
+          "line": "18"
+        },
+        {
+          "name": "parse_vtt",
+          "file": "skills/watch/scripts/transcribe.py",
+          "line": "22"
+        },
+        {
+          "name": "_dedupe",
+          "file": "skills/watch/scripts/transcribe.py",
+          "line": "53"
+        },
+        {
+          "name": "filter_range",
+          "file": "skills/watch/scripts/transcribe.py",
+          "line": "68"
+        },
+        {
+          "name": "format_transcript",
+          "file": "skills/watch/scripts/transcribe.py",
+          "line": "81"
+        },
+        {
+          "name": "main",
+          "file": "skills/watch/scripts/watch.py",
+          "line": "23"
+        },
+        {
+          "name": "plan_chunks",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "38"
+        },
+        {
+          "name": "load_api_key",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "63"
+        },
+        {
+          "name": "_from_env",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "70"
+        },
+        {
+          "name": "_from_dotenv",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "73"
+        },
+        {
+          "name": "extract_audio",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "113"
+        },
+        {
+          "name": "audio_duration",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "140"
+        },
+        {
+          "name": "split_audio",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "162"
+        },
+        {
+          "name": "_build_multipart",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "199"
+        },
+        {
+          "name": "_post_whisper",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "235"
+        },
+        {
+          "name": "_read_error_body",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "307"
+        },
+        {
+          "name": "_retry_after",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "320"
+        },
+        {
+          "name": "shift_segments",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "330"
+        },
+        {
+          "name": "_segments_from_response",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "348"
+        },
+        {
+          "name": "transcribe_chunks",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "369"
+        },
+        {
+          "name": "_transcribe_file",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "401"
+        },
+        {
+          "name": "transcribe_video",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "412"
+        },
+        {
+          "name": "transcribe_one",
+          "file": "skills/watch/scripts/whisper.py",
+          "line": "440"
+        }
+      ],
+      "covered_symbols": [
+        "_brew_pkg",
+        "_build_multipart",
+        "_check_binaries",
+        "_check_file_permissions",
+        "_clamp_fps",
+        "_dedupe",
+        "_dedupe_by_deltas",
+        "_even_indices",
+        "_even_sample",
+        "_frame_delta",
+        "_from_dotenv",
+        "_from_env",
+        "_have_api_key",
+        "_install_hint_linux",
+        "_install_hint_windows",
+        "_install_macos",
+        "_pick_subtitle",
+        "_pick_video",
+        "_post_whisper",
+        "_read_env_key",
+        "_read_error_body",
+        "_read_info",
+        "_retry_after",
+        "_scaffold_env",
+        "_scale_filter",
+        "_segments_from_response",
+        "_status",
+        "_thumb_frames",
+        "_to_seconds",
+        "_transcribe_file",
+        "_which",
+        "_write_setup_complete",
+        "audio_duration",
+        "auto_fps",
+        "auto_fps_focus",
+        "cmd_check",
+        "cmd_install",
+        "cmd_json",
+        "dedupe_perceptual",
+        "download",
+        "download_url",
+        "extract",
+        "extract_at_timestamps",
+        "extract_audio",
+        "extract_keyframes",
+        "extract_scene_candidates",
+        "extract_scene_or_uniform",
+        "fetch_captions",
+        "filter_range",
+        "format_time",
+        "format_transcript",
+        "frame_cap",
+        "get_config",
+        "get_metadata",
+        "is_first_run",
+        "is_url",
+        "load_api_key",
+        "main",
+        "merge_frames",
+        "parse_time",
+        "parse_timestamps",
+        "parse_vtt",
+        "plan_chunks",
+        "read_env_file",
+        "resolve_local",
+        "shift_segments",
+        "split_audio",
+        "transcribe_chunks",
+        "transcribe_one",
+        "transcribe_video"
+      ],
+      "missing_symbols": [],
+      "coverage_ratio": 1.0,
+      "threshold": 0.8,
+      "status": "PASS"
+    },
+    "module_002": {
+      "root": "tests",
+      "tier": "core",
+      "file_count": 10,
+      "expected_symbols": [
+        {
+          "name": "_run",
+          "file": "tests/conftest.py",
+          "line": "19"
+        },
+        {
+          "name": "build_cut_clip",
+          "file": "tests/conftest.py",
+          "line": "25"
+        },
+        {
+          "name": "build_static_clip",
+          "file": "tests/conftest.py",
+          "line": "55"
+        },
+        {
+          "name": "cut_clip",
+          "file": "tests/conftest.py",
+          "line": "73"
+        },
+        {
+          "name": "static_clip",
+          "file": "tests/conftest.py",
+          "line": "80"
+        },
+        {
+          "name": "test_default_detail_is_balanced",
+          "file": "tests/test_config.py",
+          "line": "5"
+        },
+        {
+          "name": "test_env_overrides_detail",
+          "file": "tests/test_config.py",
+          "line": "11"
+        },
+        {
+          "name": "test_invalid_detail_falls_back_to_default",
+          "file": "tests/test_config.py",
+          "line": "17"
+        },
+        {
+          "name": "test_get_config_keys",
+          "file": "tests/test_config.py",
+          "line": "23"
+        },
+        {
+          "name": "test_frame_cap_mapping",
+          "file": "tests/test_config.py",
+          "line": "30"
+        },
+        {
+          "name": "test_frame_delta_identical_is_zero",
+          "file": "tests/test_dedup.py",
+          "line": "10"
+        },
+        {
+          "name": "test_frame_delta_is_mean_absolute_difference",
+          "file": "tests/test_dedup.py",
+          "line": "14"
+        },
+        {
+          "name": "test_frame_delta_mismatched_length_is_infinite",
+          "file": "tests/test_dedup.py",
+          "line": "20"
+        },
+        {
+          "name": "_touch",
+          "file": "tests/test_dedup.py",
+          "line": "27"
+        },
+        {
+          "name": "test_dedupe_collapses_identical_run",
+          "file": "tests/test_dedup.py",
+          "line": "40"
+        },
+        {
+          "name": "test_dedupe_keeps_all_distinct",
+          "file": "tests/test_dedup.py",
+          "line": "50"
+        },
+        {
+          "name": "test_dedupe_compares_against_last_kept_not_previous",
+          "file": "tests/test_dedup.py",
+          "line": "59"
+        },
+        {
+          "name": "test_dedupe_threshold_is_inclusive",
+          "file": "tests/test_dedup.py",
+          "line": "69"
+        },
+        {
+          "name": "test_dedupe_empty_and_single_are_noops",
+          "file": "tests/test_dedup.py",
+          "line": "79"
+        },
+        {
+          "name": "test_dedupe_mismatched_thumb_count_is_noop",
+          "file": "tests/test_dedup.py",
+          "line": "87"
+        },
+        {
+          "name": "test_thumb_frames_match_candidate_count",
+          "file": "tests/test_dedup.py",
+          "line": "98"
+        },
+        {
+          "name": "test_dedupe_perceptual_collapses_static_clip",
+          "file": "tests/test_dedup.py",
+          "line": "104"
+        },
+        {
+          "name": "test_dedupe_perceptual_keeps_distinct_cuts",
+          "file": "tests/test_dedup.py",
+          "line": "114"
+        },
+        {
+          "name": "test_scene_engine_reports_zero_dedup_on_distinct",
+          "file": "tests/test_dedup.py",
+          "line": "126"
+        },
+        {
+          "name": "test_uniform_fallback_dedupes_static",
+          "file": "tests/test_dedup.py",
+          "line": "134"
+        },
+        {
+          "name": "test_keyframe_uniform_fallback_dedupes_static",
+          "file": "tests/test_dedup.py",
+          "line": "146"
+        },
+        {
+          "name": "test_dedup_false_disables_collapse",
+          "file": "tests/test_dedup.py",
+          "line": "153"
+        },
+        {
+          "name": "_capture_argv",
+          "file": "tests/test_download.py",
+          "line": "22"
+        },
+        {
+          "name": "fake_run",
+          "file": "tests/test_download.py",
+          "line": "32"
+        },
+        {
+          "name": "_sub_langs",
+          "file": "tests/test_download.py",
+          "line": "39"
+        },
+        {
+          "name": "_assert_english_only",
+          "file": "tests/test_download.py",
+          "line": "44"
+        },
+        {
+          "name": "test_fetch_captions_requests_english_only",
+          "file": "tests/test_download.py",
+          "line": "50"
+        },
+        {
+          "name": "test_download_url_requests_english_only",
+          "file": "tests/test_download.py",
+          "line": "56"
+        },
+        {
+          "name": "_Result",
+          "file": "tests/test_download.py",
+          "line": "27"
+        },
+        {
+          "name": "_duration",
+          "file": "tests/test_fixtures.py",
+          "line": "7"
+        },
+        {
+          "name": "test_cut_clip_builds",
+          "file": "tests/test_fixtures.py",
+          "line": "15"
+        },
+        {
+          "name": "test_static_clip_builds",
+          "file": "tests/test_fixtures.py",
+          "line": "20"
+        },
+        {
+          "name": "test_keyframe_engine_on_cut_clip",
+          "file": "tests/test_frames.py",
+          "line": "7"
+        },
+        {
+          "name": "test_keyframe_even_sampling_caps_and_spans",
+          "file": "tests/test_frames.py",
+          "line": "16"
+        },
+        {
+          "name": "test_keyframe_fallback_on_static_clip",
+          "file": "tests/test_frames.py",
+          "line": "28"
+        },
+        {
+          "name": "test_scene_engine_on_cut_clip",
+          "file": "tests/test_frames.py",
+          "line": "36"
+        },
+        {
+          "name": "test_scene_even_sampling_caps_and_spans",
+          "file": "tests/test_frames.py",
+          "line": "45"
+        },
+        {
+          "name": "test_scene_fallback_on_static_clip",
+          "file": "tests/test_frames.py",
+          "line": "63"
+        },
+        {
+          "name": "_run",
+          "file": "tests/test_setup.py",
+          "line": "11"
+        },
+        {
+          "name": "_write_env",
+          "file": "tests/test_setup.py",
+          "line": "29"
+        },
+        {
+          "name": "test_json_reports_watch_detail",
+          "file": "tests/test_setup.py",
+          "line": "37"
+        },
+        {
+          "name": "test_keyless_completed_setup_proceeds_silently",
+          "file": "tests/test_setup.py",
+          "line": "44"
+        },
+        {
+          "name": "test_keyless_first_run_is_encouraged",
+          "file": "tests/test_setup.py",
+          "line": "59"
+        },
+        {
+          "name": "test_key_present_is_ready",
+          "file": "tests/test_setup.py",
+          "line": "70"
+        },
+        {
+          "name": "test_parse_timestamps_mixed_formats",
+          "file": "tests/test_timestamps.py",
+          "line": "9"
+        },
+        {
+          "name": "test_parse_timestamps_strips_and_dedupes",
+          "file": "tests/test_timestamps.py",
+          "line": "13"
+        },
+        {
+          "name": "test_parse_timestamps_empty",
+          "file": "tests/test_timestamps.py",
+          "line": "17"
+        },
+        {
+          "name": "test_parse_timestamps_rejects_garbage",
+          "file": "tests/test_timestamps.py",
+          "line": "22"
+        },
+        {
+          "name": "test_merge_frames_sorts_and_reindexes",
+          "file": "tests/test_timestamps.py",
+          "line": "27"
+        },
+        {
+          "name": "test_merge_frames_keeps_all_pinned",
+          "file": "tests/test_timestamps.py",
+          "line": "41"
+        },
+        {
+          "name": "test_extract_at_timestamps_one_frame_per_point",
+          "file": "tests/test_timestamps.py",
+          "line": "47"
+        },
+        {
+          "name": "test_extract_at_timestamps_drops_out_of_window",
+          "file": "tests/test_timestamps.py",
+          "line": "58"
+        },
+        {
+          "name": "test_extract_at_timestamps_caps_and_spans",
+          "file": "tests/test_timestamps.py",
+          "line": "67"
+        },
+        {
+          "name": "test_extract_at_timestamps_does_not_clobber_detail_frames",
+          "file": "tests/test_timestamps.py",
+          "line": "77"
+        },
+        {
+          "name": "_run",
+          "file": "tests/test_watch.py",
+          "line": "10"
+        },
+        {
+          "name": "test_efficient_uses_keyframe_engine",
+          "file": "tests/test_watch.py",
+          "line": "23"
+        },
+        {
+          "name": "test_balanced_uses_scene_engine",
+          "file": "tests/test_watch.py",
+          "line": "29"
+        },
+        {
+          "name": "test_token_burner_uses_scene_engine",
+          "file": "tests/test_watch.py",
+          "line": "35"
+        },
+        {
+          "name": "test_transcript_skips_frames",
+          "file": "tests/test_watch.py",
+          "line": "40"
+        },
+        {
+          "name": "test_flag_overrides_env",
+          "file": "tests/test_watch.py",
+          "line": "46"
+        },
+        {
+          "name": "test_default_is_balanced",
+          "file": "tests/test_watch.py",
+          "line": "51"
+        },
+        {
+          "name": "test_timestamps_add_cue_frames_to_detail",
+          "file": "tests/test_watch.py",
+          "line": "57"
+        },
+        {
+          "name": "test_timestamps_with_transcript_detail_is_cue_only",
+          "file": "tests/test_watch.py",
+          "line": "63"
+        },
+        {
+          "name": "_frame_lines",
+          "file": "tests/test_watch.py",
+          "line": "70"
+        },
+        {
+          "name": "test_dedup_collapses_static_by_default",
+          "file": "tests/test_watch.py",
+          "line": "74"
+        },
+        {
+          "name": "test_no_dedup_preserves_static_frames",
+          "file": "tests/test_watch.py",
+          "line": "80"
+        },
+        {
+          "name": "test_under_limit_is_single_chunk",
+          "file": "tests/test_whisper.py",
+          "line": "17"
+        },
+        {
+          "name": "test_at_limit_is_single_chunk",
+          "file": "tests/test_whisper.py",
+          "line": "20"
+        },
+        {
+          "name": "test_over_limit_splits_into_enough_chunks",
+          "file": "tests/test_whisper.py",
+          "line": "24"
+        },
+        {
+          "name": "test_chunks_are_contiguous_and_cover_full_duration",
+          "file": "tests/test_whisper.py",
+          "line": "29"
+        },
+        {
+          "name": "test_each_chunk_estimated_under_limit",
+          "file": "tests/test_whisper.py",
+          "line": "39"
+        },
+        {
+          "name": "test_zero_duration_is_single_chunk",
+          "file": "tests/test_whisper.py",
+          "line": "46"
+        },
+        {
+          "name": "test_adds_offset_to_start_and_end",
+          "file": "tests/test_whisper.py",
+          "line": "53"
+        },
+        {
+          "name": "test_zero_offset_is_identity",
+          "file": "tests/test_whisper.py",
+          "line": "60"
+        },
+        {
+          "name": "test_does_not_mutate_input",
+          "file": "tests/test_whisper.py",
+          "line": "64"
+        },
+        {
+          "name": "_make_mp3",
+          "file": "tests/test_whisper.py",
+          "line": "69"
+        },
+        {
+          "name": "test_creates_one_file_per_plan_entry",
+          "file": "tests/test_whisper.py",
+          "line": "85"
+        },
+        {
+          "name": "test_returns_plan_offsets",
+          "file": "tests/test_whisper.py",
+          "line": "95"
+        },
+        {
+          "name": "test_chunks_are_smaller_than_full",
+          "file": "tests/test_whisper.py",
+          "line": "104"
+        },
+        {
+          "name": "test_reads_duration_of_synthesized_clip",
+          "file": "tests/test_whisper.py",
+          "line": "118"
+        },
+        {
+          "name": "test_shifts_and_concatenates_each_chunk",
+          "file": "tests/test_whisper.py",
+          "line": "125"
+        },
+        {
+          "name": "fake_transcribe",
+          "file": "tests/test_whisper.py",
+          "line": "127"
+        },
+        {
+          "name": "test_keeps_successful_chunks_when_one_fails",
+          "file": "tests/test_whisper.py",
+          "line": "137"
+        },
+        {
+          "name": "flaky",
+          "file": "tests/test_whisper.py",
+          "line": "140"
+        },
+        {
+          "name": "test_raises_when_every_chunk_fails",
+          "file": "tests/test_whisper.py",
+          "line": "149"
+        },
+        {
+          "name": "always_fail",
+          "file": "tests/test_whisper.py",
+          "line": "152"
+        },
+        {
+          "name": "TestPlanChunks",
+          "file": "tests/test_whisper.py",
+          "line": "14"
+        },
+        {
+          "name": "TestShiftSegments",
+          "file": "tests/test_whisper.py",
+          "line": "50"
+        },
+        {
+          "name": "TestSplitAudio",
+          "file": "tests/test_whisper.py",
+          "line": "82"
+        },
+        {
+          "name": "TestAudioDuration",
+          "file": "tests/test_whisper.py",
+          "line": "115"
+        },
+        {
+          "name": "TestTranscribeChunks",
+          "file": "tests/test_whisper.py",
+          "line": "122"
+        }
+      ],
+      "covered_symbols": [
+        "TestAudioDuration",
+        "TestPlanChunks",
+        "TestShiftSegments",
+        "TestSplitAudio",
+        "TestTranscribeChunks",
+        "_Result",
+        "_assert_english_only",
+        "_capture_argv",
+        "_duration",
+        "_frame_lines",
+        "_make_mp3",
+        "_run",
+        "_sub_langs",
+        "_touch",
+        "_write_env",
+        "always_fail",
+        "build_cut_clip",
+        "build_static_clip",
+        "cut_clip",
+        "fake_run",
+        "fake_transcribe",
+        "flaky",
+        "static_clip",
+        "test_adds_offset_to_start_and_end",
+        "test_at_limit_is_single_chunk",
+        "test_balanced_uses_scene_engine",
+        "test_chunks_are_contiguous_and_cover_full_duration",
+        "test_chunks_are_smaller_than_full",
+        "test_creates_one_file_per_plan_entry",
+        "test_cut_clip_builds",
+        "test_dedup_collapses_static_by_default",
+        "test_dedup_false_disables_collapse",
+        "test_dedupe_collapses_identical_run",
+        "test_dedupe_compares_against_last_kept_not_previous",
+        "test_dedupe_empty_and_single_are_noops",
+        "test_dedupe_keeps_all_distinct",
+        "test_dedupe_mismatched_thumb_count_is_noop",
+        "test_dedupe_perceptual_collapses_static_clip",
+        "test_dedupe_perceptual_keeps_distinct_cuts",
+        "test_dedupe_threshold_is_inclusive",
+        "test_default_detail_is_balanced",
+        "test_default_is_balanced",
+        "test_does_not_mutate_input",
+        "test_download_url_requests_english_only",
+        "test_each_chunk_estimated_under_limit",
+        "test_efficient_uses_keyframe_engine",
+        "test_env_overrides_detail",
+        "test_extract_at_timestamps_caps_and_spans",
+        "test_extract_at_timestamps_does_not_clobber_detail_frames",
+        "test_extract_at_timestamps_drops_out_of_window",
+        "test_extract_at_timestamps_one_frame_per_point",
+        "test_fetch_captions_requests_english_only",
+        "test_flag_overrides_env",
+        "test_frame_cap_mapping",
+        "test_frame_delta_identical_is_zero",
+        "test_frame_delta_is_mean_absolute_difference",
+        "test_frame_delta_mismatched_length_is_infinite",
+        "test_get_config_keys",
+        "test_invalid_detail_falls_back_to_default",
+        "test_json_reports_watch_detail",
+        "test_keeps_successful_chunks_when_one_fails",
+        "test_key_present_is_ready",
+        "test_keyframe_engine_on_cut_clip",
+        "test_keyframe_even_sampling_caps_and_spans",
+        "test_keyframe_fallback_on_static_clip",
+        "test_keyframe_uniform_fallback_dedupes_static",
+        "test_keyless_completed_setup_proceeds_silently",
+        "test_keyless_first_run_is_encouraged",
+        "test_merge_frames_keeps_all_pinned",
+        "test_merge_frames_sorts_and_reindexes",
+        "test_no_dedup_preserves_static_frames",
+        "test_over_limit_splits_into_enough_chunks",
+        "test_parse_timestamps_empty",
+        "test_parse_timestamps_mixed_formats",
+        "test_parse_timestamps_rejects_garbage",
+        "test_parse_timestamps_strips_and_dedupes",
+        "test_raises_when_every_chunk_fails",
+        "test_reads_duration_of_synthesized_clip",
+        "test_returns_plan_offsets",
+        "test_scene_engine_on_cut_clip",
+        "test_scene_engine_reports_zero_dedup_on_distinct",
+        "test_scene_even_sampling_caps_and_spans",
+        "test_scene_fallback_on_static_clip",
+        "test_shifts_and_concatenates_each_chunk",
+        "test_static_clip_builds",
+        "test_thumb_frames_match_candidate_count",
+        "test_timestamps_add_cue_frames_to_detail",
+        "test_timestamps_with_transcript_detail_is_cue_only",
+        "test_token_burner_uses_scene_engine",
+        "test_transcript_skips_frames",
+        "test_under_limit_is_single_chunk",
+        "test_uniform_fallback_dedupes_static",
+        "test_zero_duration_is_single_chunk",
+        "test_zero_offset_is_identity"
+      ],
+      "missing_symbols": [],
+      "coverage_ratio": 1.0,
+      "threshold": 0.8,
+      "status": "PASS"
+    },
+    "module_003": {
+      "root": "[root]",
+      "tier": "core",
+      "file_count": 9,
+      "expected_symbols": [],
+      "covered_symbols": [],
+      "missing_symbols": [],
+      "coverage_ratio": 1.0,
+      "threshold": 0.8,
+      "status": "PASS"
+    },
+    "module_004": {
+      "root": ".claude-plugin",
+      "tier": "minor",
+      "file_count": 2,
+      "expected_symbols": [],
+      "covered_symbols": [],
+      "missing_symbols": [],
+      "coverage_ratio": 1.0,
+      "threshold": 0.2,
+      "status": "PASS"
+    },
+    "module_005": {
+      "root": "hooks",
+      "tier": "minor",
+      "file_count": 2,
+      "expected_symbols": [],
+      "covered_symbols": [],
+      "missing_symbols": [],
+      "coverage_ratio": 1.0,
+      "threshold": 0.2,
+      "status": "PASS"
+    },
+    "module_006": {
+      "root": ".agents",
+      "tier": "minor",
+      "file_count": 1,
+      "expected_symbols": [],
+      "covered_symbols": [],
+      "missing_symbols": [],
+      "coverage_ratio": 1.0,
+      "threshold": 0.2,
+      "status": "PASS"
+    },
+    "module_007": {
+      "root": ".codex-plugin",
+      "tier": "minor",
+      "file_count": 1,
+      "expected_symbols": [],
+      "covered_symbols": [],
+      "missing_symbols": [],
+      "coverage_ratio": 1.0,
+      "threshold": 0.2,
+      "status": "PASS"
+    },
+    "module_008": {
+      "root": ".github",
+      "tier": "minor",
+      "file_count": 1,
+      "expected_symbols": [],
+      "covered_symbols": [],
+      "missing_symbols": [],
+      "coverage_ratio": 1.0,
+      "threshold": 0.2,
+      "status": "PASS"
+    }
+  }
+}

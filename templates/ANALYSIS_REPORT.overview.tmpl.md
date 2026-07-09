@@ -30,6 +30,8 @@ flowchart TD
 |---|---|---:|
 {{ module_table }}
 
+{{ agent_insight_summary }}
+
 ## 4. API 与运行入口
 ### 对外工具/API 表面
 {{ tool_lines }}
@@ -45,3 +47,5 @@ flowchart TD
 python3 scripts/repo_analyzer.py {{ source }} --output analysis --mode all --no-question
 ```
 {{ failed_section }}
+
+{{ research_section }}

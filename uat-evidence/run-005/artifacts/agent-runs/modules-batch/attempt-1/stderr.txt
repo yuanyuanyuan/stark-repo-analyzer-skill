@@ -1,0 +1,2981 @@
+OpenAI Codex v0.142.5
+--------
+workdir: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+model: gpt-5.5
+provider: custom
+approval: never
+sandbox: read-only
+reasoning effort: low
+reasoning summaries: none
+session id: 019f3c03-ea9c-7172-8255-093b246937e5
+--------
+user
+你是一位资深架构师，请基于已生成的 repomix 切片和模块底稿，对所有模块做判断型深度分析。
+
+## 输入
+- 分析目录: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+- 模块清单: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/05-module-ids.yaml
+- 模块底稿目录: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts
+- 主要证据切片: `slices/02-backend.xml`、`slices/04-docs.xml`、`slices/06-tests.xml`、`slices/09-dependencies.xml`、`slices/12-history-hotspot.txt`
+
+## 模块任务
+### MODULE module_001
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_001.md
+- 模块分组: skills
+- 模块层级: core
+- 需在 repomix 切片中核对的源码路径:
+- skills/watch/.skillignore
+- skills/watch/SKILL.md
+- skills/watch/scripts/build-skill.sh
+- skills/watch/scripts/config.py
+- skills/watch/scripts/download.py
+- skills/watch/scripts/frames.py
+- skills/watch/scripts/setup.py
+- skills/watch/scripts/transcribe.py
+- skills/watch/scripts/watch.py
+- skills/watch/scripts/whisper.py
+
+### MODULE module_002
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_002.md
+- 模块分组: tests
+- 模块层级: core
+- 需在 repomix 切片中核对的源码路径:
+- tests/conftest.py
+- tests/test_config.py
+- tests/test_dedup.py
+- tests/test_download.py
+- tests/test_fixtures.py
+- tests/test_frames.py
+- tests/test_setup.py
+- tests/test_timestamps.py
+- tests/test_watch.py
+- tests/test_whisper.py
+
+### MODULE module_003
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_003.md
+- 模块分组: [root]
+- 模块层级: core
+- 需在 repomix 切片中核对的源码路径:
+- .gitattributes
+- .gitignore
+- .skillignore
+- AGENTS.md
+- CHANGELOG.md
+- CLAUDE.md
+- LICENSE
+- README.md
+- dev-sync.sh
+
+### MODULE module_004
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_004.md
+- 模块分组: .claude-plugin
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- .claude-plugin/marketplace.json
+- .claude-plugin/plugin.json
+
+### MODULE module_005
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_005.md
+- 模块分组: hooks
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- hooks/hooks.json
+- hooks/scripts/check-setup.sh
+
+### MODULE module_006
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_006.md
+- 模块分组: .agents
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- .agents/plugins/marketplace.json
+
+### MODULE module_007
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_007.md
+- 模块分组: .codex-plugin
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- .codex-plugin/plugin.json
+
+### MODULE module_008
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_008.md
+- 模块分组: .github
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- .github/workflows/release.yml
+
+
+## 要求
+- 不要调用任何 skill，不要运行 repo_analyzer.py，不要重新生成 analysis；只读取上面列出的分析目录文件。
+- 不要写入任何文件，不要修改 analysis 目录；只在最终回复中返回 Markdown。
+- 不要在分析目录根部直接读取源码路径；源码内容来自 `slices/*.xml` 中的 `<file path="...">`。
+- 只基于分析目录中的证据判断，不要编造源码事实。
+- 补充业务角色、设计思路、关键数据流、模块协同、架构亮点和风险。
+- 每个关键判断必须引用已有证据文件路径。
+- 每个模块必须按下面格式输出，方便脚本拆分；不得省略任何模块：
+
+<!-- MODULE_RESULT: module_xxx -->
+## Agent 深度分析
+
+...该模块分析...
+<!-- END_MODULE_RESULT -->
+
+warning: Under-development features enabled: default_mode_request_user_input. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/chuzu/.codex/config.toml.
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+hook: SessionStart
+hook: SessionStart
+hook: SessionStart Completed
+hook: SessionStart Completed
+hook: UserPromptSubmit
+hook: UserPromptSubmit
+hook: UserPromptSubmit
+hook: UserPromptSubmit
+hook: UserPromptSubmit Completed
+hook: UserPromptSubmit Completed
+hook: UserPromptSubmit Completed
+hook: UserPromptSubmit Completed
+codex
+📝 **原始输入**：
+
+```text
+你是一位资深架构师，请基于已生成的 repomix 切片和模块底稿，对所有模块做判断型深度分析。
+
+## 输入
+- 分析目录: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+- 模块清单: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/05-module-ids.yaml
+- 模块底稿目录: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts
+- 主要证据切片: `slices/02-backend.xml`、`slices/04-docs.xml`、`slices/06-tests.xml`、`slices/09-dependencies.xml`、`slices/12-history-hotspot.txt`
+
+## 模块任务
+### MODULE module_001
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_001.md
+- 模块分组: skills
+- 模块层级: core
+- 需在 repomix 切片中核对的源码路径:
+- skills/watch/.skillignore
+- skills/watch/SKILL.md
+- skills/watch/scripts/build-skill.sh
+- skills/watch/scripts/config.py
+- skills/watch/scripts/download.py
+- skills/watch/scripts/frames.py
+- skills/watch/scripts/setup.py
+- skills/watch/scripts/transcribe.py
+- skills/watch/scripts/watch.py
+- skills/watch/scripts/whisper.py
+
+### MODULE module_002
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_002.md
+- 模块分组: tests
+- 模块层级: core
+- 需在 repomix 切片中核对的源码路径:
+- tests/conftest.py
+- tests/test_config.py
+- tests/test_dedup.py
+- tests/test_download.py
+- tests/test_fixtures.py
+- tests/test_frames.py
+- tests/test_setup.py
+- tests/test_timestamps.py
+- tests/test_watch.py
+- tests/test_whisper.py
+
+### MODULE module_003
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_003.md
+- 模块分组: [root]
+- 模块层级: core
+- 需在 repomix 切片中核对的源码路径:
+- .gitattributes
+- .gitignore
+- .skillignore
+- AGENTS.md
+- CHANGELOG.md
+- CLAUDE.md
+- LICENSE
+- README.md
+- dev-sync.sh
+
+### MODULE module_004
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_004.md
+- 模块分组: .claude-plugin
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- .claude-plugin/marketplace.json
+- .claude-plugin/plugin.json
+
+### MODULE module_005
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_005.md
+- 模块分组: hooks
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- hooks/hooks.json
+- hooks/scripts/check-setup.sh
+
+### MODULE module_006
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_006.md
+- 模块分组: .agents
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- .agents/plugins/marketplace.json
+
+### MODULE module_007
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_007.md
+- 模块分组: .codex-plugin
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- .codex-plugin/plugin.json
+
+### MODULE module_008
+- 模块底稿: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts/06-module-module_008.md
+- 模块分组: .github
+- 模块层级: minor
+- 需在 repomix 切片中核对的源码路径:
+- .github/workflows/release.yml
+
+
+## 要求
+- 不要调用任何 skill，不要运行 repo_analyzer.py，不要重新生成 analysis；只读取上面列出的分析目录文件。
+- 不要写入任何文件，不要修改 analysis 目录；只在最终回复中返回 Markdown。
+- 不要在分析目录根部直接读取源码路径；源码内容来自 `slices/*.xml` 中的 `<file path="...">`。
+- 只基于分析目录中的证据判断，不要编造源码事实。
+- 补充业务角色、设计思路、关键数据流、模块协同、架构亮点和风险。
+- 每个关键判断必须引用已有证据文件路径。
+- 每个模块必须按下面格式输出，方便脚本拆分；不得省略任何模块：
+
+<!-- MODULE_RESULT: module_xxx -->
+## Agent 深度分析
+
+...该模块分析...
+<!-- END_MODULE_RESULT -->
+```
+
+🔄 **优化后的理解**：
+- **Context（上下文）**：你已有一个仓库分析产物目录，包含模块清单、模块底稿和 repomix 切片；当前任务是做架构师级别的判断型模块分析，而不是重新分析源码仓库。
+- **Task（任务）**：只读取指定分析目录中的模块底稿与证据切片，逐一分析 module_001 到 module_008，补充业务角色、设计思路、数据流、协同关系、亮点和风险，并为关键判断标注证据路径。
+- **Format（格式）**：最终只返回 Markdown；每个模块必须使用 `<!-- MODULE_RESULT: module_xxx -->` 与 `<!-- END_MODULE_RESULT -->` 包裹，且不得省略任何模块。
+
+✅ **优化后的完整提示词**：
+
+```markdown
+<role>
+你是一位资深软件架构师，负责基于已有 repomix 切片与模块底稿，对仓库模块做判断型深度分析。你的质量标准是：证据约束、架构判断明确、风险可追溯、输出可被脚本拆分。
+</role>
+
+<input>
+分析目录: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+模块清单: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/05-module-ids.yaml
+模块底稿目录: /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/drafts
+主要证据切片:
+- slices/02-backend.xml
+- slices/04-docs.xml
+- slices/06-tests.xml
+- slices/09-dependencies.xml
+- slices/12-history-hotspot.txt
+
+模块范围:
+- module_001: skills, core
+- module_002: tests, core
+- module_003: [root], core
+- module_004: .claude-plugin, minor
+- module_005: hooks, minor
+- module_006: .agents, minor
+- module_007: .codex-plugin, minor
+- module_008: .github, minor
+</input>
+
+<goal>
+对所有 8 个模块输出判断型深度分析，补充模块业务角色、设计思路、关键数据流、模块协同、架构亮点和风险，并保证所有关键判断都能追溯到指定证据文件。
+</goal>
+
+<scope>
+只读取指定分析目录中的文件，包括模块清单、模块底稿和 listed repomix 切片。
+不要调用任何 skill。
+不要运行 repo_analyzer.py。
+不要重新生成 analysis。
+不要写入或修改任何文件。
+不要直接读取分析目录根部的源码路径；源码事实只能来自 slices/*.xml 中的 <file path="...">。
+不要基于常识编造源码事实。
+</scope>
+
+<instructions>
+1. 读取模块清单、每个模块底稿、指定 repomix 切片和热点文件。
+2. 在切片中按 <file path="..."> 核对用户列出的源码路径。
+3. 将底稿结论与切片证据交叉验证。
+4. 对每个模块输出架构判断，至少覆盖：
+   - 业务角色
+   - 设计思路
+   - 关键数据流
+   - 模块协同
+   - 架构亮点
+   - 主要风险
+   - 证据依据
+5. 每个关键判断必须引用已有证据文件路径。
+</instructions>
+
+<output_format>
+最终只返回 Markdown。
+每个模块必须严格使用以下包裹格式，方便脚本拆分：
+
+<!-- MODULE_RESULT: module_xxx -->
+## Agent 深度分析
+
+[该模块分析内容]
+<!-- END_MODULE_RESULT -->
+</output_format>
+
+<success_criteria>
+- 8 个模块全部输出，不省略。
+- 每个模块都有判断型分析，而不是复述文件列表。
+- 每个关键判断都引用证据文件路径。
+- 不出现未被证据支持的源码事实。
+- 不写入文件、不运行生成脚本、不调用 skill。
+</success_criteria>
+
+<verification_plan>
+通过只读命令检查指定文件是否存在并抽取必要内容；用切片中的 <file path="..."> 与模块路径逐项对照；最终人工核查输出块数量为 8，且每块都有证据路径引用。
+</verification_plan>
+```
+
+--- 
+
+我会只读取你列出的 artifacts、drafts 和 slices 文件，不调用 skill、不写文件，也不直接打开源码路径。接下来先确认文件结构和证据切片里包含的模块路径，再做逐模块判断。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/sh -lc "pwd && rg --files /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts | sed 's#"'^#/##'"'" in /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+ exited 1 in 0ms:
+/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+sed: 1: "s#^#/##
+": bad flag in substitute command: '#'
+
+hook: PostToolUse
+hook: PostToolUse Completed
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/sh -lc "sed -n '1,220p' 05-module-ids.yaml" in /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+ succeeded in 0ms:
+modules:
+  - id: module_001
+    name: skills
+    tier: core
+    storyline_position: 1
+    file_count: 10
+  - id: module_002
+    name: tests
+    tier: core
+    storyline_position: 2
+    file_count: 10
+  - id: module_003
+    name: [root]
+    tier: core
+    storyline_position: 3
+    file_count: 9
+  - id: module_004
+    name: .claude-plugin
+    tier: minor
+    storyline_position: 4
+    file_count: 2
+  - id: module_005
+    name: hooks
+    tier: minor
+    storyline_position: 5
+    file_count: 2
+  - id: module_006
+    name: .agents
+    tier: minor
+    storyline_position: 6
+    file_count: 1
+  - id: module_007
+    name: .codex-plugin
+    tier: minor
+    storyline_position: 7
+    file_count: 1
+  - id: module_008
+    name: .github
+    tier: minor
+    storyline_position: 8
+    file_count: 1
+
+hook: PostToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/sh -lc "for f in drafts/06-module-module_00{1..8}.md; do printf '\\n--- %s ---\\n' \""'$f"; sed -n '"'1,240p' \""'$f"; done' in /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+ succeeded in 0ms:
+
+--- drafts/06-module-module_001.md ---
+# module_001 skills
+
+- 文件数: 10
+- 分层: core
+
+## 角色
+该模块由确定性扫描按路径、公开符号和对外工具/API 生成，是后续 agent 判断业务价值与架构风险的分析底稿。
+
+## 深度分析
+- 模块边界：`skills` 路径组，共 10 个文件。
+- 分析优先级：核心模块，必须优先核对入口、测试和对外 API。
+- 业务假设：若该模块包含运行入口或对外 API，它就是报告后续判断的主要证据来源；否则先按支撑模块处理。
+
+## 关键文件
+- `skills/watch/.skillignore`
+- `skills/watch/SKILL.md`
+- `skills/watch/scripts/build-skill.sh`
+- `skills/watch/scripts/config.py`
+- `skills/watch/scripts/download.py`
+- `skills/watch/scripts/frames.py`
+- `skills/watch/scripts/setup.py`
+- `skills/watch/scripts/transcribe.py`
+- `skills/watch/scripts/watch.py`
+- `skills/watch/scripts/whisper.py`
+
+## 关键路径
+- 从 `skills/watch/scripts/config.py:15` 的 `read_env_file` 开始核对调用链。
+- 从 `skills/watch/scripts/config.py:46` 的 `get_config` 开始核对调用链。
+- 从 `skills/watch/scripts/config.py:63` 的 `frame_cap` 开始核对调用链。
+- 从 `skills/watch/scripts/download.py:18` 的 `is_url` 开始核对调用链。
+- 从 `skills/watch/scripts/download.py:25` 的 `resolve_local` 开始核对调用链。
+- 从 `skills/watch/scripts/download.py:42` 的 `_pick_subtitle` 开始核对调用链。
+- 从 `skills/watch/scripts/download.py:53` 的 `_pick_video` 开始核对调用链。
+- 从 `skills/watch/scripts/download.py:63` 的 `fetch_captions` 开始核对调用链。
+
+## 关键符号
+- `read_env_file` (skills/watch/scripts/config.py:15)
+- `get_config` (skills/watch/scripts/config.py:46)
+- `frame_cap` (skills/watch/scripts/config.py:63)
+- `is_url` (skills/watch/scripts/download.py:18)
+- `resolve_local` (skills/watch/scripts/download.py:25)
+- `_pick_subtitle` (skills/watch/scripts/download.py:42)
+- `_pick_video` (skills/watch/scripts/download.py:53)
+- `fetch_captions` (skills/watch/scripts/download.py:63)
+- `_read_info` (skills/watch/scripts/download.py:96)
+- `download_url` (skills/watch/scripts/download.py:113)
+- `download` (skills/watch/scripts/download.py:163)
+- `_scale_filter` (skills/watch/scripts/frames.py:40)
+- `_clamp_fps` (skills/watch/scripts/frames.py:47)
+- `parse_time` (skills/watch/scripts/frames.py:53)
+- `format_time` (skills/watch/scripts/frames.py:75)
+- `get_metadata` (skills/watch/scripts/frames.py:84)
+- `auto_fps` (skills/watch/scripts/frames.py:120)
+- `auto_fps_focus` (skills/watch/scripts/frames.py:139)
+- `extract` (skills/watch/scripts/frames.py:160)
+- `extract_scene_candidates` (skills/watch/scripts/frames.py:215)
+- `_even_indices` (skills/watch/scripts/frames.py:281)
+- `parse_timestamps` (skills/watch/scripts/frames.py:293)
+- `merge_frames` (skills/watch/scripts/frames.py:310)
+- `extract_at_timestamps` (skills/watch/scripts/frames.py:322)
+- `_even_sample` (skills/watch/scripts/frames.py:391)
+- `_frame_delta` (skills/watch/scripts/frames.py:413)
+- `_thumb_frames` (skills/watch/scripts/frames.py:422)
+- `dedupe_perceptual` (skills/watch/scripts/frames.py:461)
+- `_dedupe_by_deltas` (skills/watch/scripts/frames.py:477)
+- `extract_scene_or_uniform` (skills/watch/scripts/frames.py:508)
+- `extract_keyframes` (skills/watch/scripts/frames.py:574)
+- `_which` (skills/watch/scripts/setup.py:60)
+- `_check_binaries` (skills/watch/scripts/setup.py:64)
+- `_check_file_permissions` (skills/watch/scripts/setup.py:71)
+- `_read_env_key` (skills/watch/scripts/setup.py:90)
+- `_have_api_key` (skills/watch/scripts/setup.py:114)
+- `is_first_run` (skills/watch/scripts/setup.py:122)
+- `_scaffold_env` (skills/watch/scripts/setup.py:127)
+- `_write_setup_complete` (skills/watch/scripts/setup.py:140)
+- `_brew_pkg` (skills/watch/scripts/setup.py:164)
+- `_install_macos` (skills/watch/scripts/setup.py:178)
+- `_install_hint_linux` (skills/watch/scripts/setup.py:195)
+- `_install_hint_windows` (skills/watch/scripts/setup.py:205)
+- `_status` (skills/watch/scripts/setup.py:215)
+- `cmd_check` (skills/watch/scripts/setup.py:257)
+- `cmd_json` (skills/watch/scripts/setup.py:292)
+- `cmd_install` (skills/watch/scripts/setup.py:298)
+- `main` (skills/watch/scripts/setup.py:351)
+- `_to_seconds` (skills/watch/scripts/transcribe.py:18)
+- `parse_vtt` (skills/watch/scripts/transcribe.py:22)
+- `_dedupe` (skills/watch/scripts/transcribe.py:53)
+- `filter_range` (skills/watch/scripts/transcribe.py:68)
+- `format_transcript` (skills/watch/scripts/transcribe.py:81)
+- `main` (skills/watch/scripts/watch.py:23)
+- `plan_chunks` (skills/watch/scripts/whisper.py:38)
+- `load_api_key` (skills/watch/scripts/whisper.py:63)
+- `_from_env` (skills/watch/scripts/whisper.py:70)
+- `_from_dotenv` (skills/watch/scripts/whisper.py:73)
+- `extract_audio` (skills/watch/scripts/whisper.py:113)
+- `audio_duration` (skills/watch/scripts/whisper.py:140)
+- `split_audio` (skills/watch/scripts/whisper.py:162)
+- `_build_multipart` (skills/watch/scripts/whisper.py:199)
+- `_post_whisper` (skills/watch/scripts/whisper.py:235)
+- `_read_error_body` (skills/watch/scripts/whisper.py:307)
+- `_retry_after` (skills/watch/scripts/whisper.py:320)
+- `shift_segments` (skills/watch/scripts/whisper.py:330)
+- `_segments_from_response` (skills/watch/scripts/whisper.py:348)
+- `transcribe_chunks` (skills/watch/scripts/whisper.py:369)
+- `_transcribe_file` (skills/watch/scripts/whisper.py:401)
+- `transcribe_video` (skills/watch/scripts/whisper.py:412)
+- `transcribe_one` (skills/watch/scripts/whisper.py:440)
+
+## MCP 工具/API 表面
+- 未识别到 MCP 工具
+
+## 风险与缺口
+- 缺少可见测试文件，变更该模块前应先补最小回归验证。
+- 公开符号较多，后续人工深挖应优先确认职责边界是否过宽。
+
+## 证据
+- 模块 ID 来源：`05-module-ids.yaml`
+- 代码切片：`slices/02-backend.xml`
+- 依赖切片：`slices/09-dependencies.xml`
+- 历史热点：`slices/12-history-hotspot.txt`
+
+## 覆盖率明细
+| 文件组 | 文件数 | 已读方式 |
+|---|---:|---|
+| skills | 10 | deterministic deep scan |
+
+--- drafts/06-module-module_002.md ---
+# module_002 tests
+
+- 文件数: 10
+- 分层: core
+
+## 角色
+该模块由确定性扫描按路径、公开符号和对外工具/API 生成，是后续 agent 判断业务价值与架构风险的分析底稿。
+
+## 深度分析
+- 模块边界：`tests` 路径组，共 10 个文件。
+- 分析优先级：核心模块，必须优先核对入口、测试和对外 API。
+- 业务假设：若该模块包含运行入口或对外 API，它就是报告后续判断的主要证据来源；否则先按支撑模块处理。
+
+## 关键文件
+- `tests/conftest.py`
+- `tests/test_config.py`
+- `tests/test_dedup.py`
+- `tests/test_download.py`
+- `tests/test_fixtures.py`
+- `tests/test_frames.py`
+- `tests/test_setup.py`
+- `tests/test_timestamps.py`
+- `tests/test_watch.py`
+- `tests/test_whisper.py`
+
+## 关键路径
+- 从 `tests/conftest.py:19` 的 `_run` 开始核对调用链。
+- 从 `tests/conftest.py:25` 的 `build_cut_clip` 开始核对调用链。
+- 从 `tests/conftest.py:55` 的 `build_static_clip` 开始核对调用链。
+- 从 `tests/conftest.py:73` 的 `cut_clip` 开始核对调用链。
+- 从 `tests/conftest.py:80` 的 `static_clip` 开始核对调用链。
+- 从 `tests/test_config.py:5` 的 `test_default_detail_is_balanced` 开始核对调用链。
+- 从 `tests/test_config.py:11` 的 `test_env_overrides_detail` 开始核对调用链。
+- 从 `tests/test_config.py:17` 的 `test_invalid_detail_falls_back_to_default` 开始核对调用链。
+
+## 关键符号
+- `_run` (tests/conftest.py:19)
+- `build_cut_clip` (tests/conftest.py:25)
+- `build_static_clip` (tests/conftest.py:55)
+- `cut_clip` (tests/conftest.py:73)
+- `static_clip` (tests/conftest.py:80)
+- `test_default_detail_is_balanced` (tests/test_config.py:5)
+- `test_env_overrides_detail` (tests/test_config.py:11)
+- `test_invalid_detail_falls_back_to_default` (tests/test_config.py:17)
+- `test_get_config_keys` (tests/test_config.py:23)
+- `test_frame_cap_mapping` (tests/test_config.py:30)
+- `test_frame_delta_identical_is_zero` (tests/test_dedup.py:10)
+- `test_frame_delta_is_mean_absolute_difference` (tests/test_dedup.py:14)
+- `test_frame_delta_mismatched_length_is_infinite` (tests/test_dedup.py:20)
+- `_touch` (tests/test_dedup.py:27)
+- `test_dedupe_collapses_identical_run` (tests/test_dedup.py:40)
+- `test_dedupe_keeps_all_distinct` (tests/test_dedup.py:50)
+- `test_dedupe_compares_against_last_kept_not_previous` (tests/test_dedup.py:59)
+- `test_dedupe_threshold_is_inclusive` (tests/test_dedup.py:69)
+- `test_dedupe_empty_and_single_are_noops` (tests/test_dedup.py:79)
+- `test_dedupe_mismatched_thumb_count_is_noop` (tests/test_dedup.py:87)
+- `test_thumb_frames_match_candidate_count` (tests/test_dedup.py:98)
+- `test_dedupe_perceptual_collapses_static_clip` (tests/test_dedup.py:104)
+- `test_dedupe_perceptual_keeps_distinct_cuts` (tests/test_dedup.py:114)
+- `test_scene_engine_reports_zero_dedup_on_distinct` (tests/test_dedup.py:126)
+- `test_uniform_fallback_dedupes_static` (tests/test_dedup.py:134)
+- `test_keyframe_uniform_fallback_dedupes_static` (tests/test_dedup.py:146)
+- `test_dedup_false_disables_collapse` (tests/test_dedup.py:153)
+- `_capture_argv` (tests/test_download.py:22)
+- `fake_run` (tests/test_download.py:32)
+- `_sub_langs` (tests/test_download.py:39)
+- `_assert_english_only` (tests/test_download.py:44)
+- `test_fetch_captions_requests_english_only` (tests/test_download.py:50)
+- `test_download_url_requests_english_only` (tests/test_download.py:56)
+- `_Result` (tests/test_download.py:27)
+- `_duration` (tests/test_fixtures.py:7)
+- `test_cut_clip_builds` (tests/test_fixtures.py:15)
+- `test_static_clip_builds` (tests/test_fixtures.py:20)
+- `test_keyframe_engine_on_cut_clip` (tests/test_frames.py:7)
+- `test_keyframe_even_sampling_caps_and_spans` (tests/test_frames.py:16)
+- `test_keyframe_fallback_on_static_clip` (tests/test_frames.py:28)
+- `test_scene_engine_on_cut_clip` (tests/test_frames.py:36)
+- `test_scene_even_sampling_caps_and_spans` (tests/test_frames.py:45)
+- `test_scene_fallback_on_static_clip` (tests/test_frames.py:63)
+- `_run` (tests/test_setup.py:11)
+- `_write_env` (tests/test_setup.py:29)
+- `test_json_reports_watch_detail` (tests/test_setup.py:37)
+- `test_keyless_completed_setup_proceeds_silently` (tests/test_setup.py:44)
+- `test_keyless_first_run_is_encouraged` (tests/test_setup.py:59)
+- `test_key_present_is_ready` (tests/test_setup.py:70)
+- `test_parse_timestamps_mixed_formats` (tests/test_timestamps.py:9)
+- `test_parse_timestamps_strips_and_dedupes` (tests/test_timestamps.py:13)
+- `test_parse_timestamps_empty` (tests/test_timestamps.py:17)
+- `test_parse_timestamps_rejects_garbage` (tests/test_timestamps.py:22)
+- `test_merge_frames_sorts_and_reindexes` (tests/test_timestamps.py:27)
+- `test_merge_frames_keeps_all_pinned` (tests/test_timestamps.py:41)
+- `test_extract_at_timestamps_one_frame_per_point` (tests/test_timestamps.py:47)
+- `test_extract_at_timestamps_drops_out_of_window` (tests/test_timestamps.py:58)
+- `test_extract_at_timestamps_caps_and_spans` (tests/test_timestamps.py:67)
+- `test_extract_at_timestamps_does_not_clobber_detail_frames` (tests/test_timestamps.py:77)
+- `_run` (tests/test_watch.py:10)
+- `test_efficient_uses_keyframe_engine` (tests/test_watch.py:23)
+- `test_balanced_uses_scene_engine` (tests/test_watch.py:29)
+- `test_token_burner_uses_scene_engine` (tests/test_watch.py:35)
+- `test_transcript_skips_frames` (tests/test_watch.py:40)
+- `test_flag_overrides_env` (tests/test_watch.py:46)
+- `test_default_is_balanced` (tests/test_watch.py:51)
+- `test_timestamps_add_cue_frames_to_detail` (tests/test_watch.py:57)
+- `test_timestamps_with_transcript_detail_is_cue_only` (tests/test_watch.py:63)
+- `_frame_lines` (tests/test_watch.py:70)
+- `test_dedup_collapses_static_by_default` (tests/test_watch.py:74)
+- `test_no_dedup_preserves_static_frames` (tests/test_watch.py:80)
+- `test_under_limit_is_single_chunk` (tests/test_whisper.py:17)
+- `test_at_limit_is_single_chunk` (tests/test_whisper.py:20)
+- `test_over_limit_splits_into_enough_chunks` (tests/test_whisper.py:24)
+- `test_chunks_are_contiguous_and_cover_full_duration` (tests/test_whisper.py:29)
+- `test_each_chunk_estimated_under_limit` (tests/test_whisper.py:39)
+- `test_zero_duration_is_single_chunk` (tests/test_whisper.py:46)
+- `test_adds_offset_to_start_and_end` (tests/test_whisper.py:53)
+- `test_zero_offset_is_identity` (tests/test_whisper.py:60)
+- `test_does_not_mutate_input` (tests/test_whisper.py:64)
+- `_make_mp3` (tests/test_whisper.py:69)
+- `test_creates_one_file_per_plan_entry` (tests/test_whisper.py:85)
+- `test_returns_plan_offsets` (tests/test_whisper.py:95)
+- `test_chunks_are_smaller_than_full` (tests/test_whisper.py:104)
+- `test_reads_duration_of_synthesized_clip` (tests/test_whisper.py:118)
+- `test_shifts_and_concatenates_each_chunk` (tests/test_whisper.py:125)
+- `fake_transcribe` (tests/test_whisper.py:127)
+- `test_keeps_successful_chunks_when_one_fails` (tests/test_whisper.py:137)
+- `flaky` (tests/test_whisper.py:140)
+- `test_raises_when_every_chunk_fails` (tests/test_whisper.py:149)
+- `always_fail` (tests/test_whisper.py:152)
+- `TestPlanChunks` (tests/test_whisper.py:14)
+- `TestShiftSegments` (tests/test_whisper.py:50)
+- `TestSplitAudio` (tests/test_whisper.py:82)
+- `TestAudioDuration` (tests/test_whisper.py:115)
+- `TestTranscribeChunks` (tests/test_whisper.py:122)
+
+## MCP 工具/API 表面
+- 未识别到 MCP 工具
+
+## 风险与缺口
+- 公开符号较多，后续人工深挖应优先确认职责边界是否过宽。
+
+## 证据
+- 模块 ID 来源：`05-module-ids.yaml`
+- 代码切片：`slices/02-backend.xml`
+- 依赖切片：`slices/09-dependencies.xml`
+- 历史热点：`slices/12-history-hotspot.txt`
+
+## 覆盖率明细
+| 文件组 | 文件数 | 已读方式 |
+|---|---:|---|
+| tests | 10 | deterministic deep scan |
+
+--- drafts/06-module-module_003.md ---
+# module_003 [root]
+
+- 文件数: 9
+- 分层: core
+
+## 角色
+该模块由确定性扫描按路径、公开符号和对外工具/API 生成，是后续 agent 判断业务价值与架构风险的分析底稿。
+
+## 深度分析
+- 模块边界：`[root]` 路径组，共 9 个文件。
+- 分析优先级：核心模块，必须优先核对入口、测试和对外 API。
+- 业务假设：若该模块包含运行入口或对外 API，它就是报告后续判断的主要证据来源；否则先按支撑模块处理。
+
+## 关键文件
+- `.gitattributes`
+- `.gitignore`
+- `.skillignore`
+- `AGENTS.md`
+- `CHANGELOG.md`
+- `CLAUDE.md`
+- `LICENSE`
+- `README.md`
+- `dev-sync.sh`
+
+## 关键路径
+- 先从模块文件清单逐个确认入口。
+
+## 关键符号
+- 未识别到公开符号
+
+## MCP 工具/API 表面
+- 未识别到 MCP 工具
+
+## 风险与缺口
+- 缺少可见测试文件，变更该模块前应先补最小回归验证。
+
+## 证据
+- 模块 ID 来源：`05-module-ids.yaml`
+- 代码切片：`slices/02-backend.xml`
+- 依赖切片：`slices/09-dependencies.xml`
+- 历史热点：`slices/12-history-hotspot.txt`
+
+## 覆盖率明细
+| 文件组 | 文件数 | 已读方式 |
+|---|---:|---|
+| [root] | 9 | deterministic deep scan |
+
+--- drafts/06-module-module_004.md ---
+# module_004 .claude-plugin
+
+- 文件数: 2
+- 分层: minor
+
+## 角色
+该模块由确定性扫描按路径、公开符号和对外工具/API 生成，是后续 agent 判断业务价值与架构风险的分析底稿。
+
+## 深度分析
+- 模块边界：`.claude-plugin` 路径组，共 2 个文件。
+- 分析优先级：次要模块，先轻量确认依赖和辅助职责。
+- 业务假设：若该模块包含运行入口或对外 API，它就是报告后续判断的主要证据来源；否则先按支撑模块处理。
+
+## 关键文件
+- `.claude-plugin/marketplace.json`
+- `.claude-plugin/plugin.json`
+
+## 关键路径
+- 先从模块文件清单逐个确认入口。
+
+## 关键符号
+- 未识别到公开符号
+
+## MCP 工具/API 表面
+- 未识别到 MCP 工具
+
+## 风险与缺口
+- 缺少可见测试文件，变更该模块前应先补最小回归验证。
+
+## 证据
+- 模块 ID 来源：`05-module-ids.yaml`
+- 代码切片：`slices/02-backend.xml`
+- 依赖切片：`slices/09-dependencies.xml`
+- 历史热点：`slices/12-history-hotspot.txt`
+
+## 覆盖率明细
+| 文件组 | 文件数 | 已读方式 |
+|---|---:|---|
+| .claude-plugin | 2 | deterministic deep scan |
+
+--- drafts/06-module-module_005.md ---
+# module_005 hooks
+
+- 文件数: 2
+- 分层: minor
+
+## 角色
+该模块由确定性扫描按路径、公开符号和对外工具/API 生成，是后续 agent 判断业务价值与架构风险的分析底稿。
+
+## 深度分析
+- 模块边界：`hooks` 路径组，共 2 个文件。
+- 分析优先级：次要模块，先轻量确认依赖和辅助职责。
+- 业务假设：若该模块包含运行入口或对外 API，它就是报告后续判断的主要证据来源；否则先按支撑模块处理。
+
+## 关键文件
+- `hooks/hooks.json`
+- `hooks/scripts/check-setup.sh`
+
+## 关键路径
+- 先从模块文件清单逐个确认入口。
+
+## 关键符号
+- 未识别到公开符号
+
+## MCP 工具/API 表面
+- 未识别到 MCP 工具
+
+## 风险与缺口
+- 缺少可见测试文件，变更该模块前应先补最小回归验证。
+
+## 证据
+- 模块 ID 来源：`05-module-ids.yaml`
+- 代码切片：`slices/02-backend.xml`
+- 依赖切片：`slices/09-dependencies.xml`
+- 历史热点：`slices/12-history-hotspot.txt`
+
+## 覆盖率明细
+| 文件组 | 文件数 | 已读方式 |
+|---|---:|---|
+| hooks | 2 | deterministic deep scan |
+
+--- drafts/06-module-module_006.md ---
+# module_006 .agents
+
+- 文件数: 1
+- 分层: minor
+
+## 角色
+该模块由确定性扫描按路径、公开符号和对外工具/API 生成，是后续 agent 判断业务价值与架构风险的分析底稿。
+
+## 深度分析
+- 模块边界：`.agents` 路径组，共 1 个文件。
+- 分析优先级：次要模块，先轻量确认依赖和辅助职责。
+- 业务假设：若该模块包含运行入口或对外 API，它就是报告后续判断的主要证据来源；否则先按支撑模块处理。
+
+## 关键文件
+- `.agents/plugins/marketplace.json`
+
+## 关键路径
+- 先从模块文件清单逐个确认入口。
+
+## 关键符号
+- 未识别到公开符号
+
+## MCP 工具/API 表面
+- 未识别到 MCP 工具
+
+## 风险与缺口
+- 缺少可见测试文件，变更该模块前应先补最小回归验证。
+
+## 证据
+- 模块 ID 来源：`05-module-ids.yaml`
+- 代码切片：`slices/02-backend.xml`
+- 依赖切片：`slices/09-dependencies.xml`
+- 历史热点：`slices/12-history-hotspot.txt`
+
+## 覆盖率明细
+| 文件组 | 文件数 | 已读方式 |
+|---|---:|---|
+| .agents | 1 | deterministic deep scan |
+
+--- drafts/06-module-module_007.md ---
+# module_007 .codex-plugin
+
+- 文件数: 1
+- 分层: minor
+
+## 角色
+该模块由确定性扫描按路径、公开符号和对外工具/API 生成，是后续 agent 判断业务价值与架构风险的分析底稿。
+
+## 深度分析
+- 模块边界：`.codex-plugin` 路径组，共 1 个文件。
+- 分析优先级：次要模块，先轻量确认依赖和辅助职责。
+- 业务假设：若该模块包含运行入口或对外 API，它就是报告后续判断的主要证据来源；否则先按支撑模块处理。
+
+## 关键文件
+- `.codex-plugin/plugin.json`
+
+## 关键路径
+- 先从模块文件清单逐个确认入口。
+
+## 关键符号
+- 未识别到公开符号
+
+## MCP 工具/API 表面
+- 未识别到 MCP 工具
+
+## 风险与缺口
+- 缺少可见测试文件，变更该模块前应先补最小回归验证。
+
+## 证据
+- 模块 ID 来源：`05-module-ids.yaml`
+- 代码切片：`slices/02-backend.xml`
+- 依赖切片：`slices/09-dependencies.xml`
+- 历史热点：`slices/12-history-hotspot.txt`
+
+## 覆盖率明细
+| 文件组 | 文件数 | 已读方式 |
+|---|---:|---|
+| .codex-plugin | 1 | deterministic deep scan |
+
+--- drafts/06-module-module_008.md ---
+# module_008 .github
+
+- 文件数: 1
+- 分层: minor
+
+## 角色
+该模块由确定性扫描按路径、公开符号和对外工具/API 生成，是后续 agent 判断业务价值与架构风险的分析底稿。
+
+## 深度分析
+- 模块边界：`.github` 路径组，共 1 个文件。
+- 分析优先级：次要模块，先轻量确认依赖和辅助职责。
+- 业务假设：若该模块包含运行入口或对外 API，它就是报告后续判断的主要证据来源；否则先按支撑模块处理。
+
+## 关键文件
+- `.github/workflows/release.yml`
+
+## 关键路径
+- 先从模块文件清单逐个确认入口。
+
+## 关键符号
+- 未识别到公开符号
+
+## MCP 工具/API 表面
+- 未识别到 MCP 工具
+
+## 风险与缺口
+- 缺少可见测试文件，变更该模块前应先补最小回归验证。
+
+## 证据
+- 模块 ID 来源：`05-module-ids.yaml`
+- 代码切片：`slices/02-backend.xml`
+- 依赖切片：`slices/09-dependencies.xml`
+- 历史热点：`slices/12-history-hotspot.txt`
+
+## 覆盖率明细
+| 文件组 | 文件数 | 已读方式 |
+|---|---:|---|
+| .github | 1 | deterministic deep scan |
+
+hook: PostToolUse
+hook: PostToolUse Completed
+hook: PostToolUse Completed
+codex
+模块清单和底稿已经读完：8 个模块与用户给出的范围一致。底稿本身偏确定性扫描摘要，所以关键结论需要继续从 repomix 切片里的 `<file path="...">` 内容核对。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/sh -lc 'rg -n "<file path=|''^## |watch.py|download_url|extract_keyframes|transcribe_video|plugin|marketplace|release|check-setup|hooks" slices/02-backend.xml slices/04-docs.xml slices/06-tests.xml slices/09-dependencies.xml slices/12-history-hotspot.txt' in /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+ exited 2 in 0ms:
+rg: slices/02-backend.xml: No such file or directory (os error 2)
+slices/04-docs.xml:29:README.md</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="skills/watch/SKILL.md">---
+slices/04-docs.xml:46:## Resolve `SKILL_DIR` (do this before any command)
+slices/04-docs.xml:48:Every `python3 ...` command below runs a bundled script under `SKILL_DIR/scripts/`. Set `SKILL_DIR` to the **absolute path of the directory containing THIS SKILL.md you just Read** — your harness told you that path in the Read result. The scripts are always a direct sibling of this file (`SKILL_DIR/scripts/watch.py`), in every install layout:
+slices/04-docs.xml:51:Read ~/.claude/plugins/cache/claude-video/watch/&lt;ver&gt;/skills/watch/SKILL.md → SKILL_DIR=…/skills/watch
+slices/04-docs.xml:60:if [ ! -f &quot;$SKILL_DIR/scripts/watch.py&quot; ]; then
+slices/04-docs.xml:61:  echo &quot;ERROR: scripts/watch.py not found under SKILL_DIR=$SKILL_DIR&quot; &gt;&amp;2
+slices/04-docs.xml:67:## Step 0 — Setup preflight (runs every `/watch` invocation, silent on success)
+slices/04-docs.xml:136:## When to use
+slices/04-docs.xml:142:## Recommended limits
+slices/04-docs.xml:160:## How to invoke
+slices/04-docs.xml:167:python3 &quot;${SKILL_DIR}/scripts/watch.py&quot; &quot;&lt;source&gt;&quot;
+slices/04-docs.xml:202:python3 &quot;${SKILL_DIR}/scripts/watch.py&quot; video.mp4 --start 50 --end 60
+slices/04-docs.xml:205:python3 &quot;${SKILL_DIR}/scripts/watch.py&quot; &quot;$URL&quot; --start 2:15 --end 2:45 --fps 2
+slices/04-docs.xml:208:python3 &quot;${SKILL_DIR}/scripts/watch.py&quot; &quot;$URL&quot; --start 1:12:00
+slices/04-docs.xml:223:## Detail and frames
+slices/04-docs.xml:235:## Transcript-cue frames
+slices/04-docs.xml:249:## Transcription
+slices/04-docs.xml:260:## Failure modes and handling
+slices/04-docs.xml:268:## Token efficiency
+slices/04-docs.xml:277:## Security &amp; Permissions
+slices/04-docs.xml:294:**Bundled scripts:** `scripts/watch.py` (entry point), `scripts/download.py` (yt-dlp wrapper), `scripts/frames.py` (ffmpeg frame extraction), `scripts/transcribe.py` (caption selection + Whisper orchestration), `scripts/whisper.py` (Groq / OpenAI clients), `scripts/setup.py` (preflight + installer)
+slices/04-docs.xml:296:Review scripts before first use to verify behavior.</file><file path="AGENTS.md"># claude-video / watch skill
+slices/04-docs.xml:300:## Structure
+slices/04-docs.xml:303:- `skills/watch/scripts/watch.py` — entry point; orchestrates download → frames → transcript.
+slices/04-docs.xml:306:- `hooks/` — Claude Code SessionStart setup-status hook (Claude Code only).
+slices/04-docs.xml:307:- `.claude-plugin/` — `plugin.json` + `marketplace.json` (Claude Code plugin + local marketplace).
+slices/04-docs.xml:308:- `.codex-plugin/plugin.json` — Codex/agents manifest; `&quot;skills&quot;: &quot;./skills/&quot;` points the Agent Skills CLI at the self-contained skill folder.
+slices/04-docs.xml:309:- `.agents/plugins/marketplace.json` — agents marketplace listing pointing at the repo-root plugin.
+slices/04-docs.xml:313:## Orientation
+slices/04-docs.xml:315:- The product is the slash-command-invoked skill (`/watch &lt;url-or-path&gt; [question]`), not a CLI. `scripts/watch.py` is implementation. Features must work across every harness the skill installs into, not just Claude Code.
+slices/04-docs.xml:320:## Install surfaces
+slices/04-docs.xml:324:| Claude Code | `/plugin marketplace add bradautomates/claude-video` then `/plugin install watch@claude-video` |
+slices/04-docs.xml:328:## Commands
+slices/04-docs.xml:337:# Dev: mirror the working tree into the installed Claude Code plugin cache
+slices/04-docs.xml:341:## Rules
+slices/04-docs.xml:343:- Keep the version in sync across `skills/watch/SKILL.md` (frontmatter), `.claude-plugin/plugin.json`, and `.codex-plugin/plugin.json` when cutting a release.
+slices/04-docs.xml:344:- Releasing: tag `vX.Y.Z` and push the tag; `.github/workflows/release.yml` builds `dist/watch.skill` and attaches it to the GitHub release.
+slices/04-docs.xml:345:- Never commit real API keys or `.env` contents; keys live in `~/.config/watch/.env` (mode `0600`) at runtime.</file><file path="CHANGELOG.md"># Changelog
+slices/04-docs.xml:349:## [0.2.0] — 2026-06-29
+slices/04-docs.xml:373:## [0.1.3] — 2026-05-09
+slices/04-docs.xml:382:## [0.1.2] — 2026-04-24
+slices/04-docs.xml:385:- Windows console crash: removed the emoji from the long-video warning in `watch.py`; cp1252 consoles couldn&apos;t encode it.
+slices/04-docs.xml:391:## [0.1.1] — 2026-04-24
+slices/04-docs.xml:394:- Added `commands/watch.md` shim so `/watch` is callable when installed as a Claude Code plugin. Without it, the plugin loaded but the skill wasn&apos;t exposed as a slash command.
+slices/04-docs.xml:395:- `scripts/build-skill.sh` now strips `commands/` from the claude.ai `.skill` bundle alongside `hooks/` and `.claude-plugin/`.
+slices/04-docs.xml:397:## [0.1.0] — 2026-04-24
+slices/04-docs.xml:399:Initial marketplace release.
+slices/04-docs.xml:409:- `.skill` bundle packaging for claude.ai upload via `scripts/build-skill.sh`.</file><file path="CLAUDE.md">@AGENTS.md</file><file path="README.md"># /watch
+slices/04-docs.xml:413:Claude Code (recommended — auto-updates via marketplace):
+slices/04-docs.xml:415:/plugin marketplace add bradautomates/claude-video
+slices/04-docs.xml:416:/plugin install watch@claude-video
+slices/04-docs.xml:439:## What people actually use it for
+slices/04-docs.xml:451:## How it works
+slices/04-docs.xml:461:## Frame budget — why it matters
+slices/04-docs.xml:475:## Frame deduplication
+slices/04-docs.xml:488:## Detail modes — measured
+slices/04-docs.xml:506:## Install
+slices/04-docs.xml:510:| **Claude Code** | `/plugin marketplace add bradautomates/claude-video` then `/plugin install watch@claude-video` |
+slices/04-docs.xml:512:| **claude.ai** (web) | [Download `watch.skill`](https://github.com/bradautomates/claude-video/releases/latest) → Settings → Capabilities → Skills → `+` |
+slices/04-docs.xml:518:/plugin marketplace add bradautomates/claude-video
+slices/04-docs.xml:519:/plugin install watch@claude-video
+slices/04-docs.xml:522:Update later with `/plugin update watch@claude-video`.
+slices/04-docs.xml:544:1. [Download `watch.skill`](https://github.com/bradautomates/claude-video/releases/latest) from the latest release.
+slices/04-docs.xml:561:## First run
+slices/04-docs.xml:572:## Bring your own keys
+slices/04-docs.xml:583:## Usage
+slices/04-docs.xml:599:Other knobs (passed to `scripts/watch.py`):
+slices/04-docs.xml:611:## Limits
+slices/04-docs.xml:616:## Structure
+slices/04-docs.xml:623:│       ├── watch.py              # entry point — orchestrates download → frames → transcript
+slices/04-docs.xml:631:├── hooks/                        # SessionStart status hook (Claude Code only)
+slices/04-docs.xml:632:├── .claude-plugin/               # plugin.json + marketplace.json (Claude Code)
+slices/04-docs.xml:633:├── .codex-plugin/                # plugin.json — Codex/agents manifest (&quot;skills&quot;: &quot;./skills/&quot;)
+slices/04-docs.xml:634:├── .agents/plugins/              # marketplace.json — Agent Skills marketplace listing
+slices/04-docs.xml:637:└── .github/workflows/            # release.yml — auto-builds watch.skill on tag push
+slices/04-docs.xml:640:## Develop
+slices/04-docs.xml:650:Releasing: tag `vX.Y.Z`, push the tag. The workflow builds `dist/watch.skill` and attaches it to the GitHub release. Keep the version in sync across `skills/watch/SKILL.md`, `.claude-plugin/plugin.json`, and `.codex-plugin/plugin.json`.
+slices/04-docs.xml:654:## Open source
+slices/04-docs.xml:662:## Star History
+slices/12-history-hotspot.txt:3:## 累计修改次数 Top50
+slices/12-history-hotspot.txt:4:- 1 .agents/plugins/marketplace.json
+slices/12-history-hotspot.txt:5:- 1 .claude-plugin/marketplace.json
+slices/12-history-hotspot.txt:6:- 1 .claude-plugin/plugin.json
+slices/12-history-hotspot.txt:7:- 1 .codex-plugin/plugin.json
+slices/12-history-hotspot.txt:9:- 1 .github/workflows/release.yml
+slices/12-history-hotspot.txt:18:- 1 hooks/hooks.json
+slices/12-history-hotspot.txt:19:- 1 hooks/scripts/check-setup.sh
+slices/12-history-hotspot.txt:28:- 1 skills/watch/scripts/watch.py
+slices/12-history-hotspot.txt:38:- 1 tests/test_watch.py
+slices/12-history-hotspot.txt:41:## 最近 30 天提交
+slices/06-tests.xml:32:  test_watch.py
+slices/06-tests.xml:33:  test_whisper.py</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="tests/conftest.py">&quot;&quot;&quot;Shared pytest fixtures: ffmpeg-synthesized clips and scripts/ on sys.path.&quot;&quot;&quot;
+slices/06-tests.xml:42:# Make the bundled scripts importable (mirrors watch.py&apos;s sys.path insert).
+slices/06-tests.xml:115:    return path</file><file path="tests/test_config.py">&quot;&quot;&quot;WATCH_DETAIL resolution and frame_cap mapping.&quot;&quot;&quot;
+slices/06-tests.xml:151:    assert config.frame_cap(&quot;anything-else&quot;) == 100</file><file path="tests/test_dedup.py">&quot;&quot;&quot;Frame-delta dedup: per-pixel difference, greedy de-duplication, integration.&quot;&quot;&quot;
+slices/06-tests.xml:299:    out, meta = frames.extract_keyframes(str(static_clip), tmp_path / &quot;f&quot;, max_frames=50)
+slices/06-tests.xml:312:    assert len(out) &gt; 1</file><file path="tests/test_download.py">&quot;&quot;&quot;yt-dlp argv construction for download.py.
+slices/06-tests.xml:369:def test_download_url_requests_english_only(monkeypatch, tmp_path):
+slices/06-tests.xml:374:        download.download_url(URL, tmp_path / &quot;download&quot;)
+slices/06-tests.xml:375:    _assert_english_only(_sub_langs(calls[0]))</file><file path="tests/test_fixtures.py">&quot;&quot;&quot;Smoke test: the ffmpeg fixtures actually produce playable clips.&quot;&quot;&quot;
+slices/06-tests.xml:398:    assert _duration(static_clip) &gt; 2.0</file><file path="tests/test_frames.py">&quot;&quot;&quot;Keyframe engine + preserved scene/uniform fallbacks.&quot;&quot;&quot;
+slices/06-tests.xml:407:    out, meta = frames.extract_keyframes(str(cut_clip), tmp_path / &quot;f&quot;, max_frames=50)
+slices/06-tests.xml:416:    out, meta = frames.extract_keyframes(str(cut_clip), tmp_path / &quot;f&quot;, max_frames=5)
+slices/06-tests.xml:428:    out, meta = frames.extract_keyframes(str(static_clip), tmp_path / &quot;f&quot;, max_frames=50)
+slices/06-tests.xml:467:    assert meta[&quot;fallback&quot;] is True</file><file path="tests/test_setup.py">&quot;&quot;&quot;setup.py --json surfaces the resolved watch detail.&quot;&quot;&quot;
+slices/06-tests.xml:546:    assert js[&quot;whisper_backend&quot;] == &quot;groq&quot;</file><file path="tests/test_timestamps.py">&quot;&quot;&quot;Transcript-cue timestamps: parsing, point extraction, and pinned merge.&quot;&quot;&quot;
+slices/06-tests.xml:632:    assert len(list(d.glob(&quot;cue_*.jpg&quot;))) == len(cues)</file><file path="tests/test_watch.py">&quot;&quot;&quot;End-to-end routing of --detail through watch.py on a local clip.&quot;&quot;&quot;
+slices/06-tests.xml:640:WATCH = Path(__file__).resolve().parent.parent / &quot;skills&quot; / &quot;watch&quot; / &quot;scripts&quot; / &quot;watch.py&quot;
+slices/06-tests.xml:716:    assert _frame_lines(out) &gt; 1</file><file path="tests/test_whisper.py">&quot;&quot;&quot;Whisper auto-chunking: plan, split, and timestamp stitching.&quot;&quot;&quot;
+
+hook: PostToolUse
+hook: PostToolUse Completed
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/sh -lc 'wc -l slices/02-backend.xml slices/04-docs.xml slices/06-tests.xml slices/09-dependencies.xml slices/12-history-hotspot.txt' in /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+ exited 1 in 0ms:
+wc: slices/02-backend.xml: open: No such file or directory
+     673 slices/04-docs.xml
+     871 slices/06-tests.xml
+      22 slices/09-dependencies.xml
+      42 slices/12-history-hotspot.txt
+    1608 total
+
+hook: PostToolUse
+hook: PostToolUse Completed
+codex
+这里发现一个证据边界问题：用户列出的 `slices/02-backend.xml` 在当前 artifacts 目录下不存在，已有的是 docs/tests/dependencies/history 切片。为了不编造源码事实，我会用现存切片中可验证的内容做判断，并在相关模块标注 backend 切片缺失导致的限制。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/sh -lc "find slices -maxdepth 1 -type f -print | sort && printf '\\n--- dependencies ---\\n' && sed -n '1,120p' slices/09-dependencies.xml && printf '\\n--- history ---\\n' && sed -n '1,120p' slices/12-history-hotspot.txt" in /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+ succeeded in 0ms:
+slices/04-docs.xml
+slices/05-agent-config.xml
+slices/06-tests.xml
+slices/07-config-scripts.xml
+slices/09-dependencies.xml
+slices/12-history-hotspot.txt
+
+--- dependencies ---
+<repomix><file_summary>This file is a merged representation of a subset of the codebase, containing specifically included files and files not matching ignore patterns, combined into a single document by Repomix.
+The content has been processed where content has been formatted for parsing in xml style.<purpose>This file contains a packed representation of a subset of the repository&apos;s contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: package.json, **/package.json, pyproject.toml, **/pyproject.toml, requirements*.txt, **/requirements*.txt, go.mod, **/go.mod, Cargo.toml, **/Cargo.toml
+- Files matching these patterns are excluded: **/.git/**, **/.hg/**, **/.mypy_cache/**, **/.pytest_cache/**, **/.ruff_cache/**, **/.svn/**, **/.venv/**, **/__pycache__/**, **/acceptance/**, **/agent-runs/**, **/analysis/**, **/analysis-final/**, **/analysis-judge/**, **/analysis-judge-final/**, **/analysis-novice-final/**, **/build/**, **/coverage/**, **/dist/**, **/drafts/**, **/env/**, **/graphify-out/**, **/node_modules/**, **/out/**, **/slices/**, **/target/**, **/uat-evidence/**, **/vendor/**, **/venv/**, **/*.gif, **/*.gz, **/*.ico, **/*.jpeg, **/*.jpg, **/*.mov, **/*.mp3, **/*.mp4, **/*.otf, **/*.pdf, **/*.png, **/*.tar, **/*.tgz, **/*.ttf, **/*.wasm, **/*.wav, **/*.webp, **/*.woff, **/*.woff2, **/*.zip
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Content has been formatted for parsing in xml style
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><directory_structure></directory_structure><files>This section contains the contents of the repository&apos;s files.</files></repomix>
+--- history ---
+# 变更历史热点
+
+## 累计修改次数 Top50
+- 1 .agents/plugins/marketplace.json
+- 1 .claude-plugin/marketplace.json
+- 1 .claude-plugin/plugin.json
+- 1 .codex-plugin/plugin.json
+- 1 .gitattributes
+- 1 .github/workflows/release.yml
+- 1 .gitignore
+- 1 .skillignore
+- 1 AGENTS.md
+- 1 CHANGELOG.md
+- 1 CLAUDE.md
+- 1 LICENSE
+- 1 README.md
+- 1 dev-sync.sh
+- 1 hooks/hooks.json
+- 1 hooks/scripts/check-setup.sh
+- 1 skills/watch/.skillignore
+- 1 skills/watch/SKILL.md
+- 1 skills/watch/scripts/build-skill.sh
+- 1 skills/watch/scripts/config.py
+- 1 skills/watch/scripts/download.py
+- 1 skills/watch/scripts/frames.py
+- 1 skills/watch/scripts/setup.py
+- 1 skills/watch/scripts/transcribe.py
+- 1 skills/watch/scripts/watch.py
+- 1 skills/watch/scripts/whisper.py
+- 1 tests/conftest.py
+- 1 tests/test_config.py
+- 1 tests/test_dedup.py
+- 1 tests/test_download.py
+- 1 tests/test_fixtures.py
+- 1 tests/test_frames.py
+- 1 tests/test_setup.py
+- 1 tests/test_timestamps.py
+- 1 tests/test_watch.py
+- 1 tests/test_whisper.py
+
+## 最近 30 天提交
+83da59f | 2026-06-30 | Fix WATCH_DETAIL silently falling back to default
+
+hook: PostToolUse
+hook: PostToolUse Completed
+codex
+我还看到 artifacts 里有 `slices/05-agent-config.xml` 和 `slices/07-config-scripts.xml`，它们属于同一分析目录并包含配置/脚本类模块证据。因为用户的“主要证据切片”不是完整文件清单，而 module_004 到 module_008 需要这些配置文件，我会读取它们来避免只凭底稿推断。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/sh -lc "rg -n \"<file path=|plugin.json|marketplace.json|hooks.json|check-setup|release.yml|dev-sync|build-skill|config.py|setup.py|\\.skillignore|\\.gitattributes|\\.gitignore\" slices/05-agent-config.xml slices/07-config-scripts.xml slices/04-docs.xml" in /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+ succeeded in 0ms:
+slices/04-docs.xml:16:  the same level of security as you would the original repository.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+slices/04-docs.xml:20:- Files matching patterns in .gitignore are excluded
+slices/04-docs.xml:29:README.md</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="skills/watch/SKILL.md">---
+slices/04-docs.xml:74:python3 &quot;${SKILL_DIR}/scripts/setup.py&quot; --json
+slices/04-docs.xml:91:python3 &quot;${SKILL_DIR}/scripts/setup.py&quot; --check
+slices/04-docs.xml:109:python3 &quot;${SKILL_DIR}/scripts/setup.py&quot;
+slices/04-docs.xml:132:**Structured mode (optional):** `python3 &quot;${SKILL_DIR}/scripts/setup.py&quot; --json` emits `{status, can_proceed, first_run, setup_complete, missing_binaries, whisper_backend, has_api_key, config_file, watch_detail, platform}` where `status` is one of `ready | needs_install | needs_key | needs_install_and_key`. `status` describes the *ideal* state (a key is encouraged, so a keyless first run reads `needs_key`); `can_proceed` is the operational gate (binaries present AND a key is set OR setup was already completed). Branch on `can_proceed`/`first_run` to decide whether to run; use `status` to decide what to encourage.
+slices/04-docs.xml:262:- **Setup preflight failed** → run `python3 &quot;${SKILL_DIR}/scripts/setup.py&quot;` (auto-installs ffmpeg/yt-dlp via brew on macOS, scaffolds the `.env`). For API key, ask the user via `AskUserQuestion` and write it to `~/.config/watch/.env`.
+slices/04-docs.xml:294:**Bundled scripts:** `scripts/watch.py` (entry point), `scripts/download.py` (yt-dlp wrapper), `scripts/frames.py` (ffmpeg frame extraction), `scripts/transcribe.py` (caption selection + Whisper orchestration), `scripts/whisper.py` (Groq / OpenAI clients), `scripts/setup.py` (preflight + installer)
+slices/04-docs.xml:296:Review scripts before first use to verify behavior.</file><file path="AGENTS.md"># claude-video / watch skill
+slices/04-docs.xml:305:- `skills/watch/scripts/build-skill.sh` — builds `dist/watch.skill` for claude.ai upload (dev-only).
+slices/04-docs.xml:307:- `.claude-plugin/` — `plugin.json` + `marketplace.json` (Claude Code plugin + local marketplace).
+slices/04-docs.xml:308:- `.codex-plugin/plugin.json` — Codex/agents manifest; `&quot;skills&quot;: &quot;./skills/&quot;` points the Agent Skills CLI at the self-contained skill folder.
+slices/04-docs.xml:309:- `.agents/plugins/marketplace.json` — agents marketplace listing pointing at the repo-root plugin.
+slices/04-docs.xml:326:| claude.ai (web) | upload `dist/watch.skill` (built by `skills/watch/scripts/build-skill.sh`) |
+slices/04-docs.xml:335:bash skills/watch/scripts/build-skill.sh   # → dist/watch.skill
+slices/04-docs.xml:338:./dev-sync.sh                       # --dry-run to preview
+slices/04-docs.xml:343:- Keep the version in sync across `skills/watch/SKILL.md` (frontmatter), `.claude-plugin/plugin.json`, and `.codex-plugin/plugin.json` when cutting a release.
+slices/04-docs.xml:344:- Releasing: tag `vX.Y.Z` and push the tag; `.github/workflows/release.yml` builds `dist/watch.skill` and attaches it to the GitHub release.
+slices/04-docs.xml:345:- Never commit real API keys or `.env` contents; keys live in `~/.config/watch/.env` (mode `0600`) at runtime.</file><file path="CHANGELOG.md"># Changelog
+slices/04-docs.xml:376:- Windows: `video.info.json` is read as UTF-8 (#4). Previously `Path.read_text()` defaulted to cp1252 on Windows and crashed on yt-dlp&apos;s UTF-8 output, silently dropping Title/Uploader from the report. Same fix applied to `.env` reads/writes in `whisper.py` and `setup.py`.
+slices/04-docs.xml:386:- `setup.py` now prints `winget` / `pip` install commands on Windows instead of &quot;unsupported platform&quot; — matches what the README already promised.
+slices/04-docs.xml:395:- `scripts/build-skill.sh` now strips `commands/` from the claude.ai `.skill` bundle alongside `hooks/` and `.claude-plugin/`.
+slices/04-docs.xml:407:- `setup.py` preflight: silent `--check`, structured `--json`, and installer that auto-runs `brew install` on macOS.
+slices/04-docs.xml:409:- `.skill` bundle packaging for claude.ai upload via `scripts/build-skill.sh`.</file><file path="CLAUDE.md">@AGENTS.md</file><file path="README.md"># /watch
+slices/04-docs.xml:559:For claude.ai, build the `.skill` bundle from source: `bash skills/watch/scripts/build-skill.sh` produces `dist/watch.skill`.
+slices/04-docs.xml:563:On the first `/watch` call, the skill runs `scripts/setup.py --check`. If `ffmpeg` / `yt-dlp` aren&apos;t on your PATH, or no Whisper API key is set, it walks you through fixing it:
+slices/04-docs.xml:628:│       ├── config.py             # shared config (~/.config/watch/.env)
+slices/04-docs.xml:629:│       ├── setup.py              # preflight + installer
+slices/04-docs.xml:630:│       └── build-skill.sh        # build dist/watch.skill for claude.ai upload (dev-only)
+slices/04-docs.xml:632:├── .claude-plugin/               # plugin.json + marketplace.json (Claude Code)
+slices/04-docs.xml:633:├── .codex-plugin/                # plugin.json — Codex/agents manifest (&quot;skills&quot;: &quot;./skills/&quot;)
+slices/04-docs.xml:634:├── .agents/plugins/              # marketplace.json — Agent Skills marketplace listing
+slices/04-docs.xml:637:└── .github/workflows/            # release.yml — auto-builds watch.skill on tag push
+slices/04-docs.xml:647:bash skills/watch/scripts/build-skill.sh      # → dist/watch.skill
+slices/04-docs.xml:650:Releasing: tag `vX.Y.Z`, push the tag. The workflow builds `dist/watch.skill` and attaches it to the GitHub release. Keep the version in sync across `skills/watch/SKILL.md`, `.claude-plugin/plugin.json`, and `.codex-plugin/plugin.json`.
+slices/05-agent-config.xml:16:  the same level of security as you would the original repository.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+slices/05-agent-config.xml:20:- Files matching patterns in .gitignore are excluded
+slices/05-agent-config.xml:25:    marketplace.json
+slices/05-agent-config.xml:27:CLAUDE.md</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".agents/plugins/marketplace.json">{
+slices/05-agent-config.xml:46:}</file><file path="AGENTS.md"># claude-video / watch skill
+slices/05-agent-config.xml:55:- `skills/watch/scripts/build-skill.sh` — builds `dist/watch.skill` for claude.ai upload (dev-only).
+slices/05-agent-config.xml:57:- `.claude-plugin/` — `plugin.json` + `marketplace.json` (Claude Code plugin + local marketplace).
+slices/05-agent-config.xml:58:- `.codex-plugin/plugin.json` — Codex/agents manifest; `&quot;skills&quot;: &quot;./skills/&quot;` points the Agent Skills CLI at the self-contained skill folder.
+slices/05-agent-config.xml:59:- `.agents/plugins/marketplace.json` — agents marketplace listing pointing at the repo-root plugin.
+slices/05-agent-config.xml:76:| claude.ai (web) | upload `dist/watch.skill` (built by `skills/watch/scripts/build-skill.sh`) |
+slices/05-agent-config.xml:85:bash skills/watch/scripts/build-skill.sh   # → dist/watch.skill
+slices/05-agent-config.xml:88:./dev-sync.sh                       # --dry-run to preview
+slices/05-agent-config.xml:93:- Keep the version in sync across `skills/watch/SKILL.md` (frontmatter), `.claude-plugin/plugin.json`, and `.codex-plugin/plugin.json` when cutting a release.
+slices/05-agent-config.xml:94:- Releasing: tag `vX.Y.Z` and push the tag; `.github/workflows/release.yml` builds `dist/watch.skill` and attaches it to the GitHub release.
+slices/05-agent-config.xml:95:- Never commit real API keys or `.env` contents; keys live in `~/.config/watch/.env` (mode `0600`) at runtime.</file><file path="CLAUDE.md">@AGENTS.md</file></files></repomix>
+slices/07-config-scripts.xml:16:  the same level of security as you would the original repository.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+slices/07-config-scripts.xml:20:- Files matching patterns in .gitignore are excluded
+slices/07-config-scripts.xml:25:    release.yml
+slices/07-config-scripts.xml:28:    check-setup.sh
+slices/07-config-scripts.xml:32:      build-skill.sh
+slices/07-config-scripts.xml:33:      config.py
+slices/07-config-scripts.xml:36:      setup.py
+slices/07-config-scripts.xml:40:dev-sync.sh</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".github/workflows/release.yml">name: Release
+slices/07-config-scripts.xml:61:          bash skills/watch/scripts/build-skill.sh
+slices/07-config-scripts.xml:70:          prerelease: false</file><file path="hooks/scripts/check-setup.sh">#!/usr/bin/env bash
+slices/07-config-scripts.xml:122:  echo &quot;/watch: needs ffmpeg + yt-dlp. Run \`python3 \$CLAUDE_PLUGIN_ROOT/skills/watch/scripts/setup.py\` once to install and scaffold config.&quot;
+slices/07-config-scripts.xml:127:fi</file><file path="skills/watch/scripts/build-skill.sh">#!/usr/bin/env bash
+slices/07-config-scripts.xml:128:# build-skill.sh — package the watch skill as a claude.ai-upload-ready .skill file.
+slices/07-config-scripts.xml:129:# Usage: bash skills/watch/scripts/build-skill.sh   (run from anywhere)
+slices/07-config-scripts.xml:154:  echo &quot;       trim the skills/watch/ tree or add a .gitattributes export-ignore entry&quot; &gt;&amp;2
+slices/07-config-scripts.xml:165:echo &quot;upload via the claude.ai skill UI&quot;</file><file path="skills/watch/scripts/config.py">#!/usr/bin/env python3
+slices/07-config-scripts.xml:238:    return 100</file><file path="skills/watch/scripts/download.py">#!/usr/bin/env python3
+slices/07-config-scripts.xml:417:    print(json.dumps(result, indent=2))</file><file path="skills/watch/scripts/frames.py">#!/usr/bin/env python3
+slices/07-config-scripts.xml:1172:    ))</file><file path="skills/watch/scripts/setup.py">#!/usr/bin/env python3
+slices/07-config-scripts.xml:1176:  setup.py --check      Silent preflight. Exit 0 if ready, 2/3/4 on failure.
+slices/07-config-scripts.xml:1177:  setup.py --json       Machine-readable status for Claude to parse.
+slices/07-config-scripts.xml:1178:  setup.py              Installer. Auto-installs deps, scaffolds .env, marks SETUP_COMPLETE.
+slices/07-config-scripts.xml:1535:    raise SystemExit(main())</file><file path="skills/watch/scripts/transcribe.py">#!/usr/bin/env python3
+slices/07-config-scripts.xml:1630:    print(format_transcript(parse_vtt(sys.argv[1])))</file><file path="skills/watch/scripts/watch.py">#!/usr/bin/env python3
+slices/07-config-scripts.xml:1889:            setup_py = SCRIPT_DIR / &quot;setup.py&quot;
+slices/07-config-scripts.xml:1891:                f&quot;[watch] {hint} — run `python3 {setup_py}` to enable the Whisper fallback&quot;,
+slices/07-config-scripts.xml:2006:        setup_py = SCRIPT_DIR / &quot;setup.py&quot;
+slices/07-config-scripts.xml:2011:            f&quot;Run `python3 {setup_py}` to enable Whisper, then re-run._&quot;
+slices/07-config-scripts.xml:2022:    raise SystemExit(main())</file><file path="skills/watch/scripts/whisper.py">#!/usr/bin/env python3
+slices/07-config-scripts.xml:2451:        setup_py = Path(__file__).resolve().parent / &quot;setup.py&quot;
+slices/07-config-scripts.xml:2455:            f&quot;Run `python3 {setup_py}` to configure.&quot;
+slices/07-config-scripts.xml:2501:    print(json.dumps({&quot;backend&quot;: backend, &quot;segments&quot;: segments}, indent=2))</file><file path="dev-sync.sh">#!/usr/bin/env bash
+slices/07-config-scripts.xml:2503:# dev-sync.sh — copy this working tree into the installed /watch plugin cache so
+slices/07-config-scripts.xml:2511:#   ./dev-sync.sh                 # sync into the resolved install path
+slices/07-config-scripts.xml:2512:#   ./dev-sync.sh --dry-run       # show what would change
+slices/07-config-scripts.xml:2513:#   ./dev-sync.sh /some/other/dir # sync into an explicit path
+slices/07-config-scripts.xml:2558:  echo &quot;       install the plugin first, or pass a path: scripts/dev-sync.sh /path/to/install&quot; &gt;&amp;2
+slices/07-config-scripts.xml:2584:  --exclude &apos;dev-sync.sh&apos; \
+
+hook: PostToolUse
+hook: PostToolUse Completed
+codex
+我现在有足够证据做分析：核心运行实现主要在 `07-config-scripts.xml`，产品/安装语义在 `04-docs.xml` 与 `05-agent-config.xml`，测试覆盖在 `06-tests.xml`。下一步会抽取具体脚本关键段，确保数据流和风险不是凭 README 复述。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/sh -lc "sed -n '40,170p' slices/07-config-scripts.xml
+sed -n '1170,1538p' slices/07-config-scripts.xml
+sed -n '1860,2025p' slices/07-config-scripts.xml
+sed -n '127,245p' slices/07-config-scripts.xml
+sed -n '245,420p' slices/07-config-scripts.xml" in /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+ succeeded in 0ms:
+dev-sync.sh</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".github/workflows/release.yml">name: Release
+
+on:
+  push:
+    tags:
+      - &quot;v*&quot;
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build .skill artifact
+        run: |
+          bash skills/watch/scripts/build-skill.sh
+          test -f dist/watch.skill
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/watch.skill
+          generate_release_notes: true
+          draft: false
+          prerelease: false</file><file path="hooks/scripts/check-setup.sh">#!/usr/bin/env bash
+# SessionStart hook for /watch — one-line status so users know what&apos;s wired up.
+# Silent on ready state to avoid spam. Points at the installer when something
+# is missing.
+set -euo pipefail
+
+CONFIG_FILE=&quot;$HOME/.config/watch/.env&quot;
+
+# Warn if the secrets file has loose permissions.
+if [[ -f &quot;$CONFIG_FILE&quot; ]]; then
+  perms=$(stat -c &apos;%a&apos; &quot;$CONFIG_FILE&quot; 2&gt;/dev/null || stat -f &apos;%Lp&apos; &quot;$CONFIG_FILE&quot; 2&gt;/dev/null || echo &quot;&quot;)
+  if [[ -n &quot;$perms&quot; &amp;&amp; &quot;$perms&quot; != &quot;600&quot; &amp;&amp; &quot;$perms&quot; != &quot;400&quot; ]]; then
+    echo &quot;/watch: WARNING — $CONFIG_FILE has permissions $perms (should be 600).&quot;
+    echo &quot;  Fix: chmod 600 $CONFIG_FILE&quot;
+  fi
+fi
+
+# Load API keys from the config file without exporting them.
+read_key() {
+  local name=&quot;$1&quot;
+  if [[ -n &quot;${!name:-}&quot; ]]; then
+    echo &quot;${!name}&quot;
+    return
+  fi
+  if [[ -f &quot;$CONFIG_FILE&quot; ]]; then
+    awk -F= -v k=&quot;$name&quot; &apos;
+      /^[[:space:]]*#/ { next }
+      $1 == k {
+        sub(/^[[:space:]]*/, &quot;&quot;, $2); sub(/[[:space:]]*$/, &quot;&quot;, $2);
+        gsub(/^[&quot;&apos;\&apos;&apos;]|[&quot;&apos;\&apos;&apos;]$/, &quot;&quot;, $2);
+        print $2; exit
+      }
+    &apos; &quot;$CONFIG_FILE&quot;
+  fi
+}
+
+HAS_FFMPEG=&quot;&quot;
+HAS_YTDLP=&quot;&quot;
+command -v ffmpeg &gt;/dev/null 2&gt;&amp;1 &amp;&amp; HAS_FFMPEG=&quot;yes&quot;
+command -v yt-dlp &gt;/dev/null 2&gt;&amp;1 &amp;&amp; HAS_YTDLP=&quot;yes&quot;
+
+HAS_GROQ=&quot;$(read_key GROQ_API_KEY)&quot;
+HAS_OPENAI=&quot;$(read_key OPENAI_API_KEY)&quot;
+SETUP_COMPLETE=&quot;$(read_key SETUP_COMPLETE)&quot;
+
+# Fully configured → silent (Claude can surface status on demand via --check).
+if [[ &quot;$SETUP_COMPLETE&quot; == &quot;true&quot; &amp;&amp; -n &quot;$HAS_FFMPEG&quot; &amp;&amp; -n &quot;$HAS_YTDLP&quot; ]]; then
+  exit 0
+fi
+
+# First-run / partially-configured → one-line hint.
+if [[ -z &quot;$HAS_FFMPEG&quot; || -z &quot;$HAS_YTDLP&quot; ]]; then
+  echo &quot;/watch: needs ffmpeg + yt-dlp. Run \`python3 \$CLAUDE_PLUGIN_ROOT/skills/watch/scripts/setup.py\` once to install and scaffold config.&quot;
+elif [[ -z &quot;$HAS_GROQ&quot; &amp;&amp; -z &quot;$HAS_OPENAI&quot; ]]; then
+  echo &quot;/watch: ready for videos with native captions. Add GROQ_API_KEY (preferred) or OPENAI_API_KEY to ~/.config/watch/.env to unlock Whisper fallback.&quot;
+else
+  echo &quot;/watch: ready.&quot;
+fi</file><file path="skills/watch/scripts/build-skill.sh">#!/usr/bin/env bash
+# build-skill.sh — package the watch skill as a claude.ai-upload-ready .skill file.
+# Usage: bash skills/watch/scripts/build-skill.sh   (run from anywhere)
+#
+# Produces dist/watch.skill, a zip with a single top-level `watch/` directory
+# containing SKILL.md and the scripts/ runtime from skills/watch. Archiving the
+# skills/watch subtree directly keeps the bundle to exactly one SKILL.md and
+# well under claude.ai&apos;s 200-file cap, with no post-hoc `zip -d` stripping.
+set -euo pipefail
+
+REPO_ROOT=&quot;$(cd &quot;$(dirname &quot;$0&quot;)/../../..&quot; &amp;&amp; pwd)&quot;
+cd &quot;$REPO_ROOT&quot;
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo &quot;error: working tree is dirty; commit or stash before building&quot; &gt;&amp;2
+  exit 1
+fi
+
+mkdir -p dist
+OUT=&quot;dist/watch.skill&quot;
+git archive --format=zip --prefix=watch/ --output=&quot;$OUT&quot; HEAD:skills/watch
+
+COUNT=$(unzip -l &quot;$OUT&quot; | tail -1 | awk &apos;{print $2}&apos;)
+SIZE=$(du -h &quot;$OUT&quot; | cut -f1)
+
+if [ &quot;$COUNT&quot; -gt 200 ]; then
+  echo &quot;error: $COUNT files in zip, claude.ai&apos;s cap is 200&quot; &gt;&amp;2
+  echo &quot;       trim the skills/watch/ tree or add a .gitattributes export-ignore entry&quot; &gt;&amp;2
+  exit 1
+fi
+
+SKILL_MD_COUNT=$(unzip -l &quot;$OUT&quot; | grep -c &quot;SKILL.md&quot; || true)
+if [ &quot;$SKILL_MD_COUNT&quot; -ne 1 ]; then
+  echo &quot;error: expected exactly one SKILL.md, found $SKILL_MD_COUNT&quot; &gt;&amp;2
+  exit 1
+fi
+
+echo &quot;built $OUT ($COUNT files, $SIZE)&quot;
+echo &quot;upload via the claude.ai skill UI&quot;</file><file path="skills/watch/scripts/config.py">#!/usr/bin/env python3
+&quot;&quot;&quot;Shared /watch configuration helpers.&quot;&quot;&quot;
+from __future__ import annotations
+
+import os
+from pathlib import Path
+        },
+        indent=2,
+    ))</file><file path="skills/watch/scripts/setup.py">#!/usr/bin/env python3
+&quot;&quot;&quot;Setup / preflight for /watch.
+
+Modes:
+  setup.py --check      Silent preflight. Exit 0 if ready, 2/3/4 on failure.
+  setup.py --json       Machine-readable status for Claude to parse.
+  setup.py              Installer. Auto-installs deps, scaffolds .env, marks SETUP_COMPLETE.
+
+Design:
+- Silent on success: --check exits 0 with no output when everything&apos;s ready so
+  that /watch doesn&apos;t spam &quot;setup is complete&quot; on every turn.
+- Idempotent: re-running the installer is safe — it never clobbers existing
+  keys and only appends missing ones.
+- SETUP_COMPLETE=true in ~/.config/watch/.env tells us the user has been
+  through a successful installer run at least once.
+- Never sudo. On macOS, auto-install via brew. Elsewhere, print exact commands.
+- Never write an API key to disk automatically — only scaffold placeholders.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import json
+import os
+import platform
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+from config import get_config  # noqa: E402
+
+
+REQUIRED_BINARIES = [&quot;ffmpeg&quot;, &quot;ffprobe&quot;, &quot;yt-dlp&quot;]
+CONFIG_DIR = Path.home() / &quot;.config&quot; / &quot;watch&quot;
+CONFIG_FILE = CONFIG_DIR / &quot;.env&quot;
+ENV_TEMPLATE = &quot;&quot;&quot;# /watch API configuration
+#
+# Whisper transcription fallback — used only when yt-dlp cannot get captions
+# (or when you point /watch at a local file with no subtitles).
+#
+# Groq is preferred: it runs whisper-large-v3 at a fraction of OpenAI&apos;s price
+# and is faster in practice. OpenAI is the compatible fallback.
+#
+# Get a Groq key:  https://console.groq.com/keys
+# Get an OpenAI key:  https://platform.openai.com/api-keys
+#
+# Leave both blank to disable Whisper — /watch will still work, but videos
+# without native captions will come back frames-only.
+
+GROQ_API_KEY=
+OPENAI_API_KEY=
+
+# Default watch behavior (the /watch first-run wizard sets this for you).
+# Allowed values: transcript | efficient | balanced | token-burner
+# Keep the value on its own line with no trailing comment.
+# WATCH_DETAIL=balanced
+&quot;&quot;&quot;
+
+
+def _which(name: str) -&gt; str | None:
+    return shutil.which(name)
+
+
+def _check_binaries() -&gt; list[str]:
+    return [b for b in REQUIRED_BINARIES if not _which(b)]
+
+
+_PERM_WARNED: set[str] = set()
+
+
+def _check_file_permissions(path: Path) -&gt; None:
+    &quot;&quot;&quot;Warn to stderr (once per path per process) if a secrets file is
+    world/group readable.&quot;&quot;&quot;
+    key = str(path)
+    if key in _PERM_WARNED:
+        return
+    try:
+        mode = path.stat().st_mode
+        if mode &amp; 0o044:
+            _PERM_WARNED.add(key)
+            sys.stderr.write(
+                f&quot;[watch] WARNING: {path} is readable by other users. &quot;
+                f&quot;Run: chmod 600 {path}\n&quot;
+            )
+            sys.stderr.flush()
+    except OSError:
+        pass
+
+
+def _read_env_key(name: str) -&gt; str | None:
+    value = os.environ.get(name)
+    if value and value.strip():
+        return value.strip()
+    if not CONFIG_FILE.exists():
+        return None
+    _check_file_permissions(CONFIG_FILE)
+    try:
+        for line in CONFIG_FILE.read_text(encoding=&quot;utf-8&quot;).splitlines():
+            line = line.strip()
+            if not line or line.startswith(&quot;#&quot;) or &quot;=&quot; not in line:
+                continue
+            key, _, raw = line.partition(&quot;=&quot;)
+            if key.strip() != name:
+                continue
+            raw = raw.strip()
+            if len(raw) &gt;= 2 and raw[0] in (&apos;&quot;&apos;, &quot;&apos;&quot;) and raw[-1] == raw[0]:
+                raw = raw[1:-1]
+            return raw or None
+    except OSError:
+        return None
+    return None
+
+
+def _have_api_key() -&gt; tuple[bool, str | None]:
+    if _read_env_key(&quot;GROQ_API_KEY&quot;):
+        return True, &quot;groq&quot;
+    if _read_env_key(&quot;OPENAI_API_KEY&quot;):
+        return True, &quot;openai&quot;
+    return False, None
+
+
+def is_first_run() -&gt; bool:
+    &quot;&quot;&quot;True if the installer hasn&apos;t completed successfully yet.&quot;&quot;&quot;
+    return _read_env_key(&quot;SETUP_COMPLETE&quot;) != &quot;true&quot;
+
+
+def _scaffold_env() -&gt; bool:
+    &quot;&quot;&quot;Create ~/.config/watch/.env with placeholders if missing.&quot;&quot;&quot;
+    if CONFIG_FILE.exists():
+        return False
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_FILE.write_text(ENV_TEMPLATE, encoding=&quot;utf-8&quot;)
+    try:
+        CONFIG_FILE.chmod(0o600)
+    except OSError:
+        pass
+    return True
+
+
+def _write_setup_complete() -&gt; None:
+    &quot;&quot;&quot;Idempotently append SETUP_COMPLETE=true to .env.
+
+    Used only after a fully successful install (deps + key). Future sessions
+    detect this marker to skip wizard-style UI and stay silent.
+    &quot;&quot;&quot;
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    existing = &quot;&quot;
+    if CONFIG_FILE.exists():
+        existing = CONFIG_FILE.read_text(encoding=&quot;utf-8&quot;)
+        for line in existing.splitlines():
+            if line.strip().startswith(&quot;SETUP_COMPLETE=&quot;):
+                return
+        if existing and not existing.endswith(&quot;\n&quot;):
+            existing += &quot;\n&quot;
+        CONFIG_FILE.write_text(existing + &quot;SETUP_COMPLETE=true\n&quot;, encoding=&quot;utf-8&quot;)
+    else:
+        CONFIG_FILE.write_text(ENV_TEMPLATE + &quot;\nSETUP_COMPLETE=true\n&quot;, encoding=&quot;utf-8&quot;)
+    try:
+        CONFIG_FILE.chmod(0o600)
+    except OSError:
+        pass
+
+
+def _brew_pkg(missing: list[str]) -&gt; list[str]:
+    pkgs: list[str] = []
+    for bin_name in missing:
+        if bin_name in (&quot;ffmpeg&quot;, &quot;ffprobe&quot;):
+            if &quot;ffmpeg&quot; not in pkgs:
+                pkgs.append(&quot;ffmpeg&quot;)
+        elif bin_name == &quot;yt-dlp&quot;:
+            if &quot;yt-dlp&quot; not in pkgs:
+                pkgs.append(&quot;yt-dlp&quot;)
+        else:
+            pkgs.append(bin_name)
+    return pkgs
+
+
+def _install_macos(missing: list[str]) -&gt; tuple[bool, str]:
+    if _which(&quot;brew&quot;) is None:
+        return False, (
+            &quot;Homebrew is not installed. Install it from https://brew.sh, then re-run setup. &quot;
+            &quot;Or install manually: `brew install &quot; + &quot; &quot;.join(_brew_pkg(missing)) + &quot;`&quot;
+        )
+    pkgs = _brew_pkg(missing)
+    if not pkgs:
+        return True, &quot;nothing to install&quot;
+    cmd = [&quot;brew&quot;, &quot;install&quot;, *pkgs]
+    print(f&quot;[setup] running: {&apos; &apos;.join(cmd)}&quot;, file=sys.stderr)
+    result = subprocess.run(cmd)
+    if result.returncode != 0:
+        return False, f&quot;brew install failed with exit code {result.returncode}&quot;
+    return True, f&quot;installed via brew: {&apos;, &apos;.join(pkgs)}&quot;
+
+
+def _install_hint_linux(missing: list[str]) -&gt; str:
+    pkgs = _brew_pkg(missing)
+    hints = []
+    if &quot;ffmpeg&quot; in pkgs:
+        hints.append(&quot;apt: `sudo apt install ffmpeg` or dnf: `sudo dnf install ffmpeg`&quot;)
+    if &quot;yt-dlp&quot; in pkgs:
+        hints.append(&quot;`pipx install yt-dlp` (recommended) or `pip install --user yt-dlp`&quot;)
+    return &quot;\n  &quot;.join(hints) if hints else &quot;nothing to install&quot;
+
+
+def _install_hint_windows(missing: list[str]) -&gt; str:
+    pkgs = _brew_pkg(missing)
+    hints = []
+    if &quot;ffmpeg&quot; in pkgs:
+        hints.append(&quot;winget: `winget install Gyan.FFmpeg`&quot;)
+    if &quot;yt-dlp&quot; in pkgs:
+        hints.append(&quot;winget: `winget install yt-dlp.yt-dlp` or pip: `pip install --user yt-dlp`&quot;)
+    return &quot;\n  &quot;.join(hints) if hints else &quot;nothing to install&quot;
+
+
+def _status() -&gt; dict:
+    &quot;&quot;&quot;Structured preflight snapshot.
+
+    `status` describes the *ideal* state (a Whisper key is encouraged), so a
+    keyless install still reports `needs_key` on the very first run — that&apos;s
+    the agent&apos;s cue to encourage adding one.
+
+    `can_proceed` is the operational gate: /watch can run as long as the
+    binaries are present AND the user has either set a key or already finished
+    setup (consciously opting out of Whisper). A keyless user who completed
+    setup is NOT nagged on every call.
+    &quot;&quot;&quot;
+    missing = _check_binaries()
+    has_key, backend = _have_api_key()
+    setup_complete = not is_first_run()
+
+    if not missing and has_key:
+        status = &quot;ready&quot;
+    elif missing and not has_key:
+        status = &quot;needs_install_and_key&quot;
+    elif missing:
+        status = &quot;needs_install&quot;
+    else:
+        status = &quot;needs_key&quot;
+
+    can_proceed = (not missing) and (has_key or setup_complete)
+
+    cfg = get_config()
+    return {
+        &quot;status&quot;: status,
+        &quot;can_proceed&quot;: can_proceed,
+        &quot;first_run&quot;: not setup_complete,
+        &quot;setup_complete&quot;: setup_complete,
+        &quot;missing_binaries&quot;: missing,
+        &quot;whisper_backend&quot;: backend,
+        &quot;has_api_key&quot;: has_key,
+        &quot;config_file&quot;: str(CONFIG_FILE),
+        &quot;watch_detail&quot;: cfg[&quot;detail&quot;],
+        &quot;platform&quot;: platform.system(),
+    }
+
+
+def cmd_check() -&gt; int:
+    &quot;&quot;&quot;Silent-on-success preflight.
+
+    Exit 0 with no output when /watch can run. A keyless user who already
+    finished setup (SETUP_COMPLETE=true) counts as ready — Whisper is
+    encouraged, not required — so they are never nagged on follow-up calls.
+
+    On a state that blocks /watch, print one actionable line to stderr:
+      2 → binaries missing
+      3 → genuine first run with no API key (encourage one)
+      4 → both missing
+    &quot;&quot;&quot;
+    s = _status()
+    if s[&quot;can_proceed&quot;]:
+        return 0
+
+    parts = []
+    if s[&quot;missing_binaries&quot;]:
+        parts.append(f&quot;missing binaries: {&apos;, &apos;.join(s[&apos;missing_binaries&apos;])}&quot;)
+    if not s[&quot;has_api_key&quot;] and not s[&quot;setup_complete&quot;]:
+        parts.append(&quot;no Whisper API key (GROQ_API_KEY or OPENAI_API_KEY)&quot;)
+    installer = Path(__file__).resolve()
+    sys.stderr.write(
+        f&quot;[watch] setup incomplete ({&apos;; &apos;.join(parts)}). &quot;
+        f&quot;Run: python3 {installer}\n&quot;
+    )
+    sys.stderr.flush()
+
+    if s[&quot;missing_binaries&quot;] and not s[&quot;has_api_key&quot;]:
+        return 4
+    if s[&quot;missing_binaries&quot;]:
+        return 2
+    return 3
+
+
+def cmd_json() -&gt; int:
+    json.dump(_status(), sys.stdout, indent=2)
+    sys.stdout.write(&quot;\n&quot;)
+    return 0
+
+
+def cmd_install() -&gt; int:
+    missing = _check_binaries()
+    installed_deps = False
+    if missing:
+        system = platform.system()
+        if system == &quot;Darwin&quot;:
+            ok, msg = _install_macos(missing)
+            print(f&quot;[setup] {msg}&quot;, file=sys.stderr)
+            if not ok:
+                return 2
+            still_missing = _check_binaries()
+            if still_missing:
+                print(f&quot;[setup] still missing after install: {&apos;, &apos;.join(still_missing)}&quot;, file=sys.stderr)
+                return 2
+            installed_deps = True
+        elif system == &quot;Linux&quot;:
+            print(&quot;[setup] dependencies missing on Linux — please install:&quot;, file=sys.stderr)
+            print(&quot;  &quot; + _install_hint_linux(missing), file=sys.stderr)
+            return 2
+        elif system == &quot;Windows&quot;:
+            print(&quot;[setup] dependencies missing on Windows — please install:&quot;, file=sys.stderr)
+            print(&quot;  &quot; + _install_hint_windows(missing), file=sys.stderr)
+            return 2
+        else:
+            print(f&quot;[setup] unsupported platform ({system}) for auto-install. Install manually:&quot;, file=sys.stderr)
+            print(f&quot;  missing: {&apos;, &apos;.join(missing)}&quot;, file=sys.stderr)
+            return 2
+
+    created = _scaffold_env()
+    if created:
+        print(f&quot;[setup] created config: {CONFIG_FILE}&quot;)
+    else:
+        print(f&quot;[setup] config exists: {CONFIG_FILE}&quot;)
+
+    has_key, backend = _have_api_key()
+    if has_key:
+        _write_setup_complete()
+        print(f&quot;[setup] ready. whisper backend: {backend}&quot;)
+        if installed_deps:
+            print(&quot;[setup] installed dependencies; /watch is fully set up.&quot;)
+        return 0
+
+    print(&quot;&quot;)
+    print(&quot;[setup] one step left: add a Whisper API key.&quot;)
+    print(&quot;&quot;)
+    print(f&quot;  Edit {CONFIG_FILE} and set either:&quot;)
+    print(&quot;    GROQ_API_KEY=...    (preferred — cheaper, faster; get one at console.groq.com/keys)&quot;)
+    print(&quot;    OPENAI_API_KEY=...  (fallback; get one at platform.openai.com/api-keys)&quot;)
+    print(&quot;&quot;)
+    print(&quot;  Without a key, /watch still works but videos without captions come back frames-only.&quot;)
+    return 3
+
+
+def main() -&gt; int:
+    if len(sys.argv) &gt; 1:
+        arg = sys.argv[1]
+        if arg == &quot;--check&quot;:
+            return cmd_check()
+        if arg == &quot;--json&quot;:
+            return cmd_json()
+    return cmd_install()
+
+
+if __name__ == &quot;__main__&quot;:
+    raise SystemExit(main())</file><file path="skills/watch/scripts/transcribe.py">#!/usr/bin/env python3
+&quot;&quot;&quot;Parse a WebVTT subtitle file into a clean, timestamped transcript.
+
+YouTube auto-subs emit rolling-duplicate cues (each line appears 2-3 times as it
+        try:
+            all_segments = parse_vtt(dl[&quot;subtitle_path&quot;])
+            transcript_segments = filter_range(all_segments, start_sec, end_sec) if focused else all_segments
+            transcript_text = format_transcript(transcript_segments)
+            transcript_source = &quot;captions&quot;
+        except Exception as exc:
+            print(f&quot;[watch] subtitle parse failed: {exc}&quot;, file=sys.stderr)
+
+    if not transcript_segments and not args.no_whisper and video_path and meta.get(&quot;has_audio&quot;):
+        backend, api_key = load_api_key(args.whisper)
+        if backend and api_key:
+            try:
+                all_segments, used_backend = transcribe_video(
+                    video_path,
+                    work / &quot;audio.mp3&quot;,
+                    backend=backend,
+                    api_key=api_key,
+                )
+                transcript_segments = filter_range(all_segments, start_sec, end_sec) if focused else all_segments
+                transcript_text = format_transcript(transcript_segments)
+                transcript_source = f&quot;whisper ({used_backend})&quot;
+            except SystemExit as exc:
+                print(f&quot;[watch] whisper fallback failed: {exc}&quot;, file=sys.stderr)
+        else:
+            hint = (
+                f&quot;--whisper {args.whisper} was set but the matching API key is missing&quot;
+                if args.whisper else
+                &quot;no subtitles and no Whisper API key found&quot;
+            )
+            setup_py = SCRIPT_DIR / &quot;setup.py&quot;
+            print(
+                f&quot;[watch] {hint} — run `python3 {setup_py}` to enable the Whisper fallback&quot;,
+                file=sys.stderr,
+            )
+    elif not transcript_segments and video_path and not meta.get(&quot;has_audio&quot;):
+        print(&quot;[watch] no audio stream found — proceeding without transcription&quot;, file=sys.stderr)
+
+    info = dl.get(&quot;info&quot;) or {}
+
+    print()
+    print(&quot;# watch: video report&quot;)
+    print()
+    print(f&quot;- **Source:** {args.source}&quot;)
+    if info.get(&quot;title&quot;):
+        print(f&quot;- **Title:** {info[&apos;title&apos;]}&quot;)
+    if info.get(&quot;uploader&quot;):
+        print(f&quot;- **Uploader:** {info[&apos;uploader&apos;]}&quot;)
+    print(f&quot;- **Duration:** {format_time(full_duration)} ({full_duration:.1f}s)&quot;)
+    if focused:
+        print(
+            f&quot;- **Focus range:** {format_time(effective_start)} → {format_time(effective_end)} &quot;
+            f&quot;({effective_duration:.1f}s)&quot;
+        )
+    if meta.get(&quot;width&quot;) and meta.get(&quot;height&quot;):
+        print(f&quot;- **Resolution:** {meta[&apos;width&apos;]}x{meta[&apos;height&apos;]} ({meta.get(&apos;codec&apos;) or &apos;unknown codec&apos;})&quot;)
+    range_mode = &quot;focused&quot; if focused else &quot;full&quot;
+    print(f&quot;- **Detail:** {detail}&quot;)
+    detail_count = frame_meta.get(&quot;selected_count&quot;, 0)
+    if detail != &quot;transcript&quot;:
+        cap_label = &quot;unlimited&quot; if detail_budget is None else str(detail_budget)
+        engine = frame_meta.get(&quot;engine&quot;, &quot;scene&quot;)
+        fallback = &quot; with uniform fallback&quot; if frame_meta.get(&quot;fallback&quot;) else &quot;&quot;
+        deduped = frame_meta.get(&quot;deduped_count&quot;, 0)
+        dedup_note = f&quot;, {deduped} near-duplicate{&apos;s&apos; if deduped != 1 else &apos;&apos;} dropped&quot; if deduped else &quot;&quot;
+        print(
+            f&quot;- **Frames:** {detail_count} selected from {frame_meta.get(&apos;candidate_count&apos;, detail_count)} &quot;
+            f&quot;candidates ({engine}{fallback}{dedup_note}, {range_mode} range, budget {target}, cap {cap_label})&quot;
+        )
+    elif not cue_frames:
+        print(&quot;- **Frames:** skipped (transcript detail)&quot;)
+    if cue_frames:
+        dropped = cue_meta.get(&quot;dropped_out_of_window&quot;, 0)
+        drop_note = f&quot;, {dropped} dropped outside range&quot; if dropped else &quot;&quot;
+        print(
+            f&quot;- **Cue frames:** {len(cue_frames)} at transcript-flagged timestamps &quot;
+            f&quot;(transcript-cue{drop_note})&quot;
+        )
+    if frames:
+        print(f&quot;- **Frame size:** max {args.resolution}px wide, max 1998px tall&quot;)
+    if transcript_segments:
+        in_range = &quot; in range&quot; if focused else &quot;&quot;
+        print(
+            f&quot;- **Transcript:** {len(transcript_segments)} segments{in_range} &quot;
+            f&quot;(via {transcript_source or &apos;captions&apos;})&quot;
+        )
+    else:
+        print(&quot;- **Transcript:** none available&quot;)
+
+    if detail == &quot;token-burner&quot; and len(frames) &gt; 250:
+        print()
+        print(
+            f&quot;&gt; **Warning:** token-burner detail selected {len(frames)} frames. &quot;
+            &quot;This may use a large number of image tokens.&quot;
+        )
+
+    if not focused and full_duration &gt; 600 and detail not in (&quot;transcript&quot;, &quot;token-burner&quot;):
+        mins = int(full_duration // 60)
+        print()
+        print(
+            f&quot;&gt; **Warning:** This is a {mins}-minute video. Frame coverage is sparse at this length &quot;
+            f&quot;under `{detail}` detail — its cap spreads thin across the full clip. For better results, &quot;
+            &quot;re-run with `--start HH:MM:SS --end HH:MM:SS` to zoom into a section, or use &quot;
+            &quot;`--detail token-burner` to keep every scene-change frame across the whole video.&quot;
+        )
+
+    print()
+    print(&quot;## Frames&quot;)
+    print()
+    if frames:
+        print(f&quot;Frames live at: `{work / &apos;frames&apos;}`&quot;)
+        print()
+        print(
+            &quot;**Read each frame path below with the Read tool to view the image.** &quot;
+            &quot;Frames are in chronological order; `t=MM:SS` is the absolute timestamp in the source video.&quot;
+        )
+        print()
+        for frame in frames:
+            print(
+                f&quot;- `{frame[&apos;path&apos;]}` &quot;
+                f&quot;(t={format_time(frame[&apos;timestamp_seconds&apos;])}, reason={frame.get(&apos;reason&apos;, &apos;selected&apos;)})&quot;
+            )
+    else:
+        print(&quot;_No frames extracted._&quot;)
+
+    print()
+    print(&quot;## Transcript&quot;)
+    print()
+    if transcript_text:
+        label = transcript_source or &quot;captions&quot;
+        if focused:
+            print(f&quot;_Source: {label}. Filtered to {format_time(effective_start)} → {format_time(effective_end)}:_&quot;)
+        else:
+            print(f&quot;_Source: {label}._&quot;)
+        print()
+        print(&quot;```&quot;)
+        print(transcript_text)
+        print(&quot;```&quot;)
+    elif detail == &quot;transcript&quot;:
+        print(
+            &quot;_No transcript available at transcript detail. Captions were missing and Whisper was &quot;
+            &quot;unavailable or failed, so there is no visual fallback here. Re-run with &quot;
+            &quot;`--detail balanced` for frames._&quot;
+        )
+    elif focused and dl.get(&quot;subtitle_path&quot;):
+        print(f&quot;_No transcript lines fell inside {format_time(effective_start)} → {format_time(effective_end)}._&quot;)
+    else:
+        setup_py = SCRIPT_DIR / &quot;setup.py&quot;
+        print(
+            &quot;_No transcript available — proceed with frames only. &quot;
+            &quot;Captions were missing and the Whisper fallback was unavailable &quot;
+            &quot;(no API key set, or `--no-whisper` was used). &quot;
+            f&quot;Run `python3 {setup_py}` to enable Whisper, then re-run._&quot;
+        )
+
+    print()
+    print(&quot;---&quot;)
+    print(f&quot;_Work dir: `{work}` — delete when done._&quot;)
+
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    raise SystemExit(main())</file><file path="skills/watch/scripts/whisper.py">#!/usr/bin/env python3
+&quot;&quot;&quot;Transcribe a video via Groq or OpenAI Whisper API.
+
+Strategy: extract audio (mono 16kHz mp3, tiny payload), upload to whichever
+fi</file><file path="skills/watch/scripts/build-skill.sh">#!/usr/bin/env bash
+# build-skill.sh — package the watch skill as a claude.ai-upload-ready .skill file.
+# Usage: bash skills/watch/scripts/build-skill.sh   (run from anywhere)
+#
+# Produces dist/watch.skill, a zip with a single top-level `watch/` directory
+# containing SKILL.md and the scripts/ runtime from skills/watch. Archiving the
+# skills/watch subtree directly keeps the bundle to exactly one SKILL.md and
+# well under claude.ai&apos;s 200-file cap, with no post-hoc `zip -d` stripping.
+set -euo pipefail
+
+REPO_ROOT=&quot;$(cd &quot;$(dirname &quot;$0&quot;)/../../..&quot; &amp;&amp; pwd)&quot;
+cd &quot;$REPO_ROOT&quot;
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo &quot;error: working tree is dirty; commit or stash before building&quot; &gt;&amp;2
+  exit 1
+fi
+
+mkdir -p dist
+OUT=&quot;dist/watch.skill&quot;
+git archive --format=zip --prefix=watch/ --output=&quot;$OUT&quot; HEAD:skills/watch
+
+COUNT=$(unzip -l &quot;$OUT&quot; | tail -1 | awk &apos;{print $2}&apos;)
+SIZE=$(du -h &quot;$OUT&quot; | cut -f1)
+
+if [ &quot;$COUNT&quot; -gt 200 ]; then
+  echo &quot;error: $COUNT files in zip, claude.ai&apos;s cap is 200&quot; &gt;&amp;2
+  echo &quot;       trim the skills/watch/ tree or add a .gitattributes export-ignore entry&quot; &gt;&amp;2
+  exit 1
+fi
+
+SKILL_MD_COUNT=$(unzip -l &quot;$OUT&quot; | grep -c &quot;SKILL.md&quot; || true)
+if [ &quot;$SKILL_MD_COUNT&quot; -ne 1 ]; then
+  echo &quot;error: expected exactly one SKILL.md, found $SKILL_MD_COUNT&quot; &gt;&amp;2
+  exit 1
+fi
+
+echo &quot;built $OUT ($COUNT files, $SIZE)&quot;
+echo &quot;upload via the claude.ai skill UI&quot;</file><file path="skills/watch/scripts/config.py">#!/usr/bin/env python3
+&quot;&quot;&quot;Shared /watch configuration helpers.&quot;&quot;&quot;
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+
+CONFIG_DIR = Path.home() / &quot;.config&quot; / &quot;watch&quot;
+CONFIG_FILE = CONFIG_DIR / &quot;.env&quot;
+
+DEFAULT_DETAIL = &quot;balanced&quot;
+
+DETAILS = {&quot;transcript&quot;, &quot;efficient&quot;, &quot;balanced&quot;, &quot;token-burner&quot;}
+
+
+def read_env_file(path: Path | None = None) -&gt; dict[str, str]:
+    if path is None:
+        path = CONFIG_FILE
+    values: dict[str, str] = {}
+    if not path.exists():
+        return values
+    try:
+        lines = path.read_text(encoding=&quot;utf-8&quot;).splitlines()
+    except OSError:
+        return values
+    for line in lines:
+        raw = line.strip()
+        if not raw or raw.startswith(&quot;#&quot;) or &quot;=&quot; not in raw:
+            continue
+        key, _, value = raw.partition(&quot;=&quot;)
+        value = value.strip()
+        if len(value) &gt;= 2 and value[0] in (&apos;&quot;&apos;, &quot;&apos;&quot;) and value[-1] == value[0]:
+            value = value[1:-1]
+        else:
+            # Strip an inline comment (a &apos;#&apos; preceded by whitespace) from an
+            # unquoted value. Without this, `WATCH_DETAIL=balanced  # note`
+            # parses as &quot;balanced  # note&quot;, fails validation, and silently
+            # falls back to the default. Keeps &apos;#&apos; inside quotes / API keys.
+            for i, ch in enumerate(value):
+                if ch == &quot;#&quot; and i &gt; 0 and value[i - 1] in &quot; \t&quot;:
+                    value = value[:i].rstrip()
+                    break
+        values[key.strip()] = value
+    return values
+
+
+def get_config() -&gt; dict[str, object]:
+    file_values = read_env_file()
+
+    detail = (
+        os.environ.get(&quot;WATCH_DETAIL&quot;)
+        or file_values.get(&quot;WATCH_DETAIL&quot;)
+        or DEFAULT_DETAIL
+    )
+    if detail not in DETAILS:
+        detail = DEFAULT_DETAIL
+
+    return {
+        &quot;detail&quot;: detail,
+        &quot;config_file&quot;: str(CONFIG_FILE),
+    }
+
+
+def frame_cap(detail: str) -&gt; int | None:
+    if detail == &quot;efficient&quot;:
+        return 50
+    if detail == &quot;balanced&quot;:
+        return 100
+    if detail == &quot;token-burner&quot;:
+        return None
+    if detail == &quot;transcript&quot;:
+        return None
+    return 100</file><file path="skills/watch/scripts/download.py">#!/usr/bin/env python3
+&quot;&quot;&quot;Download a video via yt-dlp, or resolve a local file path.
+
+Also fetches subtitles (manual first, then auto-generated) in VTT format so
+transcribe.py can parse them without needing Whisper.
+&quot;&quot;&quot;
+from __future__ import annotations
+
+
+import json
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from urllib.parse import urlparse
+
+
+VIDEO_EXTS = {&quot;.mp4&quot;, &quot;.mkv&quot;, &quot;.webm&quot;, &quot;.mov&quot;, &quot;.m4v&quot;, &quot;.avi&quot;, &quot;.flv&quot;, &quot;.wmv&quot;}
+
+
+def is_url(source: str) -&gt; bool:
+    if source.startswith(&quot;-&quot;):
+        return False
+    parsed = urlparse(source)
+    return parsed.scheme in (&quot;http&quot;, &quot;https&quot;) and bool(parsed.netloc)
+
+
+def resolve_local(path: str) -&gt; dict:
+    p = Path(path).expanduser().resolve()
+    if not p.exists():
+        raise SystemExit(f&quot;File not found: {p}&quot;)
+    if p.suffix.lower() not in VIDEO_EXTS:
+        print(
+            f&quot;[watch] warning: {p.suffix} is not a known video extension, proceeding anyway&quot;,
+            file=sys.stderr,
+        )
+    return {
+        &quot;video_path&quot;: str(p),
+        &quot;subtitle_path&quot;: None,
+        &quot;info&quot;: {&quot;title&quot;: p.name, &quot;url&quot;: str(p)},
+        &quot;downloaded&quot;: False,
+    }
+
+
+def _pick_subtitle(out_dir: Path) -&gt; Path | None:
+    candidates = sorted(out_dir.glob(&quot;video*.vtt&quot;))
+    if not candidates:
+        return None
+    preferred = [
+        c for c in candidates
+        if any(marker in c.name for marker in (&quot;.en.&quot;, &quot;.en-US.&quot;, &quot;.en-GB.&quot;, &quot;.en-orig.&quot;))
+    ]
+    return preferred[0] if preferred else candidates[0]
+
+
+def _pick_video(out_dir: Path) -&gt; Path | None:
+    for ext in (&quot;.mp4&quot;, &quot;.mkv&quot;, &quot;.webm&quot;, &quot;.mov&quot;, &quot;.m4a&quot;, &quot;.mp3&quot;, &quot;.opus&quot;):
+        for candidate in out_dir.glob(f&quot;video*{ext}&quot;):
+            return candidate
+    for candidate in out_dir.glob(&quot;video.*&quot;):
+        if candidate.suffix.lower() in VIDEO_EXTS:
+            return candidate
+    return None
+
+
+def fetch_captions(url: str, out_dir: Path) -&gt; dict:
+    &quot;&quot;&quot;Fetch metadata and best available VTT captions without downloading video.&quot;&quot;&quot;
+    if shutil.which(&quot;yt-dlp&quot;) is None:
+        raise SystemExit(&quot;yt-dlp is not installed. Install with: brew install yt-dlp&quot;)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_template = str(out_dir / &quot;video.%(ext)s&quot;)
+    cmd = [
+        &quot;yt-dlp&quot;,
+        &quot;--skip-download&quot;,
+        &quot;--write-info-json&quot;,
+        &quot;--write-subs&quot;,
+        &quot;--write-auto-subs&quot;,
+        &quot;--sub-langs&quot;, &quot;en.*&quot;,
+        &quot;--sub-format&quot;, &quot;vtt&quot;,
+        &quot;--convert-subs&quot;, &quot;vtt&quot;,
+        &quot;--no-playlist&quot;,
+        &quot;--ignore-errors&quot;,
+        &quot;-o&quot;, output_template,
+        &quot;--&quot;,
+        url,
+    ]
+    subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
+    subtitle = _pick_subtitle(out_dir)
+    info = _read_info(out_dir / &quot;video.info.json&quot;, url)
+    return {
+        &quot;video_path&quot;: None,
+        &quot;subtitle_path&quot;: str(subtitle) if subtitle else None,
+        &quot;info&quot;: info or {&quot;url&quot;: url},
+        &quot;downloaded&quot;: False,
+    }
+
+
+def _read_info(info_path: Path, url: str) -&gt; dict:
+    info: dict = {}
+    if info_path.exists():
+        try:
+            raw = json.loads(info_path.read_text(encoding=&quot;utf-8&quot;))
+            info = {
+                &quot;title&quot;: raw.get(&quot;title&quot;),
+                &quot;uploader&quot;: raw.get(&quot;uploader&quot;) or raw.get(&quot;channel&quot;),
+                &quot;duration&quot;: raw.get(&quot;duration&quot;),
+                &quot;url&quot;: raw.get(&quot;webpage_url&quot;) or url,
+            }
+        except Exception as exc:
+            print(f&quot;[watch] info.json parse failed: {exc}&quot;, file=sys.stderr)
+            info = {&quot;url&quot;: url}
+    return info
+
+
+def download_url(
+    url: str,
+    out_dir: Path,
+    audio_only: bool = False,
+) -&gt; dict:
+    if shutil.which(&quot;yt-dlp&quot;) is None:
+        raise SystemExit(&quot;yt-dlp is not installed. Install with: brew install yt-dlp&quot;)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_template = str(out_dir / &quot;video.%(ext)s&quot;)
+
+    fmt = &quot;ba/bestaudio&quot; if audio_only else &quot;bv*[height&lt;=720]+ba/b[height&lt;=720]/bv+ba/b&quot;
+    cmd = [
+        &quot;yt-dlp&quot;,
+        &quot;-N&quot;, &quot;8&quot;,
+        &quot;-f&quot;, fmt,
+        &quot;--merge-output-format&quot;, &quot;mp4&quot;,
+        &quot;--write-info-json&quot;,
+        &quot;--write-subs&quot;,
+        &quot;--write-auto-subs&quot;,
+        &quot;--sub-langs&quot;, &quot;en.*&quot;,
+        &quot;--sub-format&quot;, &quot;vtt&quot;,
+        &quot;--convert-subs&quot;, &quot;vtt&quot;,
+        &quot;--no-playlist&quot;,
+        &quot;--ignore-errors&quot;,
+        &quot;-o&quot;, output_template,
+        &quot;--&quot;,
+        url,
+    ]
+
+    # yt-dlp may exit non-zero if a subtitle variant fails (e.g. 429) even when
+    # the video itself downloaded fine. Treat &quot;video file present&quot; as success.
+    result = subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
+    video = _pick_video(out_dir)
+    if video is None:
+        raise SystemExit(
+            f&quot;yt-dlp did not produce a video file in {out_dir} (exit {result.returncode})&quot;
+        )
+
+    subtitle = _pick_subtitle(out_dir)
+    info = _read_info(out_dir / &quot;video.info.json&quot;, url)
+
+    return {
+        &quot;video_path&quot;: str(video),
+        &quot;subtitle_path&quot;: str(subtitle) if subtitle else None,
+        &quot;info&quot;: info or {&quot;url&quot;: url},
+        &quot;downloaded&quot;: True,
+    }
+
+
+def download(
+    source: str,
+    out_dir: Path,
+    audio_only: bool = False,
+) -&gt; dict:
+    if is_url(source):
+        return download_url(source, out_dir, audio_only=audio_only)
+    return resolve_local(source)
+
+
+if __name__ == &quot;__main__&quot;:
+    if len(sys.argv) &lt; 3:
+        print(&quot;usage: download.py &lt;url-or-path&gt; &lt;out-dir&gt;&quot;, file=sys.stderr)
+        raise SystemExit(2)
+    result = download(sys.argv[1], Path(sys.argv[2]))
+    print(json.dumps(result, indent=2))</file><file path="skills/watch/scripts/frames.py">#!/usr/bin/env python3
+&quot;&quot;&quot;Probe video metadata and extract frames at an auto-scaled fps.
+
+Auto-fps targets a frame budget, not a fixed rate. Token cost scales with frame
+
+hook: PostToolUse
+hook: PostToolUse Completed
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/sh -lc "sed -n '25,48p' slices/05-agent-config.xml
+sed -n '40,105p' slices/05-agent-config.xml
+sed -n '398,655p' slices/04-docs.xml
+sed -n '632,725p' slices/06-tests.xml
+sed -n '730,870p' slices/06-tests.xml" in /Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts
+ succeeded in 0ms:
+    marketplace.json
+AGENTS.md
+CLAUDE.md</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".agents/plugins/marketplace.json">{
+  &quot;name&quot;: &quot;claude-video&quot;,
+  &quot;interface&quot;: {
+    &quot;displayName&quot;: &quot;watch&quot;
+  },
+  &quot;plugins&quot;: [
+    {
+      &quot;name&quot;: &quot;watch&quot;,
+      &quot;source&quot;: {
+        &quot;source&quot;: &quot;url&quot;,
+        &quot;url&quot;: &quot;https://github.com/bradautomates/claude-video.git&quot;
+      },
+      &quot;policy&quot;: {
+        &quot;installation&quot;: &quot;AVAILABLE&quot;,
+        &quot;authentication&quot;: &quot;ON_INSTALL&quot;
+      },
+      &quot;category&quot;: &quot;Productivity&quot;
+    }
+  ]
+}</file><file path="AGENTS.md"># claude-video / watch skill
+
+Agent Skills package that gives an agent a video input. Installable across Claude Code (most common host), Codex, Cursor, GitHub Copilot, and 50+ other [Agent Skills](https://agentskills.io) hosts. Pure-stdlib Python that orchestrates `yt-dlp` + `ffmpeg` and an optional Whisper API.
+        &quot;installation&quot;: &quot;AVAILABLE&quot;,
+        &quot;authentication&quot;: &quot;ON_INSTALL&quot;
+      },
+      &quot;category&quot;: &quot;Productivity&quot;
+    }
+  ]
+}</file><file path="AGENTS.md"># claude-video / watch skill
+
+Agent Skills package that gives an agent a video input. Installable across Claude Code (most common host), Codex, Cursor, GitHub Copilot, and 50+ other [Agent Skills](https://agentskills.io) hosts. Pure-stdlib Python that orchestrates `yt-dlp` + `ffmpeg` and an optional Whisper API.
+
+## Structure
+
+- `skills/watch/SKILL.md` — canonical skill contract the model reads when `/watch` fires. Source of truth for behavior across every host.
+- `skills/watch/scripts/watch.py` — entry point; orchestrates download → frames → transcript.
+- `skills/watch/scripts/{download,frames,transcribe,whisper,setup,config}.py` — yt-dlp wrapper, ffmpeg frame extraction + auto-fps, caption/Whisper transcription, preflight/installer, shared config.
+- `skills/watch/scripts/build-skill.sh` — builds `dist/watch.skill` for claude.ai upload (dev-only).
+- `hooks/` — Claude Code SessionStart setup-status hook (Claude Code only).
+- `.claude-plugin/` — `plugin.json` + `marketplace.json` (Claude Code plugin + local marketplace).
+- `.codex-plugin/plugin.json` — Codex/agents manifest; `&quot;skills&quot;: &quot;./skills/&quot;` points the Agent Skills CLI at the self-contained skill folder.
+- `.agents/plugins/marketplace.json` — agents marketplace listing pointing at the repo-root plugin.
+- `CLAUDE.md` → `@AGENTS.md` — generic-agent entry point.
+- `tests/` — pytest suite (ffmpeg-synthesized clips; no network).
+
+## Orientation
+
+- The product is the slash-command-invoked skill (`/watch &lt;url-or-path&gt; [question]`), not a CLI. `scripts/watch.py` is implementation. Features must work across every harness the skill installs into, not just Claude Code.
+- **The skill is one self-contained folder: `skills/watch/`.** SKILL.md and `scripts/` are siblings inside it. This is what lets `npx skills add` copy a working skill as a unit — do NOT move SKILL.md or `scripts/` back to the repo root, or non-Claude installers will copy SKILL.md without the scripts.
+- **Path resolution is harness-agnostic.** SKILL.md resolves `SKILL_DIR` as the directory of the SKILL.md the model just Read, then runs `${SKILL_DIR}/scripts/...`. Do NOT reintroduce `${CLAUDE_SKILL_DIR}` (Claude-Code-only) — it is unset on Codex/Cursor/agents and breaks every script call there.
+- **No `commands/` wrapper.** `/watch` is derived from SKILL.md frontmatter (`name: watch` + `user-invocable: true`). A separate command file creates a duplicate slash command.
+
+## Install surfaces
+
+| Surface | Install |
+|---------|---------|
+| Claude Code | `/plugin marketplace add bradautomates/claude-video` then `/plugin install watch@claude-video` |
+| Codex / Cursor / Copilot / +50 | `npx skills add bradautomates/claude-video -g` |
+| claude.ai (web) | upload `dist/watch.skill` (built by `skills/watch/scripts/build-skill.sh`) |
+
+## Commands
+
+```bash
+# Tests (stdlib + pytest; ffmpeg required for frame tests)
+.venv/bin/pytest -q                # or: python3 -m pytest -q
+
+# Build the claude.ai upload bundle (archives skills/watch/ as the bundle root)
+bash skills/watch/scripts/build-skill.sh   # → dist/watch.skill
+
+# Dev: mirror the working tree into the installed Claude Code plugin cache
+./dev-sync.sh                       # --dry-run to preview
+```
+
+## Rules
+
+- Keep the version in sync across `skills/watch/SKILL.md` (frontmatter), `.claude-plugin/plugin.json`, and `.codex-plugin/plugin.json` when cutting a release.
+- Releasing: tag `vX.Y.Z` and push the tag; `.github/workflows/release.yml` builds `dist/watch.skill` and attaches it to the GitHub release.
+- Never commit real API keys or `.env` contents; keys live in `~/.config/watch/.env` (mode `0600`) at runtime.</file><file path="CLAUDE.md">@AGENTS.md</file></files></repomix>
+Initial marketplace release.
+
+### Added
+- `/watch &lt;url-or-path&gt; [question]` slash command.
+- yt-dlp download with native caption extraction (manual + auto-subs).
+- ffmpeg frame extraction with auto-scaled fps (≤2 fps, ≤100 frames, duration-aware budget).
+- `--start` / `--end` focused mode with denser frame budget and transcript range filtering.
+- Whisper fallback (Groq preferred, OpenAI secondary) for videos without captions.
+- `setup.py` preflight: silent `--check`, structured `--json`, and installer that auto-runs `brew install` on macOS.
+- Session-start hook that prints a one-line status on first run / partial config.
+- `.skill` bundle packaging for claude.ai upload via `scripts/build-skill.sh`.</file><file path="CLAUDE.md">@AGENTS.md</file><file path="README.md"># /watch
+
+**Give Claude the ability to watch any video.**
+
+Claude Code (recommended — auto-updates via marketplace):
+```
+/plugin marketplace add bradautomates/claude-video
+/plugin install watch@claude-video
+```
+
+Codex, Cursor, Copilot, Gemini CLI, or any of 50+ [Agent Skills](https://agentskills.io) hosts:
+```bash
+npx skills add bradautomates/claude-video -g
+```
+(`-g` installs globally for your user, available across all projects. Drop it to scope per-project.)
+
+More install options (claude.ai web, manual) in the [Install](#install) section below.
+
+Zero config to start — `yt-dlp` and `ffmpeg` install on first run via `brew` on macOS (Linux/Windows print exact commands). Captions cover most public videos for free. Whisper API key is only needed when a video has no captions.
+
+---
+
+Claude can read a webpage, run a script, browse a repo. What it can&apos;t do, out of the box, is *watch a video*. You paste a YouTube link and it has to either guess from the title or pull a transcript that&apos;s missing 90% of what&apos;s on screen.
+
+With Claude Video `/watch` you can paste a URL or a local path, ask a question, and Claude fetches captions first, downloads only what it needs, extracts frames (scene-aware, or fast keyframes at `efficient` detail), pulls a timestamped transcript (free captions when available, Whisper API as fallback), and `Read`s every frame as an image. By the time it answers, it has *seen* the video and *heard* the audio.
+
+```
+/watch https://youtu.be/dQw4w9WgXcQ what happens at the 30 second mark?
+```
+
+## What people actually use it for
+
+**Analyze someone else&apos;s content.** `/watch https://youtu.be/&lt;viral-video&gt; what hook did they open with?` Claude looks at the first frames, reads the opening transcript, breaks down the structure. Same for ad creative, competitor launches, podcast intros, anything where the *how* matters as much as the *what*.
+
+**Diagnose a bug from a video.** Someone sends you a screen recording of something broken. `/watch bug-repro.mov what&apos;s going wrong?` Claude watches the recording, finds the frame where the issue appears, describes what&apos;s on screen, often catches the cause without you ever opening the file.
+
+**Summarize a video.** `/watch https://youtu.be/&lt;long-thing&gt; summarize this` does the obvious thing — pulls the structure, the key moments, what was actually said and shown. Faster than watching at 2x.
+
+**Cut the hype out of an update video.** `/watch https://youtu.be/&lt;launch-video&gt; what&apos;s actually new — skip the hype` Strip a &quot;game-changer&quot; feature drop down to the few things that matter, so you get the substance without ten minutes of intro and overselling.
+
+**Turn a playlist into notes.** `/watch https://youtu.be/&lt;video&gt; summarize this to a note` Run it across a series and file a per-video summary, so a channel or course becomes a searchable set of notes instead of hours you have to sit through.
+
+## How it works
+
+1. **You paste a video and a question.** URL (anything yt-dlp supports — YouTube, Loom, TikTok, X, Instagram, plus a few hundred more) or a local path (`.mp4`, `.mov`, `.mkv`, `.webm`).
+2. **`yt-dlp` checks captions first.** At `transcript` detail, captioned URLs return without downloading video. Otherwise, or when Whisper needs audio, it downloads only what the run needs.
+3. **`ffmpeg` extracts frames at the chosen detail.** `efficient` decodes keyframes only (near-instant); `balanced`/`token-burner` prefer scene-change frames and fall back to the duration-aware uniform sampler when they under-produce. JPEGs are 512px wide by default and clamped to 1998px tall for Claude Read compatibility.
+4. **The transcript comes from one of two places.** First try: `yt-dlp` pulls native captions (manual or auto-generated) from the source. Free, instant, accurate-ish. Fallback: extract a mono 16 kHz 64 kbps mp3 audio clip (~480 kB/min) and ship it to Whisper — Groq&apos;s `whisper-large-v3` (preferred — cheaper and faster) or OpenAI&apos;s `whisper-1`.
+5. **Frames + transcript are handed to Claude.** The script prints frame paths with `t=MM:SS` markers and the transcript with timestamps. Claude `Read`s each frame in parallel — JPEGs render directly as images in its context.
+6. **Claude answers grounded in what&apos;s actually on screen and in the audio.** Not &quot;based on the description&quot; or &quot;according to the title.&quot; It saw the frames. It heard the transcript. It answers the way someone who watched the video would.
+7. **Cleanup.** The script prints a working directory at the end. If you&apos;re not asking follow-ups, Claude removes it.
+
+## Frame budget — why it matters
+
+Token cost is dominated by frames. Every frame is an image; image tokens add up fast. The script&apos;s auto-fps logic exists so you don&apos;t blow your context budget on a sparse scan of a 30-minute video that would have been better answered by a focused 30-second window.
+
+| Duration | Default frame budget | What you get |
+|----------|---------------------|--------------|
+| ≤30 s | ~30 frames | Dense — basically every key moment |
+| 30 s - 1 min | ~40 frames | Still dense |
+| 1 - 3 min | ~60 frames | Comfortable |
+| 3 - 10 min | ~80 frames | Sparse but workable |
+| &gt; 10 min | 100 frames (capped modes) | &quot;Sparse scan&quot; warning — re-run focused, or `--detail token-burner` for full uncapped coverage |
+
+When the user names a moment (&quot;around 2:30&quot;, &quot;the last 30 seconds&quot;, &quot;from 0:45 to 1:00&quot;), pass `--start` / `--end`. Focused mode gets denser per-second budgets, capped at 2 fps. Far more useful than a sparse pass over the whole thing.
+
+## Frame deduplication
+
+Frame selection — keyframes (`efficient`), scene-change detection (`balanced`/`token-burner`), or the uniform sampler it falls back to — can still surface near-identical frames: a screen recording that holds one slide for 90 seconds produces a dozen, each billed as a separate image. A dedup pass drops them before frames reach Claude. It runs by default on every frame mode (`--no-dedup` turns it off):
+
+1. One `ffmpeg` call scales each extracted JPEG to a 16×16 grayscale thumbnail. Everything after is pure-stdlib Python — no image libraries.
+2. For each frame, compute the **mean absolute difference** against the *last frame that was kept* (average per-pixel brightness change, 0–255 scale).
+3. If that difference is at or below the threshold (`2.0`), the frame is a near-duplicate and is dropped. Otherwise it&apos;s kept and becomes the new reference.
+4. The frame-budget cap applies *after* dedup, so the budget is spent on distinct frames.
+
+Comparing against the last *kept* frame (not the previous one) catches slow fades that never trip a frame-to-frame threshold. The threshold is deliberately low and measures absolute brightness rather than structure, so a one-line code diff, a terminal scrolling a row, or two differently-colored flat slides all survive.
+
+The **Frames** line reports what was collapsed, e.g. `6 selected from 14 candidates (… 8 near-duplicates dropped …)`. On always-moving footage nothing is dropped and you pay what you would have anyway.
+
+## Detail modes — measured
+
+The `--detail` dial trades speed and token cost for visual fidelity. Numbers below are from a real run against a **49:08** YouTube video (1280×720, English auto-captions) — a long, mostly-static screen recording, the case that stresses the caps hardest. Extraction times are local CPU against a pre-downloaded copy; the one-time download was **~37 s** / 76 MB, shared by the three frame modes.
+
+| Mode | Engine | Frames | Cap | Extraction time | Temporal coverage | Est. image tokens |
+|------|--------|--------|-----|-----------------|-------------------|-------------------|
+| `transcript` | none (captions) | 0 | — | **~4.5 s** (one yt-dlp call, no download) | full (text) | 0 (≈26.6k text tokens) |
+| `efficient` | keyframe (`-skip_frame nokey`) | 50 | 50 | **~0.5 s** | 0:00 → 49:04 (full) | **~9.8k** |
+| `balanced` | scene-change | 100 | 100 | **~20.9 s** | 0:00 → 48:38 (full) | **~19.7k** |
+| `token-burner` | scene-change | 116 | uncapped | **~21.0 s** | 0:00 → 48:38 (full) | **~22.8k** |
+
+- **Image tokens** use Anthropic&apos;s `(width × height) / 750` — at the default 512px width these 720p frames are 512×288, **≈197 tokens/frame**; `--resolution 1024` roughly 4×s that. The transcript is surfaced in every captioned mode and on long videos is often the larger cost.
+- **One sampling rule across frame modes.** Each detects all candidates across the full range, then even-samples (first + last always kept) down to its cap. The modes differ only in candidate *source* (keyframes vs. scene cuts) and cap, never in how coverage is spread — so the last frame always lands at the end, not partway through.
+- **`efficient` is the speed tier** (~0.5 s) — it only reconstructs keyframes, so it&apos;s ~40× faster than the scene modes, which decode every frame to find cuts. It can also return *more* frames than `balanced` on low-motion footage (keyframes outnumber scene cuts); &quot;efficient&quot; means fast extraction, not fewer frames.
+- **`token-burner` only diverges from `balanced` past the cap.** This clip had 116 cuts, so `balanced` sampled 100 and `token-burner` kept all 116. On high-motion video with hundreds of cuts, `token-burner` keeps everything (and trips the &gt;250-frame token warning) while `balanced` thins to 100.
+
+End-to-end from a cold URL, `transcript` is the cheapest mode by far; the frame modes add the shared ~37 s download on top of the extraction times above.
+
+## Install
+
+| Surface | Install |
+|---------|---------|
+| **Claude Code** | `/plugin marketplace add bradautomates/claude-video` then `/plugin install watch@claude-video` |
+| **Codex, Cursor, Copilot, Gemini CLI, +50 more** | `npx skills add bradautomates/claude-video -g` |
+| **claude.ai** (web) | [Download `watch.skill`](https://github.com/bradautomates/claude-video/releases/latest) → Settings → Capabilities → Skills → `+` |
+| **Manual / dev** | `git clone` then symlink `skills/watch` into your host&apos;s skills dir (see below) |
+
+### Claude Code
+
+```
+/plugin marketplace add bradautomates/claude-video
+/plugin install watch@claude-video
+```
+
+Update later with `/plugin update watch@claude-video`.
+
+### Codex, Cursor, Copilot, Gemini CLI, and 50+ other hosts
+
+The [Agent Skills](https://agentskills.io) CLI installs the skill into whatever agents it detects:
+
+```bash
+npx skills add bradautomates/claude-video -g
+```
+
+`-g` installs globally for your user (`~/.codex/skills`, `~/.cursor/skills`, etc.); drop it to install into the current project instead. Useful flags:
+
+- `-a, --agent &lt;names…&gt;` — target specific hosts, e.g. `-a codex -a cursor`
+- `-l, --list` — list the skills in this repo without installing
+- `--copy` — copy files instead of symlinking (for filesystems without symlink support)
+
+The CLI discovers the skill from `skills/watch/SKILL.md` and copies the whole folder — `SKILL.md` plus its `scripts/` runtime — as a self-contained unit. `SKILL.md` resolves its own scripts relative to wherever it was installed, so it works the same on every host.
+
+Update later with `npx skills update watch -g`.
+
+### claude.ai (web)
+
+1. [Download `watch.skill`](https://github.com/bradautomates/claude-video/releases/latest) from the latest release.
+2. Go to Settings → Capabilities → Skills.
+3. Click `+` and drop the file in.
+
+Enable &quot;Code execution and file creation&quot; under Capabilities first — the skill shells out to `ffmpeg` and `yt-dlp`, so it won&apos;t run without it.
+
+### Manual (developer)
+
+Clone the repo and symlink the self-contained skill folder into your host&apos;s skills directory — the symlink keeps the install in sync with your working tree as you edit:
+
+```bash
+git clone https://github.com/bradautomates/claude-video.git
+ln -s &quot;$(pwd)/claude-video/skills/watch&quot; ~/.claude/skills/watch   # or ~/.codex/skills/watch
+```
+
+For claude.ai, build the `.skill` bundle from source: `bash skills/watch/scripts/build-skill.sh` produces `dist/watch.skill`.
+
+## First run
+
+On the first `/watch` call, the skill runs `scripts/setup.py --check`. If `ffmpeg` / `yt-dlp` aren&apos;t on your PATH, or no Whisper API key is set, it walks you through fixing it:
+
+- **macOS** — auto-runs `brew install ffmpeg yt-dlp`.
+- **Linux** — prints the exact `apt` / `dnf` / `pipx` commands.
+- **Windows** — prints the `winget` / `pip` commands.
+- **API key** — scaffolds `~/.config/watch/.env` (mode `0600`) with commented placeholders for `GROQ_API_KEY` (preferred) and `OPENAI_API_KEY`.
+
+After setup, preflight is silent and `/watch` just works. The check is a sub-100ms lookup, so it doesn&apos;t slow you down on subsequent runs.
+
+## Bring your own keys
+
+Captions cover the majority of public videos for free. The Whisper fallback only kicks in when a video genuinely has no caption track — typically local files, TikToks, some Vimeos, and the occasional caption-less YouTube upload.
+
+| Capability | What you need | Cost |
+|------------|---------------|------|
+| Download + native captions | `yt-dlp` + `ffmpeg` | Free |
+| Whisper fallback (preferred) | [Groq API key](https://console.groq.com/keys) — `whisper-large-v3` | Cheap, fast |
+| Whisper fallback (alt) | [OpenAI API key](https://platform.openai.com/api-keys) — `whisper-1` | Standard pricing |
+| Disable Whisper entirely | `--no-whisper` | Free, frames-only when no captions |
+
+## Usage
+
+```
+/watch https://youtu.be/dQw4w9WgXcQ what happens at the 30 second mark?
+/watch https://www.tiktok.com/@user/video/123 summarize this
+/watch ~/Movies/screen-recording.mp4 when does the UI break?
+/watch https://vimeo.com/123 what tools does she mention?
+```
+
+Focused on a specific section — denser frame budget, lower token cost:
+```
+/watch https://youtu.be/abc --start 2:15 --end 2:45
+/watch video.mp4 --start 50 --end 60
+/watch &quot;$URL&quot; --start 1:12:00            # from 1h12m to end
+```
+
+Other knobs (passed to `scripts/watch.py`):
+
+- `--detail transcript|efficient|balanced|token-burner` — fidelity/speed dial. `transcript` skips frames (transcript only); `efficient` uses fast keyframes (cap 50); `balanced` uses scene-aware frames (cap 100); `token-burner` is scene-aware and uncapped.
+- `--timestamps T1,T2,…` — grab a frame at each absolute timestamp (`SS`/`MM:SS`/`HH:MM:SS`). Claude reads the transcript first, then targets the moments the presenter flags (&quot;look here&quot;, &quot;as you can see&quot;). Added on top of the detail frames (reserved against the cap); out-of-window cues are dropped in focus mode; with `--detail transcript` these become the only frames.
+- `--max-frames N` — lower the frame cap for a tighter token budget.
+- `--resolution W` — bump frame width to 1024 px when Claude needs to read on-screen text (slides, terminals, code).
+- `--fps F` — override the auto-fps calculation (still capped at 2 fps).
+- `--whisper groq|openai` — force a specific Whisper backend.
+- `--no-whisper` — disable transcription entirely; frames only.
+- `--no-dedup` — keep near-duplicate frames. By default a frame-delta pass drops frames that are visually near-identical to the one before them (held slides, static screen recordings, paused video), so the frame budget is spent on distinct content; this flag turns that off.
+- `--out-dir DIR` — keep working files somewhere specific (default: auto-generated tmp dir).
+
+## Limits
+
+- **Long-video accuracy depends on the detail mode.** On the capped modes (`efficient`, default `balanced`) coverage thins out past ~10 minutes — the frame cap spreads across the whole clip, so the script prints a &quot;sparse scan&quot; warning and you&apos;re better off re-running focused with `--start`/`--end`. `token-burner` lifts the cap and keeps *every* scene-change frame across the full video, so it stays complete on longer clips at the cost of more image tokens. The 10-minute mark is guidance for the capped modes, not a hard ceiling.
+- **Detail is one dial.** Defaults are balanced: scene-aware frames, 2 fps max, 100-frame cap. Use `--detail efficient` for a fast 50-frame keyframe pass, or `--detail token-burner` for uncapped scene candidates. Set `WATCH_DETAIL` in `~/.config/watch/.env` to change the default.
+
+## Structure
+
+```
+.
+├── skills/watch/                 # self-contained skill — copied as a unit by every installer
+│   ├── SKILL.md                  # skill contract — the source of truth across all surfaces
+│   └── scripts/
+│       ├── watch.py              # entry point — orchestrates download → frames → transcript
+│       ├── download.py           # yt-dlp wrapper
+│       ├── frames.py             # ffmpeg frame extraction + auto-fps logic
+│       ├── transcribe.py         # VTT parsing + dedupe + Whisper orchestration
+│       ├── whisper.py            # Groq / OpenAI clients (pure stdlib)
+│       ├── config.py             # shared config (~/.config/watch/.env)
+│       ├── setup.py              # preflight + installer
+│       └── build-skill.sh        # build dist/watch.skill for claude.ai upload (dev-only)
+├── hooks/                        # SessionStart status hook (Claude Code only)
+├── .claude-plugin/               # plugin.json + marketplace.json (Claude Code)
+├── .codex-plugin/                # plugin.json — Codex/agents manifest (&quot;skills&quot;: &quot;./skills/&quot;)
+├── .agents/plugins/              # marketplace.json — Agent Skills marketplace listing
+├── AGENTS.md → CLAUDE.md         # generic-agent entry point
+├── tests/                        # pytest suite (ffmpeg-synthesized clips, no network)
+└── .github/workflows/            # release.yml — auto-builds watch.skill on tag push
+```
+
+## Develop
+
+```bash
+# Run the test suite (stdlib + pytest; ffmpeg required for frame tests):
+python3 -m pytest -q
+
+# Build the claude.ai upload bundle:
+bash skills/watch/scripts/build-skill.sh      # → dist/watch.skill
+```
+
+Releasing: tag `vX.Y.Z`, push the tag. The workflow builds `dist/watch.skill` and attaches it to the GitHub release. Keep the version in sync across `skills/watch/SKILL.md`, `.claude-plugin/plugin.json`, and `.codex-plugin/plugin.json`.
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+## Open source
+
+    assert len(list(d.glob(&quot;cue_*.jpg&quot;))) == len(cues)</file><file path="tests/test_watch.py">&quot;&quot;&quot;End-to-end routing of --detail through watch.py on a local clip.&quot;&quot;&quot;
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+WATCH = Path(__file__).resolve().parent.parent / &quot;skills&quot; / &quot;watch&quot; / &quot;scripts&quot; / &quot;watch.py&quot;
+
+
+def _run(clip: Path, *args: str, env_extra: dict | None = None) -&gt; str:
+    env = dict(os.environ)
+    env.pop(&quot;WATCH_DETAIL&quot;, None)
+    if env_extra:
+        env.update(env_extra)
+    proc = subprocess.run(
+        [sys.executable, str(WATCH), str(clip), &quot;--no-whisper&quot;, *args],
+        capture_output=True, text=True, env=env,
+    )
+    assert proc.returncode == 0, proc.stderr
+    return proc.stdout
+
+
+def test_efficient_uses_keyframe_engine(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;efficient&quot;)
+    assert &quot;(keyframe&quot; in out
+    assert &quot;**Detail:** efficient&quot; in out
+
+
+def test_balanced_uses_scene_engine(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;balanced&quot;)
+    assert &quot;(scene&quot; in out
+    assert &quot;**Detail:** balanced&quot; in out
+
+
+def test_token_burner_uses_scene_engine(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;token-burner&quot;)
+    assert &quot;(scene&quot; in out
+
+
+def test_transcript_skips_frames(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;transcript&quot;)
+    assert &quot;skipped&quot; in out
+    assert &quot;frame_0000.jpg&quot; not in out
+
+
+def test_flag_overrides_env(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;efficient&quot;, env_extra={&quot;WATCH_DETAIL&quot;: &quot;balanced&quot;})
+    assert &quot;(keyframe&quot; in out
+
+
+def test_default_is_balanced(cut_clip: Path):
+    out = _run(cut_clip)  # no flag, WATCH_DETAIL cleared
+    assert &quot;**Detail:** balanced&quot; in out
+    assert &quot;(scene&quot; in out
+
+
+def test_timestamps_add_cue_frames_to_detail(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;balanced&quot;, &quot;--timestamps&quot;, &quot;1,3&quot;)
+    assert &quot;reason=transcript-cue&quot; in out
+    assert &quot;reason=scene-change&quot; in out  # detail frames still present (additive)
+
+
+def test_timestamps_with_transcript_detail_is_cue_only(cut_clip: Path):
+    out = _run(cut_clip, &quot;--detail&quot;, &quot;transcript&quot;, &quot;--timestamps&quot;, &quot;1,3&quot;)
+    assert &quot;reason=transcript-cue&quot; in out
+    assert &quot;reason=scene-change&quot; not in out
+    assert &quot;reason=keyframe&quot; not in out
+
+
+def _frame_lines(out: str) -&gt; int:
+    return sum(1 for line in out.splitlines() if &quot;/frames/frame_&quot; in line and &quot;(t=&quot; in line)
+
+
+def test_dedup_collapses_static_by_default(static_clip: Path):
+    out = _run(static_clip)  # solid blue → identical frames collapse to one
+    assert &quot;near-duplicate&quot; in out
+    assert _frame_lines(out) == 1
+
+
+def test_no_dedup_preserves_static_frames(static_clip: Path):
+    out = _run(static_clip, &quot;--no-dedup&quot;)
+    assert &quot;near-duplicate&quot; not in out
+    assert _frame_lines(out) &gt; 1</file><file path="tests/test_whisper.py">&quot;&quot;&quot;Whisper auto-chunking: plan, split, and timestamp stitching.&quot;&quot;&quot;
+from __future__ import annotations
+
+import math
+import subprocess
+from pathlib import Path
+
+import pytest
+
+import whisper
+
+class TestPlanChunks:
+    def test_under_limit_is_single_chunk(self):
+        plan = whisper.plan_chunks(total_seconds=600.0, total_bytes=5 * MB, max_bytes=24 * MB)
+        assert plan == [(0.0, 600.0)]
+
+    def test_at_limit_is_single_chunk(self):
+        plan = whisper.plan_chunks(total_seconds=600.0, total_bytes=24 * MB, max_bytes=24 * MB)
+        assert plan == [(0.0, 600.0)]
+
+    def test_over_limit_splits_into_enough_chunks(self):
+        # 71 MB against a 24 MB cap → ceil(71/24) = 3 chunks.
+        plan = whisper.plan_chunks(total_seconds=3600.0, total_bytes=71 * MB, max_bytes=24 * MB)
+        assert len(plan) == 3
+
+    def test_chunks_are_contiguous_and_cover_full_duration(self):
+        total = 3600.0
+        plan = whisper.plan_chunks(total_seconds=total, total_bytes=71 * MB, max_bytes=24 * MB)
+        # Offsets start at 0 and each picks up where the previous ended.
+        assert plan[0][0] == 0.0
+        for (off, dur), (next_off, _) in zip(plan, plan[1:]):
+            assert math.isclose(off + dur, next_off)
+        last_off, last_dur = plan[-1]
+        assert math.isclose(last_off + last_dur, total)
+
+    def test_each_chunk_estimated_under_limit(self):
+        total_seconds, total_bytes, cap = 3600.0, 71 * MB, 24 * MB
+        plan = whisper.plan_chunks(total_seconds, total_bytes, cap)
+        bytes_per_second = total_bytes / total_seconds
+        for _off, dur in plan:
+            assert dur * bytes_per_second &lt;= cap
+
+    def test_zero_duration_is_single_chunk(self):
+        plan = whisper.plan_chunks(total_seconds=0.0, total_bytes=0, max_bytes=24 * MB)
+        assert plan == [(0.0, 0.0)]
+
+
+class TestShiftSegments:
+    def test_adds_offset_to_start_and_end(self):
+        segs = [{&quot;start&quot;: 0.0, &quot;end&quot;: 2.5, &quot;text&quot;: &quot;hi&quot;}, {&quot;start&quot;: 2.5, &quot;end&quot;: 4.0, &quot;text&quot;: &quot;there&quot;}]
+        shifted = whisper.shift_segments(segs, 1800.0)
+        assert shifted == [
+            {&quot;start&quot;: 1800.0, &quot;end&quot;: 1802.5, &quot;text&quot;: &quot;hi&quot;},
+            {&quot;start&quot;: 1802.5, &quot;end&quot;: 1804.0, &quot;text&quot;: &quot;there&quot;},
+        ]
+
+    def test_zero_offset_is_identity(self):
+        segs = [{&quot;start&quot;: 1.0, &quot;end&quot;: 2.0, &quot;text&quot;: &quot;x&quot;}]
+        assert whisper.shift_segments(segs, 0.0) == segs
+
+    def test_does_not_mutate_input(self):
+        segs = [{&quot;start&quot;: 0.0, &quot;end&quot;: 1.0, &quot;text&quot;: &quot;x&quot;}]
+        whisper.shift_segments(segs, 10.0)
+        assert segs[0][&quot;start&quot;] == 0.0
+
+
+def _make_mp3(path: Path, seconds: float) -&gt; None:
+    &quot;&quot;&quot;Synthesize a mono 16k 64k mp3 of a sine tone — mirrors extract_audio&apos;s format.&quot;&quot;&quot;
+    subprocess.run(
+        [
+            &quot;ffmpeg&quot;, &quot;-hide_banner&quot;, &quot;-loglevel&quot;, &quot;error&quot;, &quot;-y&quot;,
+            &quot;-f&quot;, &quot;lavfi&quot;, &quot;-t&quot;, str(seconds), &quot;-i&quot;, &quot;sine=frequency=440:sample_rate=16000&quot;,
+            &quot;-acodec&quot;, &quot;libmp3lame&quot;, &quot;-ar&quot;, &quot;16000&quot;, &quot;-ac&quot;, &quot;1&quot;, &quot;-b:a&quot;, &quot;64k&quot;,
+            str(path),
+        ],
+        check=True,
+    )
+
+
+class TestSplitAudio:
+    def test_creates_one_file_per_plan_entry(self, tmp_path: Path):
+        full = tmp_path / &quot;audio.mp3&quot;
+        _make_mp3(full, 6.0)
+        plan = [(0.0, 3.0), (3.0, 3.0)]
+
+        chunks = whisper.split_audio(full, tmp_path, plan)
+
+        assert len(chunks) == 2
+        for chunk_path, _offset in chunks:
+            assert chunk_path.exists() and chunk_path.stat().st_size &gt; 0
+
+    def test_returns_plan_offsets(self, tmp_path: Path):
+        full = tmp_path / &quot;audio.mp3&quot;
+        _make_mp3(full, 6.0)
+        plan = [(0.0, 3.0), (3.0, 3.0)]
+
+        chunks = whisper.split_audio(full, tmp_path, plan)
+
+        assert [offset for _path, offset in chunks] == [0.0, 3.0]
+
+    def test_chunks_are_smaller_than_full(self, tmp_path: Path):
+        full = tmp_path / &quot;audio.mp3&quot;
+        _make_mp3(full, 6.0)
+        plan = [(0.0, 3.0), (3.0, 3.0)]
+
+        chunks = whisper.split_audio(full, tmp_path, plan)
+
+        full_size = full.stat().st_size
+        for chunk_path, _offset in chunks:
+            assert chunk_path.stat().st_size &lt; full_size
+
+
+class TestAudioDuration:
+    def test_reads_duration_of_synthesized_clip(self, tmp_path: Path):
+        audio = tmp_path / &quot;audio.mp3&quot;
+        _make_mp3(audio, 5.0)
+        assert whisper.audio_duration(audio) == pytest.approx(5.0, abs=0.5)
+
+
+class TestTranscribeChunks:
+    def test_shifts_and_concatenates_each_chunk(self):
+        chunks = [(Path(&quot;a.mp3&quot;), 0.0), (Path(&quot;b.mp3&quot;), 100.0)]
+
+        def fake_transcribe(path: Path) -&gt; list[dict]:
+            return [{&quot;start&quot;: 0.0, &quot;end&quot;: 2.0, &quot;text&quot;: path.stem}]
+
+        out = whisper.transcribe_chunks(chunks, fake_transcribe)
+
+        assert out == [
+            {&quot;start&quot;: 0.0, &quot;end&quot;: 2.0, &quot;text&quot;: &quot;a&quot;},
+            {&quot;start&quot;: 100.0, &quot;end&quot;: 102.0, &quot;text&quot;: &quot;b&quot;},
+        ]
+
+    def test_keeps_successful_chunks_when_one_fails(self):
+        chunks = [(Path(&quot;a.mp3&quot;), 0.0), (Path(&quot;b.mp3&quot;), 100.0)]
+
+        def flaky(path: Path) -&gt; list[dict]:
+            if path.stem == &quot;b&quot;:
+                raise SystemExit(&quot;chunk b failed&quot;)
+            return [{&quot;start&quot;: 1.0, &quot;end&quot;: 2.0, &quot;text&quot;: &quot;a&quot;}]
+
+        out = whisper.transcribe_chunks(chunks, flaky)
+
+        assert out == [{&quot;start&quot;: 1.0, &quot;end&quot;: 2.0, &quot;text&quot;: &quot;a&quot;}]
+
+    def test_raises_when_every_chunk_fails(self):
+        chunks = [(Path(&quot;a.mp3&quot;), 0.0), (Path(&quot;b.mp3&quot;), 100.0)]
+
+        def always_fail(path: Path) -&gt; list[dict]:
+            raise SystemExit(&quot;boom&quot;)
+
+
+hook: PostToolUse
+hook: PostToolUse Completed
+codex
+<!-- MODULE_RESULT: module_001 -->
+## Agent 深度分析
+
+**业务角色**：`skills/watch` 是产品核心模块，承担 `/watch <url-or-path>` 的真实执行能力：把视频 URL 或本地视频转成 agent 可消费的“帧路径 + 时间戳转录 + 元信息报告”。这一判断来自 `AGENTS.md` 对模块结构的说明，以及 README 中“paste a URL or local path → captions/download → frames/transcript → Claude reads frames”的工作流描述（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**设计思路**：模块采用“自包含 skill 文件夹”设计，`SKILL.md` 与 `scripts/` 同级，运行时通过 `SKILL_DIR/scripts/...` 定位脚本，避免绑定 Claude Code 专属环境变量。这是跨 Claude Code、Codex、Cursor、Copilot 等宿主安装的关键设计约束（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。实现层面拆成 `watch.py` 编排入口、`download.py` 处理 yt-dlp、本地文件与字幕、`frames.py` 处理 ffmpeg 抽帧、`transcribe.py` 处理 VTT、`whisper.py` 处理 Whisper fallback、`setup.py/config.py` 处理运行前置条件和用户配置（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。
+
+**关键数据流**：主链路是 source → `download.download()` 判断 URL/本地路径 → URL 走 `yt-dlp` 下载视频与英文 VTT，本地路径直接 resolve → `frames.py` 生成 keyframe/scene/uniform/cue frames → `transcribe.py` 优先解析 VTT → 无字幕且允许时进入 Whisper fallback → `watch.py` 输出 Markdown 报告、帧路径和 transcript（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`）。`config.py` 提供 `WATCH_DETAIL` 默认值与 frame cap 映射，`setup.py --check/--json/install` 提供运行前依赖和 API key 状态（证据：`slices/07-config-scripts.xml`）。
+
+**模块协同**：它与测试模块形成强耦合回归关系：`tests/test_watch.py` 直接运行 `skills/watch/scripts/watch.py`，验证 detail 路由、timestamp cue、dedup 默认行为；`tests/test_whisper.py` 覆盖 chunk plan、split、timestamp shift 和部分失败容忍（证据：`slices/06-tests.xml`）。它也与发布/安装模块协同：`build-skill.sh` 只归档 `skills/watch`，GitHub release workflow 调用该脚本生成 `dist/watch.skill`（证据：`slices/07-config-scripts.xml`）。
+
+**架构亮点**：亮点是把复杂视频理解拆成确定性工具链，而不是让模型直接猜：`yt-dlp` 负责获取素材，`ffmpeg` 负责抽帧，VTT/Whisper 负责转录，模型只消费结果。这符合“确定性环节用代码，判断环节交给模型”的项目原则（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。另一个亮点是 token 成本意识很强：detail 模式、frame cap、dedup、focused range 都围绕“让帧预算花在有信息量的位置”设计（证据：`slices/04-docs.xml`、`slices/06-tests.xml`）。
+
+**主要风险**：第一，核心源码的完整后端切片 `slices/02-backend.xml` 在当前目录缺失，模块底稿中大量函数符号只能通过 `slices/07-config-scripts.xml` 和测试切片交叉验证，不能宣称已核对全部源码细节（证据：当前可用切片列表、`slices/07-config-scripts.xml`）。第二，模块依赖外部二进制与网络服务，`ffmpeg`、`yt-dlp`、Groq/OpenAI API 的环境差异会成为主要运行风险；`setup.py` 和 hook 已做前置检测，但这仍是产品可靠性的外部边界（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`）。第三，历史热点显示所有核心文件修改次数均为 1，说明当前历史信号不足，不能用热点判断成熟度或稳定性（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_002 -->
+## Agent 深度分析
+
+**业务角色**：`tests` 是核心质量闸门，不是普通附属测试。它覆盖配置解析、下载参数、抽帧策略、去重、timestamp cue、setup 状态、watch 端到端路由和 Whisper 分块，是保障 `/watch` 跨宿主可用性的主要确定性验证层（证据：`drafts/06-module-module_002.md`、`slices/06-tests.xml`）。
+
+**设计思路**：测试设计明显偏“无网络、可重复、工具链模拟”。`conftest.py` 使用 ffmpeg 合成测试视频，`test_download.py` 捕获 yt-dlp argv 而不是访问真实网络，`test_watch.py` 对本地 clip 跑 `watch.py --no-whisper`，`test_whisper.py` 用合成 mp3 验证分块与时间戳拼接（证据：`slices/06-tests.xml`）。这使测试关注确定性逻辑，而不是被外部网站、API 或网络状态污染。
+
+**关键数据流**：测试数据流从 fixture 合成视频开始，进入 `watch.py` 或底层函数，再断言输出报告中的 detail、engine、frame path、dedup、cue frame 等可观察结果（证据：`slices/06-tests.xml`）。Whisper 测试则从音频大小与时长推导 chunk plan，再验证 split 后 chunk 文件、offset 保留、segment shift 和部分 chunk 失败策略（证据：`slices/06-tests.xml`）。
+
+**模块协同**：该模块直接绑定 `skills/watch/scripts` 的公开行为。`test_config.py` 保护 `WATCH_DETAIL` 和 `frame_cap`；`test_frames.py/test_dedup.py/test_timestamps.py` 保护 frame selection 与 cue merge；`test_setup.py` 保护 `setup.py --json` 的结构化状态；`test_watch.py` 保护入口脚本的用户可见输出（证据：`slices/06-tests.xml`、`drafts/06-module-module_002.md`）。
+
+**架构亮点**：测试覆盖的是产品行为，而不只是函数返回值。例如 `test_default_is_balanced`、`test_transcript_skips_frames`、`test_timestamps_add_cue_frames_to_detail` 直接验证用户会看到的报告语义；这对 agent skill 很重要，因为最终契约是“模型读到什么输出”，不是内部函数如何命名（证据：`slices/06-tests.xml`）。另外，下载测试验证 `--sub-langs en.*`，能防止字幕语言策略回退成不确定行为（证据：`slices/06-tests.xml`）。
+
+**主要风险**：第一，测试 suite 仍依赖本机 ffmpeg，环境缺失会导致测试不可跑；README 也明确测试需要 ffmpeg（证据：`slices/04-docs.xml`、`slices/06-tests.xml`）。第二，网络真实行为、yt-dlp 网站兼容性、Groq/OpenAI API 错误体等并未从当前测试切片看到完整集成覆盖；这是合理取舍，但发布前不能把它等同于端到端线上验证（证据：`slices/06-tests.xml`、`slices/07-config-scripts.xml`）。第三，历史热点只有一次提交记录，无法从历史数据判断哪些测试长期稳定或经常失败（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_003 -->
+## Agent 深度分析
+
+**业务角色**：根模块是项目的产品说明、开发约束和发布协作中枢。`README.md` 面向用户解释 `/watch` 的安装、使用、限制和工作原理；`AGENTS.md` 面向 agent/维护者定义结构、宿主兼容原则和发布规则；`CLAUDE.md` 转向 `AGENTS.md` 作为 Claude 入口（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**设计思路**：根文档把产品定位明确为“slash-command-invoked skill，不是 CLI”。这会反向约束代码组织：`scripts/watch.py` 是实现细节，`skills/watch/SKILL.md` 是跨宿主 contract，`skills/watch` 必须保持自包含，不能把脚本移回 repo root（证据：`slices/05-agent-config.xml`）。README 则以用户工作流组织，从“为什么需要视频输入”到 install、first run、detail modes、limits、develop/release，形成从使用到维护的完整路径（证据：`slices/04-docs.xml`）。
+
+**关键数据流**：根模块不处理运行时数据，但定义了安装与发布数据流：用户通过 Claude Code marketplace、Agent Skills CLI、claude.ai `.skill` bundle 或手动 symlink 安装；开发者通过 `build-skill.sh` 生成 bundle，通过 tag 触发 GitHub release（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`slices/07-config-scripts.xml`）。`dev-sync.sh` 的角色是把工作树同步到 Claude Code plugin cache，用于开发验证（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。
+
+**模块协同**：根模块是所有 minor 配置模块的解释层：它说明 `.claude-plugin`、`.codex-plugin`、`.agents/plugins`、`hooks`、`.github/workflows` 各自服务的安装面和发布面（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。它也与核心 skill 模块保持版本约束：发布时需同步 `SKILL.md`、`.claude-plugin/plugin.json`、`.codex-plugin/plugin.json`（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**架构亮点**：根文档将“跨宿主兼容性”写成硬规则，而不是隐含知识，例如禁止重引入 `${CLAUDE_SKILL_DIR}`、禁止额外 `commands/` wrapper、保持 `SKILL.md + scripts/` 同级。这类文档约束能显著降低 agent 修改时破坏安装面的概率（证据：`slices/05-agent-config.xml`）。
+
+**主要风险**：第一，根模块承载多安装面的事实来源，版本同步依赖人工遵守；虽然文档提示同步版本，但当前证据未显示自动校验版本一致性的测试或 CI（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`slices/07-config-scripts.xml`）。第二，`.gitattributes`、`.gitignore`、`.skillignore` 的具体内容未在当前读取到的主要切片中展开，不能进一步判断打包排除策略是否完备（证据：`drafts/06-module-module_003.md`、`slices/04-docs.xml`）。第三，历史热点信号全部为 1 次，不能识别根文档中真正的维护热点（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_004 -->
+## Agent 深度分析
+
+**业务角色**：`.claude-plugin` 是 Claude Code 安装面的适配模块，负责把同一个 `/watch` skill 暴露到 Claude Code plugin/marketplace 体系中。该角色来自项目结构说明：`.claude-plugin/` 包含 `plugin.json` 与 `marketplace.json`，用于 Claude Code plugin 和 local marketplace（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`drafts/06-module-module_004.md`）。
+
+**设计思路**：该模块不是业务逻辑，而是分发元数据。核心设计是让 Claude Code 安装路径与 self-contained `skills/watch` 运行模型保持一致：文档强调产品 contract 在 `skills/watch/SKILL.md`，Claude Code 只是安装面之一，不能把实现绑定到 Claude Code 专属变量（证据：`slices/05-agent-config.xml`）。
+
+**关键数据流**：用户通过 `/plugin marketplace add bradautomates/claude-video` 和 `/plugin install watch@claude-video` 安装，Claude Code plugin 元数据把仓库中的 watch skill 暴露给宿主；实际运行仍回到 `skills/watch/SKILL.md` 和 `scripts/watch.py`（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**模块协同**：它与 `hooks` 模块协同提供 Claude Code 专属体验：plugin 负责安装入口，SessionStart hook 负责首次/部分配置时的一行状态提示（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。它还与 root/release 协同，发布规则要求 `.claude-plugin/plugin.json` 版本与 `SKILL.md`、`.codex-plugin/plugin.json` 同步（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**架构亮点**：将 Claude Code 适配隔离在 `.claude-plugin`，而不是污染核心 `skills/watch`，有利于保持核心 skill 对 Codex/Cursor/其他 Agent Skills host 的可移植性（证据：`slices/05-agent-config.xml`）。
+
+**主要风险**：当前可读切片没有展开 `.claude-plugin/marketplace.json` 和 `.claude-plugin/plugin.json` 的完整内容，只能确认其存在与职责，不能判断字段、版本号、路径指向是否正确（证据：`drafts/06-module-module_004.md`、`slices/04-docs.xml`、`slices/05-agent-config.xml`）。另外，版本同步是文档规则，当前证据未显示 CI 自动检查该规则（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_005 -->
+## Agent 深度分析
+
+**业务角色**：`hooks` 是 Claude Code 专属的运行前状态提示模块，用于 SessionStart 时检测 `/watch` 的依赖、API key 与配置权限，并在未就绪时给用户一行可执行提示（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`、`drafts/06-module-module_005.md`）。
+
+**设计思路**：hook 的设计重点是“ready 时静默，异常时提示”。`check-setup.sh` 检查 `~/.config/watch/.env` 权限、读取 `GROQ_API_KEY`/`OPENAI_API_KEY`/`SETUP_COMPLETE`、检查 `ffmpeg` 和 `yt-dlp`，完全配置时直接 `exit 0`，否则输出安装或 key 提示（证据：`slices/07-config-scripts.xml`）。这与 `setup.py --check` 的 silent-on-success 设计保持一致（证据：`slices/07-config-scripts.xml`）。
+
+**关键数据流**：SessionStart → hook 读取本机配置文件和 PATH → 判定二进制、API key、setup marker → 输出“需要 ffmpeg + yt-dlp”“ready for videos with native captions”“ready”等状态；真正安装仍交给 `skills/watch/scripts/setup.py`（证据：`slices/07-config-scripts.xml`）。
+
+**模块协同**：hook 与 `setup.py/config.py` 共享同一个运行状态模型：`~/.config/watch/.env`、`SETUP_COMPLETE`、Groq/OpenAI key、ffmpeg/yt-dlp。它服务 Claude Code 安装面，但不影响 Codex/其他宿主的核心执行路径（证据：`slices/07-config-scripts.xml`、`slices/05-agent-config.xml`）。
+
+**架构亮点**：hook 把用户体验问题前置解决：缺依赖、缺 key、权限过宽不会等到 `/watch` 执行中才失败。并且 ready 时静默，避免每次会话噪音（证据：`slices/07-config-scripts.xml`）。
+
+**主要风险**：第一，hook 是 shell 脚本，存在平台命令差异；它用 GNU/BSD `stat` 双路径处理权限，但仍主要服务 Claude Code 本地环境（证据：`slices/07-config-scripts.xml`）。第二，hook 与 Python `setup.py` 各自实现读取 env/key 的逻辑，若未来状态字段变化，可能出现判断分叉；当前证据显示二者都读取同一 `.env` 和 key，但没有看到共享库机制（证据：`slices/07-config-scripts.xml`）。第三，当前底稿未显示 hook 的独立测试文件，测试覆盖主要集中在 Python `setup.py`（证据：`drafts/06-module-module_005.md`、`slices/06-tests.xml`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_006 -->
+## Agent 深度分析
+
+**业务角色**：`.agents` 模块是 Agent Skills marketplace 列表入口，用于让 Codex/Cursor/Copilot/Gemini CLI 等 Agent Skills host 通过 marketplace 发现并安装该仓库中的 watch 插件（证据：`slices/05-agent-config.xml`、`slices/04-docs.xml`、`drafts/06-module-module_006.md`）。
+
+**设计思路**：`.agents/plugins/marketplace.json` 是轻量注册表，而不是执行逻辑。它声明 marketplace 名称 `claude-video`、展示名 `watch`、插件源为 GitHub URL，并标注安装可用、认证在安装时处理、分类为 Productivity（证据：`slices/05-agent-config.xml`）。这与项目“一个 self-contained skill folder 被不同宿主复制/链接”的设计一致（证据：`slices/05-agent-config.xml`、`slices/04-docs.xml`）。
+
+**关键数据流**：Agent Skills CLI 或 host marketplace 读取 `.agents/plugins/marketplace.json` → 定位 GitHub repo → 安装 watch plugin/skill → 最终执行仍进入 `skills/watch/SKILL.md` 与 `scripts/watch.py`（证据：`slices/05-agent-config.xml`、`slices/04-docs.xml`）。
+
+**模块协同**：它与 `.codex-plugin` 一起服务非 Claude Code 安装面；与 root README/AGENTS 协同说明 `npx skills add bradautomates/claude-video -g` 的安装路径；与 core skill 协同要求 `skills/watch` 自包含，避免 marketplace 复制时丢失脚本（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**架构亮点**：该模块把多宿主分发能力降到一个小而稳定的 JSON manifest，业务实现不需要感知具体 host。这种分层能降低对单一平台的耦合（证据：`slices/05-agent-config.xml`）。
+
+**主要风险**：manifest 指向 GitHub URL，安装成功依赖远端仓库可达和 host 对该 marketplace schema 的兼容；当前证据不能验证外部 marketplace 实际解析结果（证据：`slices/05-agent-config.xml`）。历史热点仅显示该文件修改 1 次，不能判断其 schema 是否经历过兼容性修正（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_007 -->
+## Agent 深度分析
+
+**业务角色**：`.codex-plugin` 是 Codex/agents 安装面的 manifest 模块，作用是把 Agent Skills CLI 指向 `./skills/`，让 watch skill 以 self-contained folder 形式被发现和安装（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`drafts/06-module-module_007.md`）。
+
+**设计思路**：它的架构职责是“声明入口，不承载实现”。项目文档明确 `.codex-plugin/plugin.json` 是 Codex/agents manifest，`"skills": "./skills/"` 指向自包含 skill 目录；运行时 path resolution 仍由 `SKILL.md` 基于自身目录完成（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**关键数据流**：Codex 或 Agent Skills CLI 读取 `.codex-plugin/plugin.json` → 发现 `skills/watch/SKILL.md` → 复制/链接整个 `skills/watch` 目录 → 用户调用 `/watch` → `SKILL.md` 启动 `scripts/watch.py`（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`）。
+
+**模块协同**：该模块与 core skill 的目录布局强绑定：如果 `SKILL.md` 与 `scripts/` 不再同级，Codex/agents 安装面会复制到不完整 skill。AGENTS 明确禁止把 `SKILL.md` 或 scripts 移回 repo root，这正是在保护 `.codex-plugin` 的安装契约（证据：`slices/05-agent-config.xml`）。发布时它还需要与 `SKILL.md` 和 `.claude-plugin/plugin.json` 版本同步（证据：`slices/04-docs.xml`）。
+
+**架构亮点**：Codex 适配层保持极薄，有助于核心能力在多个 agent runtime 中复用；跨平台差异被限制在 manifest 层，而不是散落到 Python 运行逻辑中（证据：`slices/05-agent-config.xml`）。
+
+**主要风险**：当前可读切片未展开 `.codex-plugin/plugin.json` 的完整 JSON 内容，只能依据 README/AGENTS 判断其职责，不能核对实际字段值和版本号（证据：`drafts/06-module-module_007.md`、`slices/04-docs.xml`、`slices/05-agent-config.xml`）。此外，版本同步缺少当前证据中的自动校验，仍是发布流程风险（证据：`slices/04-docs.xml`、`slices/07-config-scripts.xml`）。
+<!-- END_MODULE_RESULT -->
+
+<!-- MODULE_RESULT: module_008 -->
+## Agent 深度分析
+
+**业务角色**：`.github` 模块承担发布自动化职责：当推送 `v*` tag 时，构建 claude.ai 可上传的 `dist/watch.skill`，并将其附加到 GitHub Release（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`、`drafts/06-module-module_008.md`）。
+
+**设计思路**：workflow 很窄，只做 release build，不跑完整测试。它 checkout 仓库，执行 `bash skills/watch/scripts/build-skill.sh`，确认 `dist/watch.skill` 存在，再用 `softprops/action-gh-release@v2` 创建 release 并上传文件（证据：`slices/07-config-scripts.xml`）。这与 `build-skill.sh` 的“只归档 `skills/watch`、限制 200 文件、确保唯一 SKILL.md”形成发布闭环（证据：`slices/07-config-scripts.xml`）。
+
+**关键数据流**：开发者 tag push → GitHub Actions 触发 → `build-skill.sh` 从 `HEAD:skills/watch` 生成 zip → workflow 校验 artifact → GitHub Release 附件发布 → claude.ai 用户下载 `watch.skill` 安装（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`）。
+
+**模块协同**：它与 module_001 的 `build-skill.sh` 紧密协同，发布产物只包含 `skills/watch`；与 root 文档协同，README/AGENTS 均说明 tag 发布流程和版本同步要求（证据：`slices/04-docs.xml`、`slices/05-agent-config.xml`、`slices/07-config-scripts.xml`）。
+
+**架构亮点**：发布动作保持可审计和可复现：同一个本地 build 脚本既供开发者手动构建，也供 CI release 调用，避免 CI 与本地打包逻辑分叉（证据：`slices/07-config-scripts.xml`）。
+
+**主要风险**：第一，workflow 当前证据显示只构建并上传 release artifact，未在发布前运行 pytest，因此 release tag 可能绕过测试质量门（证据：`slices/07-config-scripts.xml`、`slices/06-tests.xml`）。第二，`build-skill.sh` 要求工作树干净，但在 GitHub Actions checkout 后通常满足；本地手动发布时该约束能防止脏构建，但不能替代版本一致性检查（证据：`slices/07-config-scripts.xml`、`slices/04-docs.xml`）。第三，历史热点只有一次修改，不能判断 release workflow 是否经历过真实发布压力测试（证据：`slices/12-history-hotspot.txt`）。
+<!-- END_MODULE_RESULT -->
+hook: Stop
+hook: Stop
+hook: Stop Completed
+hook: Stop Completed
+tokens used
+71,861

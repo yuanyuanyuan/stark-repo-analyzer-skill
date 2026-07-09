@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Render repo-analyzer audience reports from REPORT_DATA.json."""
+"""Render repo-analyzer audience reports from report-data.json.
+
+T08: supports --output-dir to write rendered reports to a separate directory
+(defaults to --data for backward compatibility). Reads report-data.json from
+the --data directory.
+"""
 
 import argparse
 import json
@@ -25,35 +30,40 @@ def render_template(template: str, data: dict) -> str:
 
 
 def render_report(data_dir: Path, mode: str) -> str:
-    data = json.loads((data_dir / "REPORT_DATA.json").read_text(encoding="utf-8"))
+    data = json.loads((data_dir / "report-data.json").read_text(encoding="utf-8"))
     template = (TEMPLATE_DIR / f"ANALYSIS_REPORT.{mode}.tmpl.md").read_text(encoding="utf-8")
     context = {**data, **data.get("audiences", {}).get(mode, {})}
     return render_template(template, context)
 
 
-def render_all(data_dir: Path, mode: str) -> None:
+def render_all(data_dir: Path, mode: str, output_dir: Path = None) -> None:
+    if output_dir is None:
+        output_dir = data_dir
+    output_dir.mkdir(parents=True, exist_ok=True)
     modes = REPORT_MODES if mode == "all" else (mode,)
     for report_mode in modes:
         body = render_report(data_dir, report_mode)
-        (data_dir / f"ANALYSIS_REPORT.{report_mode}.md").write_text(body, encoding="utf-8")
+        (output_dir / f"ANALYSIS_REPORT.{report_mode}.md").write_text(body, encoding="utf-8")
     if mode == "all":
         overview_template = (TEMPLATE_DIR / "ANALYSIS_REPORT.overview.tmpl.md").read_text(encoding="utf-8")
-        data = json.loads((data_dir / "REPORT_DATA.json").read_text(encoding="utf-8"))
-        (data_dir / "ANALYSIS_REPORT.md").write_text(render_template(overview_template, data), encoding="utf-8")
+        data = json.loads((data_dir / "report-data.json").read_text(encoding="utf-8"))
+        (output_dir / "ANALYSIS_REPORT.md").write_text(render_template(overview_template, data), encoding="utf-8")
     else:
-        (data_dir / "ANALYSIS_REPORT.md").write_text(render_report(data_dir, mode), encoding="utf-8")
+        (output_dir / "ANALYSIS_REPORT.md").write_text(render_report(data_dir, mode), encoding="utf-8")
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Render repo-analyzer reports from REPORT_DATA.json.")
+    parser = argparse.ArgumentParser(description="Render repo-analyzer reports from report-data.json.")
     parser.add_argument("--template", choices=[*REPORT_MODES, "all"], default="all")
-    parser.add_argument("--data", default="analysis", help="analysis output directory")
+    parser.add_argument("--data", default=".stark-repo-analyzer/data", help="data directory containing report-data.json")
+    parser.add_argument("--output-dir", default=None, help="output directory for rendered reports (defaults to --data)")
     return parser
 
 
 def main(argv: Sequence[str] = None) -> int:
     args = build_parser().parse_args(argv)
-    render_all(Path(args.data).expanduser().resolve(), args.template)
+    output_dir = Path(args.output_dir) if args.output_dir else None
+    render_all(Path(args.data).expanduser().resolve(), args.template, output_dir)
     return 0
 
 

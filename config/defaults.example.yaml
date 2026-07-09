@@ -1,0 +1,14 @@
+# stark-repo-analyzer ask_user 默认值模板
+#
+# 首次运行（交互模式）会自动复制到 ~/.config/repo-analyzer/defaults.yaml。
+# --no-question 模式直接使用代码内置默认值，不读取本文件。
+#
+# 字段说明：
+#   priority            优先方向（architecture / product / learning）
+#   audience            报告受众（tech-lead / business / learning）
+#   usage_assumptions   用法假设（cli / library / service），可多选
+#   future_extensions   未来扩展方向（plugins / api / integrations），可多选
+priority: architecture
+audience: tech-lead
+usage_assumptions: []
+future_extensions: []

@@ -23,8 +23,10 @@ README 摘要显示该项目的主要卖点是：
 
 ## 3. 业务风险
 - 能力集中在 `{{ largest_root }}`，如果该模块缺少测试或错误处理，发布风险会集中放大。
-- 当前报告能确认文件、manifest、工具名和运行入口；市场定位、用户留存和真实搜索质量仍需要人工或 subagent 评审。
+- {{ business_risk_line }}
 - 验收入口是 `acceptance/check.sh`，适合在交付前做快速门禁。
+
+{{ agent_business_insights }}
 
 {{ audience_section }}
 
@@ -35,3 +37,5 @@ README 摘要显示该项目的主要卖点是：
 - 依赖切片：`slices/09-dependencies.xml`
 - 状态报告：`STATE_REPORT.md`
 {{ failed_section }}
+
+{{ research_section }}

@@ -1,0 +1,43 @@
+{
+  "mode": "codex",
+  "max_attempts": 3,
+  "modules": {
+    "module_001": {
+      "status": "PASS",
+      "attempts": 1
+    },
+    "module_002": {
+      "status": "PASS",
+      "attempts": 1
+    },
+    "module_003": {
+      "status": "PASS",
+      "attempts": 1
+    },
+    "module_004": {
+      "status": "PASS",
+      "attempts": 1
+    },
+    "module_005": {
+      "status": "PASS",
+      "attempts": 1
+    },
+    "module_006": {
+      "status": "PASS",
+      "attempts": 1
+    },
+    "module_007": {
+      "status": "PASS",
+      "attempts": 1
+    },
+    "module_008": {
+      "status": "PASS",
+      "attempts": 1
+    }
+  },
+  "cross_ref": {
+    "status": "PASS",
+    "attempts": 1
+  },
+  "status": "PASS"
+}

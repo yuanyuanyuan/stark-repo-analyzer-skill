@@ -1,0 +1,25 @@
+{
+  "run_id": "cross-ref-review",
+  "attempt": 1,
+  "returncode": 0,
+  "elapsed_seconds": 35.173,
+  "command": [
+    "codex",
+    "exec",
+    "-c",
+    "model_reasoning_effort=\"low\"",
+    "--sandbox",
+    "read-only",
+    "--skip-git-repo-check",
+    "-C",
+    "/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts",
+    "--output-last-message",
+    "/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/agent-runs/cross-ref-review/last-message.md",
+    "-"
+  ],
+  "command_kind": "codex exec",
+  "cwd": "/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts",
+  "timed_out": false,
+  "timeout_seconds": null,
+  "timeout_config_seconds": 0
+}

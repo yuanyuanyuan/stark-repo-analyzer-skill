@@ -1,0 +1,103 @@
+%% ============ 4.1 ask_user 三运行时交互 + 降级链 ============
+sequenceDiagram
+    participant Stage3 as 阶段三 write_question_answers
+    participant ORC as AskUserOrchestrator
+    participant DET as RuntimeDetector
+    participant CC as ClaudeCodeAskAdapter
+    participant CX as CodexAskAdapter
+    participant CU as CursorAskAdapter
+    participant DEF as defaults.yaml
+
+    Stage3->>ORC: ask_user(questions, no_question, runtime_hint)
+    alt --no-question
+        ORC->>DEF: 读默认值
+        DEF-->>ORC: Q1=architecture,Q2=tech-lead,Q3=Q4=[]
+        ORC-->>Stage3: List[Answer](默认值)
+    else 交互
+        ORC->>DET: detect()
+        DET-->>ORC: claude-code | codex | cursor | unknown
+        alt claude-code
+            ORC->>CC: ask(questions, 60)
+            CC-->>ORC: List[Answer]
+        else codex (选项受限)
+            ORC->>CX: ask(questions, 60)
+            CX-->>ORC: List[Answer] 或 退化纯文本
+        else cursor / unknown / 超时
+            ORC->>CU: ask(questions, 60)
+            CU->>CU: 写 questions.json + 暂停
+            Note over CU: 用户手工填后 --resume 续跑
+            CU-->>ORC: List[Answer] 或 空
+            alt 空/超时
+                ORC->>DEF: 读默认值(降级)
+                DEF-->>ORC: 默认值
+            end
+        end
+        ORC-->>Stage3: List[Answer]
+    end
+    Stage3->>Stage3: 写 03-question-answers.md (4 题答案或默认值)
+
+%% ============ 4.2 acceptance 流水线：新增执行器挂接 ============
+sequenceDiagram
+    participant UAT as UAT 裁判
+    participant CHK as acceptance/check.sh (write_acceptance 生成)
+    participant PY as 内联 Python 断言(245项)
+    participant L4 as 04-link.sh
+    participant L5 as 05-mermaid-judge.sh
+    participant LJ as llm-judge.sh → llm_judge.py
+    participant CX as codex exec (haiku-4.5)
+    participant AGG as CheckAggregator
+
+    UAT->>CHK: sh acceptance/check.sh [--strict]
+    CHK->>PY: 运行既有 245 项内联断言
+    PY-->>CHK: PASS|... / FAIL|...
+    CHK->>L4: 运行 外链检查
+    L4->>L4: curl -I -L / gh api
+    alt 离线
+        L4-->>CHK: SKIP|link check|offline
+    else 可达
+        L4-->>CHK: PASS|link check:外链可达|12/12 200
+    end
+    CHK->>L5: 运行 Mermaid 渲染
+    L5->>L5: npx mmdc -i panorama.mmd
+    alt 渲染失败 且 非 --strict
+        L5-->>CHK: WARN|mermaid render|syntax error
+    else 渲染失败 且 --strict
+        L5-->>CHK: FAIL|mermaid render|syntax error
+    else 成功
+        L5-->>CHK: PASS|mermaid render:全景图|exit 0
+    end
+    CHK->>LJ: 运行 LLM-judge
+    LJ->>CX: codex exec (haiku-4.5) 评分 prompt
+    CX-->>LJ: {"accuracy":8.2,"audience_match":{...},"jaccard":0.41}
+    LJ-->>CHK: PASS|llm-judge:内容准确度|8.2/10≥7
+    CHK->>AGG: aggregate(全部 PASS/FAIL/WARN/SKIP 行)
+    AGG-->>CHK: TOTAL:N PASS:P FAIL:F WARN:W SKIP:S
+    alt F>0
+        CHK-->>UAT: exit 1
+    else
+        CHK-->>UAT: exit 0
+    end
+
+%% ============ 4.3 外部调研阶段（可选） ============
+sequenceDiagram
+    participant Main as analyze()
+    participant RS as ResearchStage
+    participant NET as 网络/WebSearch
+    participant RD as report_data()
+
+    Main->>RS: run(output, args, repo)
+    alt 非 --research
+        RS-->>Main: None (SKIP, 不写文件)
+    else --research
+        RS->>RS: _is_online()?
+        alt 离线/--offline
+            RS-->>Main: None (SKIP, 记 research_enabled=false)
+        else 在线
+            RS->>NET: 竞品/组织动机/官方文档
+            NET-->>RS: findings
+            RS->>RS: 写 03-research.md (5 章节+引用)
+            RS-->>Main: Path(03-research.md)
+            RS->>RD: research_section = 渲染片段
+            RD-->>Main: REPORT_DATA.json 含 research_section
+        end
+    end

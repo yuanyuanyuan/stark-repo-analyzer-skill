@@ -81,3 +81,4 @@ Desktop.ini
 graphify-out/
 analysis/
 analysis-*/
+.stark-repo-analyzer/

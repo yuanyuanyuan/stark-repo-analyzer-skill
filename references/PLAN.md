@@ -8,20 +8,28 @@
 >
 > 外部调研：**可选层（默认 OFF）**，执行到阶段五后由用户决定是否开启。
 
+> ⚠️ **文档状态（2026-07-08 同步）**：本文是**历史设计草案**（原 `video-use` 仓库分析方案）。实际实现已通过 ADR 系列演进，与本文存在重大偏差，请以 `SKILL.md` + `references/decisions/0001-0019` + `scripts/analyzer_*.py` 为准。关键偏差：
+> 1. **阶段一已废弃**（[ADR-0001](decisions/0001-phase-1-cut.md)）：原 `repomix --compress` 宏观建模 + 4+1 overview subagent 不再实现，改为 Phase-2a 生成 10KB 项目名片（见 §3 / `data/manifest-card.md`）。
+> 2. **输出目录已重组**（[ADR-0016](decisions/0016-output-dir-restructure.md)）：根从 `analysis/` 改为 `.stark-repo-analyzer/`，分 `data/ reports/ diagnostics/ logs/ acceptance/ agent-runs/` 子目录；本文中的 `analysis/...` 路径为历史设计稿，实际路径见文末 §附录 C（ADR-0016 路径对照）。
+> 3. **代码已模块化**（T05）：原 `scripts/repo_analyzer.py` 单体（约 2746 行）已重构为 195 行编排入口 + `analyzer_*.py` 系列模块。
+> 4. **运行时增强**（[ADR-0017](decisions/0017-preflight-agent-degrade.md)/[0018](decisions/0018-progress-reporter-run-log.md)/[0019](decisions/0019-llm-judge-model-and-manifest-10k.md)）：`--agent-mode` 默认 `codex` + 预检自动降级；`[N/M]` 进度与 `logs/run-*.md`；LLM-judge 模型默认置空；名片 10KB。
+> 5. **外部调研仍为 stub**（T07）：`--research` 开关已接但 `write_research()` 恒写 SKIP，不产出真实 5 章节（见 [PRD_UNFINISHED_FEATURES.md](PRD_UNFINISHED_FEATURES.md) #4）。
+
 ---
 
 ## 0. 环境与目录约定
 
 | 项 | 值 |
 |----|----|
-| 工作根目录 | `/mnt/d/projects/mynote/mac-projects/myIP` |
-| 交付物目录 | `analysis/`（相对工作根目录） |
-| 仓库克隆目录 | `/tmp` 下动态生成的临时目录（详见 §1） |
-| 工具 | `repomix`（已 `npm install -g`）、`git`、`mktemp`、Claude Agent（subagent） |
+| 工作根目录 | 示例 `/mnt/d/projects/mynote/mac-projects/myIP`（实际以调用时的工作目录为准） |
+| 交付物目录 | `.stark-repo-analyzer/`（默认，相对当前工作目录；可用 `--output` 覆盖，见 [ADR-0016](decisions/0016-output-dir-restructure.md)） |
+| 输出子目录 | `data/`（结构化 JSON/YAML/TXT）、`reports/`（人读报告）、`diagnostics/`（切片/草稿/cross-ref）、`logs/`（运行日志）、`acceptance/`（验收脚本）、`agent-runs/`（agent 证据） |
+| 仓库克隆目录 | 动态生成的临时目录（`tempfile.TemporaryDirectory`，详见 §1），分析结束后自动清理，不污染工作区 |
+| 工具 | `repomix`（`npx repomix`）、`git`、`scripts/repo_analyzer.py`（编排入口）+ `analyzer_*.py` 模块、可选 `codex` CLI（agent 模式） |
 | 全局 ignore 规则 | **全语言版**（Node/Python/Go/Rust/Java/Ruby/PHP/.NET/C-C++/媒体/IDE/密钥/日志），见 §2 完整定义；**锁文件 + AI Agent 配置不放全局 ignore**（维度 09/05 单独 include） |
 | 输出格式 | 切片统一 `--style xml`；分析报告统一 Markdown |
 | 分析模式 | **核心 80% / 次要 20%**（自定义非对称） |
-| 外部调研 | 可选开关（默认 OFF） |
+| 外部调研 | 可选开关（默认 OFF，且当前为 SKIP stub） |
 
 ---
 
@@ -50,7 +58,9 @@ cd "$REPO_DIR"
 
 ---
 
-## 2. 阶段一：宏观认知建模（压缩 repomix）
+## 2. 阶段一：宏观认知建模（压缩 repomix）【已废弃 · ADR-0001】
+
+> ⚠️ **本节（阶段一 `repomix --compress` 宏观认知建模 + 4+1 overview subagent）已于 [ADR-0001](decisions/0001-phase-1-cut.md) 废弃**，不再实现。替代方案：Phase-2a 直接生成 10KB 项目名片（`data/manifest-card.md`，含 Git 信息/代码规模/许可证/依赖/运行命令/顶层目录/README 前 4000 字符），减少一次压缩与多 subagent 调用。下文保留为历史设计参考。
 
 **目的**：以最小 token 成本建立项目心智模型，作为切片决策的依据。
 
@@ -261,7 +271,9 @@ npx repomix --compress \
 
 ---
 
-## 3. 阶段二：12 维精细切片（不压缩 + XML，**并行执行**）
+## 3. 阶段二：动态切片（不压缩 + XML，**并行执行**）【原固定 12 维已改写为动态 · ADR-0002】
+
+> ⚠️ **本节原「固定 12 维切片」已改写为动态切片**（[ADR-0002](decisions/0002-phase-2a-dynamic.md)）：先识别 repo 类型，再按 `config/repo-types.yaml` 加载该类型的 N 维切片（维度由 `RepoTypeLoader` 外置，见 PLAN_COMPLIANCE §1 行 7）。切片产物写入 `diagnostics/slices/`。原 12 维清单保留为 `fallback_dimensions` 回退（未知类型时硬套）。下文 12 维清单作为历史基线参考。
 
 ### 3.0 共享资源
 
@@ -582,53 +594,78 @@ analysis/03-research.md
 ## 附录 C：参考资料
 ```
 
-### 9.2 交付物总览
+### 9.2 交付物总览（实际结构 · ADR-0016）
+
+> 以下为代码实际产出结构（根目录 `.stark-repo-analyzer/`）。历史设计稿的 `analysis/` 平铺结构已废弃，路径对照见文末 §附录 C。
 
 ```
-analysis/
-├── 00-meta.txt                  # 阶段 0 元数据
-├── PLAN.md                      # 本文件
-├── .ignore-glob.sh              # 阶段 1 共享 ignore 变量（§2 创建，§2 + §3 复用）
-├── overview.md                  # 阶段 1 宏观认知（4+1 subagent 并行写作，见 §2.2）
-├── 03-research.md               # 【可选】阶段三半外部调研
-├── 05-modules-plan.md           # 阶段 4 模块清单 + 叙事线 + 依赖图
-├── 08-coverage.md               # 阶段 6 覆盖率门控
-├── ANALYSIS_REPORT.md           # 阶段 7 最终报告
-├── README.md                    # 索引页
-├── drafts/                      # 阶段 5 业务模块草稿
-│   ├── 06-module-{core-1}.md
-│   ├── 06-module-{core-2}.md
-│   ├── ...
-│   └── 06-module-secondary.md
-└── slices/                      # 阶段 2 12 维原料
-    ├── 01-frontend.xml
-    ├── 02-backend.xml
-    ├── 03-database.xml
-    ├── 04-docs.xml
-    ├── 05-agent-config.xml
-    ├── 06-tests.xml
-    ├── 07-config-scripts.xml
-    ├── 08-interfaces.xml
-    ├── 09-dependencies.xml
-    ├── 10-examples.xml
-    ├── 11-assets.xml
-    └── 12-history-hotspot.txt
+.stark-repo-analyzer/
+├── data/                        # 结构化数据（JSON/YAML/TXT）
+│   ├── meta.txt                 # 阶段 0 元数据
+│   ├── repo-type.yaml           # Phase-2a 仓库类型与动态切片清单
+│   ├── manifest-card.md         # 10KB 项目名片（ADR-0019）
+│   ├── question-answers.md      # 自适应问题答案（ask_user 适配器）
+│   ├── research.md              # 【可选】外部调研（当前恒为 SKIP stub，T07）
+│   ├── module-ids.yaml          # 模块候选清单
+│   ├── modules-plan.md          # 阶段 4 模块清单 + 叙事线 + 依赖图
+│   ├── coverage.md              # 覆盖率门控
+│   ├── coverage-failure.md      # 未通过模块明细（§9，ADR-0015）
+│   ├── expected-symbols.json    # 期望符号
+│   ├── coverage-symbols.json    # 实测符号
+│   ├── mcp-tools.json           # MCP / API 工具面
+│   ├── performance-report.json  # 性能诊断
+│   ├── config-effective.json    # 生效配置（含 agent_mode_degraded / token）
+│   ├── report-data.json         # 模板渲染数据
+│   └── agent-summary.json       # agent 状态汇总
+├── reports/                     # 人读 Markdown 报告
+│   ├── ANALYSIS_REPORT.md       # 总览报告
+│   ├── ANALYSIS_REPORT.tech-lead.md
+│   ├── ANALYSIS_REPORT.business.md
+│   ├── ANALYSIS_REPORT.learning.md
+│   ├── README.md                # 索引页
+│   ├── STATE_REPORT.md          # 状态报告（PASS/FAIL + 失败模块）
+│   ├── SLA_REPORT.md            # SLA 报告（含 token 用量）
+│   └── PERFORMANCE_REPORT.md    # 性能诊断报告
+├── diagnostics/                 # 诊断中间产物
+│   ├── slices/                  # 动态切片（原 12 维，按 repo 类型）
+│   │   ├── 01-frontend.xml
+│   │   ├── 02-backend.xml
+│   │   ├── ...
+│   │   └── history-hotspot.txt
+│   ├── module-drafts/           # 阶段 5 业务模块草稿（原 06-module-*.md）
+│   │   ├── module-{core-1}.md
+│   │   └── ...
+│   ├── cross-ref-checks.md      # 确定性 cross-ref 校验（原 07-）
+│   ├── cross-ref-review-input.md# 压缩审稿包
+│   └── cross-ref-agent-review.md# 独立审稿（原 07-）
+├── logs/                        # 运行日志（ADR-0018）
+│   └── run-YYYYMMDD-HHMMSS.md
+├── acceptance/                  # 验收脚本
+│   ├── check.sh                 # 本地硬断言（245+ 项）+ 串联 3 执行器
+│   ├── 04-link.sh               # 外链可达性 + commit 引用
+│   ├── 05-mermaid-judge.sh      # Mermaid 渲染
+│   └── llm-judge.sh             # → scripts/llm_judge.py
+└── agent-runs/                  # agent 调用证据
+    ├── modules-batch/           # 批量模块深挖
+    ├── repair-*/                # coverage 修复
+    ├── cross-ref-repair-*/      # cross-ref 修复
+    └── cross-ref-review-final/  # 独立复审
 ```
 
 ---
 
-## 10. 验收标准（核心 80% / 次要 20% 模式）
+## 10. 验收标准（核心 80% / 次要 20% 模式，实际以 `.stark-repo-analyzer/` 为准）
 
-- [ ] 仓库成功克隆至 `/tmp/video-use-XXXXXX`，未污染工作区
-- [ ] `analysis/00-meta.txt` 含元数据
-- [ ] `analysis/overview.md` 覆盖 14 项内容（含 v2 新增 4 项）
-- [ ] `analysis/slices/01-12-*.{xml,txt}` 全部存在
-- [ ] `analysis/05-modules-plan.md` 选定叙事线 + 模块依赖图
-- [ ] `analysis/drafts/06-module-*.md` 全部核心模块四要素完整
-- [ ] **核心模块 ≥80% 覆盖率，次要模块 ≥20%**（写入 `08-coverage.md`）
-- [ ] `analysis/ANALYSIS_REPORT.md` 含 Mermaid 全景图 + 架构评价 + 改进建议
-- [ ] `analysis/README.md` 索引页可点击跳转至各产物
-- [ ] `analysis/PLAN.md` 保留（作为复现手册）
+- [ ] 仓库成功克隆至临时目录，未污染工作区
+- [ ] `data/meta.txt` 含 git 元数据、文件数量与语言统计
+- [ ] `data/repo-type.yaml` 与 `data/manifest-card.md`（10KB 名片）已生成
+- [ ] `diagnostics/slices/` 至少含与 repo 类型匹配的切片（文档/代码/依赖/历史热点等）
+- [ ] `data/modules-plan.md` 选定叙事线 + 模块依赖图
+- [ ] `diagnostics/module-drafts/module-*.md` 全部核心模块四要素完整
+- [ ] **核心模块 ≥80% 覆盖率，次要模块 ≥20%**（写入 `data/coverage.md`）
+- [ ] `reports/ANALYSIS_REPORT.md`（及 `--mode all` 时的三受众变体）含 Mermaid 全景图 + 架构评价 + 改进建议
+- [ ] `reports/README.md` 索引页可点击跳转至各产物
+- [ ] `acceptance/check.sh` 本地硬断言（245+ 项）+ 3 个扩展执行器（`04-link.sh` / `05-mermaid-judge.sh` / `llm-judge.sh`）汇总 `TOTAL:` 行
 
 ---
 

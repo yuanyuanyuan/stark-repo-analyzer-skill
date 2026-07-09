@@ -1,0 +1,173 @@
+{
+  "stages": [
+    {
+      "name": "checkout-target",
+      "elapsed_seconds": 1.332,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "prepare-output",
+      "elapsed_seconds": 0.0,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "scan-files",
+      "elapsed_seconds": 0.001,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "classify-repo",
+      "elapsed_seconds": 0.001,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "write-meta",
+      "elapsed_seconds": 0.042,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "repomix-slices",
+      "elapsed_seconds": 13.181,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "module-drafts",
+      "elapsed_seconds": 0.015,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "cross-ref-deterministic-initial",
+      "elapsed_seconds": 0.001,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "agent-init",
+      "elapsed_seconds": 0.0,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "agent-modules-batch",
+      "elapsed_seconds": 365.253,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "cross-ref-deterministic-after-agent",
+      "elapsed_seconds": 0.001,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "coverage-initial",
+      "elapsed_seconds": 0.032,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "agent-cross-ref-review",
+      "elapsed_seconds": 35.176,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "agent-cross-ref-repair",
+      "elapsed_seconds": 0.0,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "state-report",
+      "elapsed_seconds": 0.0,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "render-reports",
+      "elapsed_seconds": 0.053,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "write-index-and-config",
+      "elapsed_seconds": 0.002,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "name": "sla-report",
+      "elapsed_seconds": 0.0,
+      "status": "PASS",
+      "error": ""
+    }
+  ],
+  "agent_attempts": [
+    {
+      "run_id": "modules-batch",
+      "attempt": 1,
+      "returncode": 0,
+      "elapsed_seconds": 365.246,
+      "command": [
+        "codex",
+        "exec",
+        "-c",
+        "model_reasoning_effort=\"low\"",
+        "--sandbox",
+        "read-only",
+        "--skip-git-repo-check",
+        "-C",
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts",
+        "--output-last-message",
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/agent-runs/modules-batch/last-message.md",
+        "-"
+      ],
+      "command_kind": "codex exec",
+      "cwd": "/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts",
+      "timed_out": false,
+      "timeout_seconds": null,
+      "timeout_config_seconds": 0
+    },
+    {
+      "run_id": "cross-ref-review",
+      "attempt": 1,
+      "returncode": 0,
+      "elapsed_seconds": 35.173,
+      "command": [
+        "codex",
+        "exec",
+        "-c",
+        "model_reasoning_effort=\"low\"",
+        "--sandbox",
+        "read-only",
+        "--skip-git-repo-check",
+        "-C",
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts",
+        "--output-last-message",
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts/agent-runs/cross-ref-review/last-message.md",
+        "-"
+      ],
+      "command_kind": "codex exec",
+      "cwd": "/Users/chuzu/projests/stark-repo-analyzer-skill/uat-evidence/run-005/artifacts",
+      "timed_out": false,
+      "timeout_seconds": null,
+      "timeout_config_seconds": 0
+    }
+  ],
+  "summary": {
+    "total_elapsed_seconds": 415.091,
+    "agent_total_elapsed_seconds": 400.419,
+    "agent_attempt_count": 2,
+    "slowest_stage": "agent-modules-batch",
+    "slowest_agent_run_id": "modules-batch",
+    "agent_timeout_enabled": false,
+    "diagnosis": "agent subprocess/model fixed cost dominates; do not hide it with default timeout"
+  }
+}

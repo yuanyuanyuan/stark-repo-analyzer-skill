@@ -1,0 +1,8 @@
+Tue Jul  7 17:45:50 CST 2026
+cwd=/Users/chuzu/projests/stark-repo-analyzer-skill
+codex=/Users/chuzu/.local/bin/codex
+skill_link=/Users/chuzu/projests/stark-repo-analyzer-skill
+git_head=49d4d8bc3c69c1e1a093c73625045b7938ab6dbc
+?? .workbuddy/
+?? docs/RULES-SOP.md
+?? uat-evidence/run-004/
