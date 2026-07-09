@@ -75,11 +75,11 @@ The skill activates automatically when you mention:
 
 After scanning the codebase, the skill asks you to choose a depth level:
 
-| Mode | Core Module Coverage | Secondary Coverage | Best For |
-|------|---------------------|-------------------|----------|
-| **Quick** | >= 30% | >= 10% | Getting a high-level overview |
-| **Standard** (default) | >= 60% | >= 30% | Regular architecture analysis |
-| **Deep** | >= 90% | >= 60% | Studying every design decision |
+| Mode | Source-Anchor Depth (guidance, not a gate) | Best For |
+|------|---------------------------------------------|----------|
+| **Quick** | Key judgments of core modules anchored; secondary modules sampled | Getting a high-level overview |
+| **Standard** (default) | All key judgments of core modules anchored; representative anchors for secondary | Regular architecture analysis |
+| **Deep** | Every design decision anchored, including secondary modules | Studying every design decision |
 
 ## How It Works
 
@@ -88,7 +88,7 @@ After scanning the codebase, the skill asks you to choose a depth level:
 3. **Adaptive Q&A** — Generates targeted questions based on project characteristics, not a fixed checklist
 4. **Dynamic Report Structure** — Designs chapter layout based on your answers and project traits
 5. **Parallel Deep Analysis** — Spawns subagents for each core module, analyzing them concurrently
-6. **Cross-Validation** — Verifies conclusions across modules, checks code read coverage
+6. **Cross-Validation** — Verifies conclusions across modules, checks source anchors on core judgments
 7. **Multi-Source Fusion** — Merges research, module analyses, and insights into a cohesive narrative
 8. **Final Report** — Outputs a single Markdown file with Mermaid diagrams
 
