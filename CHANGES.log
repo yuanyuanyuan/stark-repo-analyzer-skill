@@ -1,5 +1,14 @@
 # Changes
 
+## v1.5.0 - 2026-07-09
+
+- Added Risk Sampling as a required core-module analysis step.
+- Required each core module to sample at least one relevant risk path with object, source anchor, finding, and architecture impact.
+- Documented risk categories including error handling, configuration loading, plugins/extension points, cache, concurrency, auth/security boundaries, and generated/vendor/test boundaries.
+- Required non-applicable risk categories to be explained instead of silently omitted.
+- Required final-report critical evaluation to cite risk sampling findings while keeping unsupported risk inferences subject to Unsupported Claims rules.
+- Added a v1.5 manual acceptance checklist and updated user documentation without adding automatic risk scanners or a hard quality gate.
+
 ## v1.4.0 - 2026-07-09
 
 - Added Unsupported Claims as a process-level final-report check for evidence status.

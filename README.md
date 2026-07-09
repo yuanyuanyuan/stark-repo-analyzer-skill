@@ -43,6 +43,7 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 - **Parallel subagent analysis** — Spawns multiple agents to analyze core modules concurrently for large codebases
 - **Evidence Matrix module drafts** — Requires each core module draft to start with a Markdown evidence structure before narrative analysis
 - **Unsupported claims check** — Before the final report, downgrades evidence-free judgments to assumptions, open questions, limitations, or unsupported areas
+- **Risk-path sampling** — Requires each core module to sample relevant risk paths such as error handling, configuration, extension points, cache, concurrency, security boundaries, and generated/vendor/test boundaries
 - **Competitive positioning** — Compares design philosophy and technical trade-offs against similar projects
 - **Mermaid diagrams** — Architecture overviews, data flows, and per-module sequence diagrams throughout the report
 - **Interactive workflow** — Asks targeted questions based on project traits before diving into analysis
@@ -89,12 +90,12 @@ After scanning the codebase, the skill asks you to choose a depth level:
 2. **External Research** — Web searches for reviews, comparisons, and architecture discussions; crawls the official website
 3. **Adaptive Q&A** — Generates targeted questions based on project characteristics, not a fixed checklist
 4. **Dynamic Report Structure** — Designs chapter layout and writes a lightweight Evidence Plan for each core module before deep reading, including architecture questions, candidate entry points, required evidence types, risk paths, and expected judgment scope
-5. **Parallel Deep Analysis** — Spawns subagents for each core module with its Evidence Plan, and requires each core module draft to start with a Markdown Evidence Matrix covering role, entry points, data structures, main flow, dependencies, design decisions, risks, source evidence, and open questions
-6. **Cross-Validation** — Verifies conclusions across modules, checks source anchors, checks whether module drafts answer their Evidence Plan, and uses Evidence Matrix fields to spot gaps or conflicts before synthesis
-7. **Multi-Source Fusion** — Merges research, module analyses, insights, and Evidence Matrix comparisons into a cohesive narrative; runs a final unsupported-claims check so evidence-free judgments stay out of certain claims
+5. **Parallel Deep Analysis** — Spawns subagents for each core module with its Evidence Plan, and requires each core module draft to start with a Markdown Evidence Matrix covering role, entry points, data structures, main flow, dependencies, design decisions, risk-path samples, source evidence, and open questions
+6. **Cross-Validation** — Verifies conclusions across modules, checks source anchors, checks whether module drafts answer their Evidence Plan, and uses Evidence Matrix plus risk-path samples to spot gaps or conflicts before synthesis
+7. **Multi-Source Fusion** — Merges research, module analyses, insights, Evidence Matrix comparisons, and risk-path findings into a cohesive narrative; runs a final unsupported-claims check so evidence-free judgments stay out of certain claims
 8. **Final Report** — Outputs a single Markdown file with Mermaid diagrams that distinguishes verified conclusions from assumptions, open questions, limitations, and unsupported areas
 
-Evidence Plan is a planning-layer Markdown artifact embedded in the existing module plan. Evidence Matrix is a Markdown structure inside module drafts, used for comparison and synthesis before the final report. Unsupported Claims is a process-level final-report check: missing evidence is downgraded rather than auto-scored. This v1 workflow does not add a CLI, JSON schema, `module-evidence/*.json`, automatic parsing, automatic generation, LLM judge, or a hard quality gate.
+Evidence Plan is a planning-layer Markdown artifact embedded in the existing module plan. Evidence Matrix is a Markdown structure inside module drafts, used for comparison and synthesis before the final report. Risk-path sampling is a manual module-analysis rule: each core module samples at least one relevant boundary or failure path with source anchors, and final critical evaluation cites those findings. Unsupported Claims is a process-level final-report check: missing evidence is downgraded rather than auto-scored. This v1 workflow does not add a CLI, JSON schema, `module-evidence/*.json`, automatic parsing, automatic generation, automatic risk scanners, LLM judge, or a hard quality gate.
 
 ## Report Output
 

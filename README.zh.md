@@ -43,6 +43,7 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 - **并行 Subagent 分析** — 为每个核心模块启动独立 Agent 并行分析，高效处理大型代码库
 - **Evidence Matrix 模块草稿** — 每个核心模块草稿先提交 Markdown 证据结构，再进入叙事分析
 - **Unsupported Claims 检查** — 最终报告前把无证据判断降级为假设、开放问题、限制说明或 unsupported area
+- **风险路径抽样** — 每个核心模块必须抽样相关风险路径，例如错误处理、配置、扩展点、缓存、并发、安全边界以及 generated/vendor/test 边界
 - **竞品定位** — 对比设计哲学和技术路线差异，而非功能清单
 - **Mermaid 架构图** — 贯穿报告的系统架构图、数据流图和模块时序图
 - **交互式工作流** — 根据项目特征生成针对性问题，在深入分析前与你对齐方向
@@ -89,12 +90,12 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 2. **外部调研** — 搜索项目评价、竞品对比、架构讨论；遍历官网关键页面
 3. **自适应提问** — 根据项目特征生成针对性问题，不是固定问题清单
 4. **动态报告结构** — 根据你的回答和项目特点设计章节布局，并在深读前为每个核心模块写轻量 Evidence Plan，包含架构问题、候选入口、必需证据类型、风险路径和预期判断范围
-5. **并行深度分析** — 为每个核心模块启动 Subagent，并把对应 Evidence Plan 放入 prompt；每个核心模块草稿必须先写 Markdown Evidence Matrix，覆盖模块角色、入口点、核心数据结构、主流程、跨模块依赖、关键设计决策、风险点、源码证据和开放问题
-6. **交叉验证** — 跨模块验证结论，核查核心结论的源码锚点，检查模块草稿是否回应 Evidence Plan，并用 Evidence Matrix 字段发现缺口或冲突
-7. **多源融合** — 将调研、模块分析、洞察和 Evidence Matrix 对比结果融合为连贯叙事，并在最终报告前执行 Unsupported Claims 检查，避免无证据判断进入确定性结论
+5. **并行深度分析** — 为每个核心模块启动 Subagent，并把对应 Evidence Plan 放入 prompt；每个核心模块草稿必须先写 Markdown Evidence Matrix，覆盖模块角色、入口点、核心数据结构、主流程、跨模块依赖、关键设计决策、风险路径抽样、源码证据和开放问题
+6. **交叉验证** — 跨模块验证结论，核查核心结论的源码锚点，检查模块草稿是否回应 Evidence Plan，并用 Evidence Matrix 与风险路径抽样发现缺口或冲突
+7. **多源融合** — 将调研、模块分析、洞察、Evidence Matrix 对比结果和风险路径发现融合为连贯叙事，并在最终报告前执行 Unsupported Claims 检查，避免无证据判断进入确定性结论
 8. **最终报告** — 输出包含 Mermaid 图表的单一 Markdown 文件，并区分已验证结论与假设、开放问题、限制说明、unsupported area
 
-Evidence Plan 是嵌入现有模块规划的计划层 Markdown 产物。Evidence Matrix 是模块草稿中的 Markdown 证据结构，用于最终报告前的对比、合成和缺口发现。Unsupported Claims 是最终报告前的流程级检查：无证据内容会被降级，而不是被自动评分或硬阻塞。当前 v1 工作流不新增 CLI、JSON schema、`module-evidence/*.json`、自动解析、自动生成流程、LLM judge 或硬质量门。
+Evidence Plan 是嵌入现有模块规划的计划层 Markdown 产物。Evidence Matrix 是模块草稿中的 Markdown 证据结构，用于最终报告前的对比、合成和缺口发现。风险路径抽样是人工模块分析规则：每个核心模块至少抽样一条相关边界或失败路径，并带源码锚点，最终报告的批判性评价会引用这些发现。Unsupported Claims 是最终报告前的流程级检查：无证据内容会被降级，而不是被自动评分或硬阻塞。当前 v1 工作流不新增 CLI、JSON schema、`module-evidence/*.json`、自动解析、自动生成流程、自动风险扫描器、LLM judge 或硬质量门。
 
 ## 报告输出
 
