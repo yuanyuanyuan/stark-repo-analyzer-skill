@@ -1,5 +1,14 @@
 # Changes
 
+## v1.4.0 - 2026-07-09
+
+- Added Unsupported Claims as a process-level final-report check for evidence status.
+- Required core deterministic conclusions to carry source anchors, document evidence, or first-hand external sources.
+- Required evidence-free judgments to move into assumptions, open questions, limitations, or unsupported areas.
+- Kept cross-module inferences pending until main-agent verification, and prevented open questions from disappearing during synthesis.
+- Added a v1.4 manual acceptance checklist focused on final-report behavior.
+- Updated user documentation to describe verified vs unverified content without implying auto scanning, LLM judge, or a hard quality gate.
+
 ## v1.2.0 - 2026-07-09
 
 - Added the Evidence Plan workflow to repo-analyzer module planning.
