@@ -47,6 +47,8 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 - **风险路径抽样** — 每个核心模块必须抽样相关风险路径，例如错误处理、配置、扩展点、缓存、并发、安全边界以及 generated/vendor/test 边界
 - **预算档** — 快速、标准、深度模式由 evidence 深度、风险抽样强度、报告长度、subagent 上限和调研强度定义，而不是源码行覆盖率
 - **竞品定位** — 对比设计哲学和技术路线差异，而非功能清单
+- **软质量门** — 最终报告前生成 Markdown 质量门摘要，检查 Evidence Matrix 完整性、源码锚点、风险抽样、unsupported claims、预算执行、Repo Map 使用情况和关键单元覆盖；未通过项可见地出现在报告的开放问题、限制说明或 unsupported area 中，不硬阻塞报告生成
+- **关键单元覆盖率试点** — 每个核心模块草稿列出关键单元（入口点、核心数据结构、公共 API、状态/配置定义、跨模块依赖）及其锚定状态、源码锚点、设计判断和未覆盖原因；覆盖率作为审计信号，不作为硬门控；结果反馈 v2.0 schema 决策
 - **Mermaid 架构图** — 贯穿报告的系统架构图、数据流图和模块时序图
 - **交互式工作流** — 根据项目特征生成针对性问题，在深入分析前与你对齐方向
 
@@ -97,10 +99,11 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 5. **动态报告结构** — 根据你的回答和项目特点设计章节布局，并基于 Repo Map 为每个核心模块写轻量 Evidence Plan，包含架构问题、候选入口、必需证据类型、风险路径、预期判断范围和当前预算档
 6. **并行深度分析** — 为每个核心模块启动 Subagent，并把对应 Evidence Plan 与预算档放入 prompt；每个核心模块草稿必须先写 Markdown Evidence Matrix，覆盖模块角色、入口点、核心数据结构、主流程、跨模块依赖、关键设计决策、风险路径抽样、源码证据和开放问题
 7. **交叉验证** — 跨模块验证结论，核查核心结论的源码锚点，检查模块草稿是否回应 Evidence Plan，检查 Repo Map 使用情况和预算执行，并用 Evidence Matrix 与风险路径抽样发现缺口或冲突
-8. **多源融合** — 将调研、模块分析、洞察、Evidence Matrix 对比结果、风险路径发现和预算执行摘要融合为连贯叙事，并在最终报告前执行 Unsupported Claims 检查，避免无证据判断进入确定性结论
-9. **最终报告** — 输出包含 Mermaid 图表的单一 Markdown 文件，并区分已验证结论与假设、开放问题、限制说明、unsupported area
+8. **软质量门** — 合成前生成 Markdown 质量门摘要（`drafts/08-quality-gate.md`），检查所有证据规则；未通过项不阻塞报告生成，而是反���进最终报告的开放问题、限制说明或 unsupported area
+9. **多源融合** — 将调研、模块分析、洞察、Evidence Matrix 对比结果、风险路径发现、关键单元覆盖摘要和预算执行摘要融合为连贯叙事，并在最终报告前执行 Unsupported Claims 检查，避免无证据判断进入确定性结论
+10. **最终报告** — 输出包含 Mermaid 图表的单一 Markdown 文件，区分已验证结论与假设、开放问题、限制说明、unsupported area；软质量门的所有未通过项在报告中可见
 
-Markdown Repo Map 是深读前的低依赖仓库概览，只用现有系统命令和人工整理提供候选信号，并驱动 Evidence Plan；它不引入新 CLI、JSON schema、生态命令或 graphify 硬依赖。Evidence Plan 是嵌入现有模块规划的计划层 Markdown 产物。Evidence Matrix 是模块草稿中的 Markdown 证据结构，用于最终报告前的对比、合成和缺口发现。风险路径抽样是人工模块分析规则：每个核心模块至少抽样一条相关边界或失败路径，并带源码锚点，最终报告的批判性评价会引用这些发现。预算档让快速、标准、深度模式按 evidence 深度和成本边界区分，而不是按行覆盖率区分。Unsupported Claims 是最终报告前的流程级检查：无证据内容会被降级，而不是被自动评分或硬阻塞。当前 v1 工作流不新增 CLI、JSON schema、`module-evidence/*.json`、自动解析、自动生成流程、自动风险扫描器、生态命令、符号枚举器、精确 token 计量、自动 token 中断、LLM judge 或硬质量门。
+Markdown Repo Map 是深读前的低依赖仓库概览，只用现有系统命令和人工整理提供候选信号，并驱动 Evidence Plan；它不引入新 CLI、JSON schema、生态命令或 graphify 硬依赖。Evidence Plan 是嵌入现有模块规划的计划层 Markdown 产物。Evidence Matrix 是模块草稿中的 Markdown 证据结构，用于最终报告前的对比、合成和缺口发现。风险路径抽样是人工模块分析规则：每个核心模块至少抽样一条相关边界或失败路径，并带源码锚点，最终报告的批判性评价会引用这些发现。预算档让快速、标准、深度模式按 evidence 深度和成本边界区分，而不是按行覆盖率区分。Unsupported Claims 是最终报告前的流程级检查：无证据内容会被降级，而不是被自动评分或硬阻塞。Soft Quality Gate 在最终报告前生成 Markdown 摘要，让质量缺口可见但不阻塞报告生成，不要求 JSON gate、gate CLI 或 LLM judge。关键单元覆盖率是 v1.9 试点：核心模块草稿列出关键单元及锚定状态，覆盖率是审计信号而非硬门控，不要求 ctags、ast-grep、稳定单元 id 或自动枚举分母。当前 v1 工作流不新增 CLI、JSON schema、`module-evidence/*.json`、自动解析、自动生成流程、自动风险扫描器、生态命令、符号枚举器、精确 token 计量、自动 token 中断、LLM judge 或硬质量门。
 
 ## 报告输出
 

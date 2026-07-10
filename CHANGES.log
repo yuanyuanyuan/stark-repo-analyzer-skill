@@ -1,5 +1,24 @@
 # Changes
 
+## v1.9.0 - 2026-07-09
+
+- Introduced Key Unit Coverage as a v1.9 pilot to validate whether key-unit coverage is a better audit signal than line coverage before committing to a v2.0 hard schema.
+- Defined key unit types: entry points, core data structures, public APIs, state/config definitions, and key cross-module dependencies.
+- Required each core module draft to include a key unit list recording anchored status, source anchor, design judgment, and uncovered reason for each unit.
+- Required the cross-validation stage to aggregate key unit coverage across modules and record an initial judgment on whether key-unit coverage better explains report confidence than line coverage.
+- Required trial conclusions to be recorded as actionable feedback for v2.0 coverage-units schema, doctor checks, and gate rules.
+- Added a v1.9 manual acceptance checklist focused on key unit list completeness, anchor quality, uncovered reasons, and v2.0 feedback.
+- Updated user documentation to describe key unit coverage as a pilot signal, not a hard gate, with no requirement for ctags, ast-grep, stable unit IDs, or automatic denominator enumeration.
+
+## v1.8.0 - 2026-07-09
+
+- Added Soft Quality Gate as a process-level check before the final report.
+- Required the main agent to generate a Markdown quality-gate summary (`drafts/08-quality-gate.md`) covering Evidence Matrix completeness, source anchors, risk sampling, unsupported claims, budget execution, Repo Map usage, and key-unit coverage.
+- Required each check item to be marked pass, fail, or not-applicable, with failing items stating a reason and a target location in the final report.
+- Required all failing items to be reflected in the final report as open questions, limitations, or unsupported areas without blocking report generation.
+- Added a v1.8 manual acceptance checklist for verifying quality-gate presence, coverage, real-draft references, final-report reflection, and non-blocking behavior.
+- Updated user documentation to explain that the soft quality gate makes quality gaps visible without introducing a JSON gate, gate CLI, LLM judge, or hard block.
+
 ## v1.6.0 - 2026-07-09
 
 - Redefined Quick, Standard, and Deep modes as Budget Profiles based on evidence depth, risk sampling strength, report length, subagent limits, and research intensity.
