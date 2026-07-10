@@ -8,7 +8,7 @@
     {
       "name": "repo-analyzer",
       "description": "Deep architectural analysis of open-source projects with professional reports",
-      "version": "1.6.0",
+      "version": "2.0.0",
       "source": "./",
       "author": {
         "name": "yzddmr6"

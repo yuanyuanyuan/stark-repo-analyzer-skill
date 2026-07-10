@@ -1,0 +1,30 @@
+export const LANGUAGE_BY_EXTENSION = {
+  ".c": "C",
+  ".cc": "C++",
+  ".cpp": "C++",
+  ".cs": "C#",
+  ".go": "Go",
+  ".java": "Java",
+  ".js": "JavaScript",
+  ".jsx": "JavaScript",
+  ".kt": "Kotlin",
+  ".kts": "Kotlin",
+  ".php": "PHP",
+  ".py": "Python",
+  ".rb": "Ruby",
+  ".rs": "Rust",
+  ".swift": "Swift",
+  ".ts": "TypeScript",
+  ".tsx": "TypeScript",
+};
+
+export const AST_GREP_LANGUAGES = new Set([
+  "C#",
+  "Go",
+  "Java",
+  "JavaScript",
+  "Kotlin",
+  "Python",
+  "Rust",
+  "TypeScript",
+]);
