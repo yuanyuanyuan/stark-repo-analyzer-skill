@@ -84,6 +84,13 @@ flowchart LR
       finding: `${profile.mode} 模式风险抽样 ${index + 1}。`,
       impact: "该发现影响模块边界与工程成熟度评价。",
     }));
+    matrix.semantic_reviews = profile.mode === "standard" ? [{
+      unit_id: coverage.units[0].id,
+      anchor: coverage.units[0].anchor,
+      judgment: coverage.units[0].judgment,
+      source_observation: `${coverage.units[0].anchor} 展示了该单元在 standard 模式下的角色、流程或权衡判断。`,
+      verdict: "supported",
+    }] : [];
     writeFileSync(join(fixture.out, "module-evidence", "src.json"), `${JSON.stringify(matrix, null, 2)}\n`);
     const report = `${baseReport}${profile.expansion}\n`;
     writeFileSync(join(fixture.out, "report.md"), report);

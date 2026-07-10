@@ -23,6 +23,17 @@ ${extra}
 `;
 }
 
+function semanticReviewFor(unit, overrides = {}) {
+  return {
+    unit_id: unit.id,
+    anchor: unit.anchor,
+    judgment: unit.judgment,
+    source_observation: `源码 ${unit.anchor} 表达了该单元的当前判断。`,
+    verdict: "supported",
+    ...overrides,
+  };
+}
+
 function prepareArtifacts() {
   const fixture = createFixture();
   const env = { REPO_ANALYZER_CTAGS: fixture.ctags, REPO_ANALYZER_AST_GREP: "/missing/ast-grep", REPO_ANALYZER_GRAPHIFY: "/missing/graphify" };
@@ -60,6 +71,23 @@ function prepareArtifacts() {
   );
   writeFileSync(join(fixture.out, "report.md"), reportDraft());
   return { fixture, env, coverage, unitsPath };
+}
+
+function prepareStandardArtifacts() {
+  const prepared = prepareArtifacts();
+  const coverage = JSON.parse(readFileSync(prepared.unitsPath, "utf8"));
+  for (const unit of coverage.units) {
+    unit.status = "analyzed";
+    unit.anchor = `${unit.file}:${unit.line}`;
+    unit.judgment = `${unit.symbol} 用于验证 src 模块的角色、流程或权衡。`;
+    unit.skip_reason = null;
+  }
+  writeFileSync(prepared.unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const matrixPath = join(prepared.fixture.out, "module-evidence", "src.json");
+  const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
+  matrix.semantic_reviews = [semanticReviewFor(coverage.units[0])];
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+  return { ...prepared, coverage, matrixPath };
 }
 
 test("gate 以双硬条件计算覆盖率，并按预算档决定是否放行", () => {
@@ -149,4 +177,66 @@ test("gate 拒绝缺少 Why、源码锚点和 Mermaid 的空洞报告", () => {
   assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
   const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
   assert.ok(report.checks.find((item) => item.id === "report-draft").reasons.length >= 3);
+});
+
+test("standard gate 要求每个 core 模块至少一个有效 semantic review", () => {
+  const { fixture, env } = prepareStandardArtifacts();
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 0);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "semantic-source-review");
+  assert.equal(check.status, "pass");
+  assert.deepEqual(check.modules[0].units.length, 1);
+  assert.equal(check.threshold.per_core_module, 1);
+});
+
+test("standard gate 拒绝缺失、未知、非 analyzed 和重复的 semantic review", () => {
+  const { fixture, env, unitsPath, matrixPath, coverage } = prepareStandardArtifacts();
+  const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
+
+  delete matrix.semantic_reviews;
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 3);
+  let report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  assert.match(report.checks.find((item) => item.id === "semantic-source-review").reasons.join("\n"), /semantic_reviews 必须是数组/);
+
+  matrix.semantic_reviews = [
+    semanticReviewFor(coverage.units[0], { unit_id: "missing-unit" }),
+    semanticReviewFor(coverage.units[0]),
+    semanticReviewFor(coverage.units[0]),
+  ];
+  const updatedCoverage = JSON.parse(readFileSync(unitsPath, "utf8"));
+  updatedCoverage.units[1].status = "unanalyzed";
+  matrix.semantic_reviews.push(semanticReviewFor(updatedCoverage.units[1]));
+  writeFileSync(unitsPath, `${JSON.stringify(updatedCoverage, null, 2)}\n`);
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 3);
+  report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const reasons = report.checks.find((item) => item.id === "semantic-source-review").reasons.join("\n");
+  assert.match(reasons, /未知 unit_id/);
+  assert.match(reasons, /重复抽查 unit/);
+  assert.match(reasons, /不是 analyzed 状态/);
+});
+
+test("standard gate 拒绝过期 anchor、过期 judgment、空 observation 和非 supported verdict", () => {
+  const { fixture, env, matrixPath, coverage } = prepareStandardArtifacts();
+  const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
+  matrix.semantic_reviews = [
+    semanticReviewFor(coverage.units[0], {
+      anchor: "src/index.js:999",
+      judgment: "过期判断。",
+      source_observation: "",
+      verdict: "partial",
+    }),
+  ];
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const reasons = report.checks.find((item) => item.id === "semantic-source-review").reasons.join("\n");
+  assert.match(reasons, /anchor 与 coverage 当前值不一致/);
+  assert.match(reasons, /judgment 与 coverage 当前值不一致/);
+  assert.match(reasons, /source_observation 缺失或为空/);
+  assert.match(reasons, /verdict 必须为 supported/);
 });

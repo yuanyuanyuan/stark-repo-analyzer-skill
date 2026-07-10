@@ -167,6 +167,87 @@ function referenceCheck(coverage, matrices, reportContent) {
   return check("reference-completeness", reasons.length === 0, reasons, evidence);
 }
 
+function semanticSourceReviewCheck(coverage, matrices, mode) {
+  if (mode !== "standard") {
+    return { ...check("semantic-source-review", true), threshold: { mode, policy: "not-enforced-in-this-slice" }, modules: [] };
+  }
+
+  const coreModules = coverage.modules.filter((module) => module.classification === "core");
+  const matrixByModule = new Map(matrices.map((item) => [item.value.module, item]));
+  const unitById = new Map(coverage.units.map((unit) => [unit.id, unit]));
+  const reasons = [];
+  const evidence = [];
+  const modules = [];
+
+  for (const module of coreModules) {
+    const matrix = matrixByModule.get(module.name);
+    const reviews = matrix?.value.semantic_reviews;
+    const moduleSummary = { module: module.name, required: 1, valid: 0, units: [] };
+    modules.push(moduleSummary);
+
+    if (!matrix) {
+      reasons.push(`core 模块 ${module.name} 缺少 Evidence Matrix，无法执行语义抽查。`);
+      continue;
+    }
+    evidence.push(matrix.path);
+    if (!Array.isArray(reviews)) {
+      reasons.push(`${module.name}.semantic_reviews 必须是数组。`);
+      continue;
+    }
+    if (reviews.length === 0) {
+      reasons.push(`${module.name} 缺少 standard 模式要求的 semantic review。`);
+      continue;
+    }
+
+    const seen = new Set();
+    for (const [index, review] of reviews.entries()) {
+      const label = `${module.name}.semantic_reviews[${index}]`;
+      const unitId = review?.unit_id;
+      const unit = unitById.get(unitId);
+      const reviewReasons = [];
+
+      if (!nonEmpty(unitId)) {
+        reviewReasons.push("缺少 stable unit_id。");
+      } else if (seen.has(unitId)) {
+        reviewReasons.push(`重复抽查 unit ${unitId}。`);
+      }
+      if (nonEmpty(unitId)) seen.add(unitId);
+
+      if (!unit) {
+        reviewReasons.push(`未知 unit_id: ${unitId}。`);
+      } else {
+        if (unit.module !== module.name) reviewReasons.push(`unit ${unitId} 不属于模块 ${module.name}。`);
+        if (unit.status !== "analyzed") reviewReasons.push(`unit ${unitId} 不是 analyzed 状态。`);
+        if (!ANCHOR_PATTERN.test(unit.anchor ?? "")) reviewReasons.push(`unit ${unitId} 当前 anchor 不是有效 file:line。`);
+        if (!nonEmpty(unit.judgment)) reviewReasons.push(`unit ${unitId} 当前 judgment 为空。`);
+        if (review?.anchor !== unit.anchor) reviewReasons.push(`unit ${unitId} 的 semantic review anchor 与 coverage 当前值不一致。`);
+        if (review?.judgment !== unit.judgment) reviewReasons.push(`unit ${unitId} 的 semantic review judgment 与 coverage 当前值不一致。`);
+      }
+
+      if (!nonEmpty(review?.source_observation)) reviewReasons.push("source_observation 缺失或为空。");
+      if (review?.verdict !== "supported") reviewReasons.push("verdict 必须为 supported。");
+
+      if (reviewReasons.length > 0) {
+        reasons.push(`${label}: ${reviewReasons.join(" ")}`);
+      } else {
+        moduleSummary.valid += 1;
+        moduleSummary.units.push(unitId);
+        evidence.push(unitId);
+      }
+    }
+
+    if (moduleSummary.valid < moduleSummary.required) {
+      reasons.push(`${module.name} standard 模式有效 semantic review ${moduleSummary.valid}/${moduleSummary.required}，未达到阈值。`);
+    }
+  }
+
+  return {
+    ...check("semantic-source-review", reasons.length === 0, reasons, evidence),
+    threshold: { mode: "standard", per_core_module: 1 },
+    modules,
+  };
+}
+
 export function gate({ out, mode }) {
   const budget = budgetFor(mode);
   const coverage = readJson(join(out, "coverage-units.json"));
@@ -181,6 +262,7 @@ export function gate({ out, mode }) {
     moduleCoverage(coverage, budget),
     unsupportedCheck(coverage, reportContent),
     referenceCheck(coverage, matrices, reportContent),
+    semanticSourceReviewCheck(coverage, matrices, mode),
   ];
   const result = {
     schema_version: 1,

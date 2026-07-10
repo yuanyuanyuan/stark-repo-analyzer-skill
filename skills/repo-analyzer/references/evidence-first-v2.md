@@ -45,13 +45,22 @@
       "impact": "对架构评价的影响"
     }
   ],
+  "semantic_reviews": [
+    {
+      "unit_id": "src/x.ts#handler",
+      "anchor": "src/x.ts:10",
+      "judgment": "该入口通过队列隔离请求接收与后台处理，以延迟换取突发流量下的稳定性。",
+      "source_observation": "源码 span 显示 handler 只入队请求并立即返回，由后台 worker 执行实际处理。",
+      "verdict": "supported"
+    }
+  ],
   "source_evidence": ["src/x.ts:10"],
   "open_questions": ["尚未验证的问题"],
   "narrative": "与机器字段一致的 Why > What 模块叙事"
 }
 ```
 
-`cross_module_dependencies` 和 `open_questions` 可以是空数组，其余字段不可为空。`source_evidence` 必须使用 `文件:行号` 锚点。
+`cross_module_dependencies` 和 `open_questions` 可以是空数组，其余字段不可为空。`source_evidence` 必须使用 `文件:行号` 锚点。standard 模式下，每个 core 模块至少需要一条有效 `semantic_reviews`：`unit_id` 引用当前 analyzed unit，`anchor` 与 `judgment` 逐值匹配 coverage 当前字段，`source_observation` 非空，`verdict` 为 `supported`。
 
 ## Coverage 回填
 

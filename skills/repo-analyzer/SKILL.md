@@ -148,6 +148,16 @@ repo-analyzer units --repo "$REPO" --out "$WORK_DIR"
 
 主 Agent 必须交叉验证模块角色、主流程、共享状态和依赖方向；检查每个模块是否回应 Evidence Plan、连接整体设计哲学，并把冲突、未验证推断和开放问题保留下来。风险抽样结果必须进入最终批判性评价，而不是只留在 Matrix。
 
+standard 模式必须执行 Semantic Source Review：模块分析完成后，主 Agent 重新读取每个 core 模块至少一个 analyzed unit 的当前源码 span，并在对应 `module-evidence/{module}.json` 写入 `semantic_reviews` 数组。每条记录包含：
+
+- `unit_id`：`coverage-units.json` 中稳定的单元 ID
+- `anchor`：coverage 当前 `anchor`
+- `judgment`：coverage 当前 `judgment`
+- `source_observation`：复核者从源码 span 看到的事实
+- `verdict`：只能用 `supported` 表示已解决复核
+
+`anchor` 和 `judgment` 必须逐值匹配 coverage 当前状态。若复核得到 partial 或 unsupported，不得把该记录作为已解决结果写入最终 Matrix；先修正判断，或把该单元降级为 `unanalyzed` / 开放问题，并保持 coverage、Matrix 和报告一致后重新抽查。运行时无 subagent 时，按独立串行复核 pass 执行，同样不能降低证据要求。
+
 ### Phase 8：多源融合与报告草稿
 
 写 `$WORK_DIR/report.md`。报告保持场景化问题、项目全景、核心设计哲学、深度模块分析、设计权衡、批判性评价、业界对比、Mermaid 图和可借鉴经验。开放问题与 Unsupported Area 不得静默消失。
@@ -163,6 +173,8 @@ repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 ```
 
 读取 `quality-gate-report.json`。只有 `allowed_to_synthesize: true` 才能进入最终合成。质量门检查 Evidence Plan、模块分级、核心 Evidence Matrix、源码锚点、风险抽样、双硬条件覆盖率、未解析 core 范围和引用完整性。
+
+standard 模式还会检查 `semantic-source-review`：每个 core 模块至少 1 条有效语义抽查；未知或非 analyzed 单元、重复抽查、过期 anchor/judgment、空 `source_observation` 或非 `supported` verdict 都会阻止最终合成，并在质量报告中列出关联 unit 与失败原因。
 
 ### Phase 10：最终合成
 
@@ -194,7 +206,7 @@ repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 | `repo-map.md` | summarize | 面向模型的候选摘要 |
 | `coverage-units.json` | units + agent 回填 | 稳定分母、覆盖状态和引用完整性 |
 | `evidence-plan.md` | agent | 架构问题、证据范围、分工与预算 |
-| `module-evidence/*.json` | agent | 核心模块机器可读 Evidence Matrix |
+| `module-evidence/*.json` | agent | 核心模块机器可读 Evidence Matrix；standard 模式包含 `semantic_reviews` |
 | `report.md` | agent | 质量门前叙事草稿与 unsupported 声明 |
 | `quality-gate-report.json` | gate | 逐项质量结果与合成放行决定 |
 
