@@ -64,6 +64,7 @@ function prepareArtifacts() {
       cross_module_dependencies: [],
       key_design_decisions: ["入口与服务函数分离，保留替换实现的边界。"],
       risk_areas: [{ category: "error-handling", evidence: "src/index.js:1", finding: "未发现错误转换层。", impact: "错误会直接穿透入口。" }],
+      semantic_reviews: [semanticReviewFor(coverage.units[0])],
       source_evidence: ["src/index.js:1", "src/service.js:1"],
       open_questions: [],
       narrative: "入口层很薄，其价值在于隔离调用者与服务实现，而非承载业务逻辑。",
@@ -188,6 +189,59 @@ test("standard gate 要求每个 core 模块至少一个有效 semantic review",
   assert.equal(check.status, "pass");
   assert.deepEqual(check.modules[0].units.length, 1);
   assert.equal(check.threshold.per_core_module, 1);
+});
+
+test("quick gate 要求全局 2-3 条 semantic review，可用 analyzed unit 不足时要求全抽", () => {
+  const { fixture, env, unitsPath, matrixPath, coverage } = prepareStandardArtifacts();
+  const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
+
+  matrix.semantic_reviews = [semanticReviewFor(coverage.units[0])];
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
+  let report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  let check = report.checks.find((item) => item.id === "semantic-source-review");
+  assert.match(check.reasons.join("\n"), /quick 模式全局有效 semantic review 1\/2/);
+  assert.equal(check.threshold.min, 2);
+  assert.equal(check.threshold.max, 2);
+
+  matrix.semantic_reviews = [semanticReviewFor(coverage.units[0]), semanticReviewFor(coverage.units[1])];
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 0);
+  report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  check = report.checks.find((item) => item.id === "semantic-source-review");
+  assert.equal(check.global.valid, 2);
+
+  coverage.units.push(
+    { ...coverage.units[0], id: "src/index.js#extra-1", symbol: "extraOne", judgment: "extraOne 用于验证 quick 超预算。" },
+    { ...coverage.units[0], id: "src/index.js#extra-2", symbol: "extraTwo", judgment: "extraTwo 用于验证 quick 超预算。" },
+  );
+  matrix.semantic_reviews = coverage.units.slice(0, 4).map((unit) => semanticReviewFor(unit));
+  writeFileSync(unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
+  report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  check = report.checks.find((item) => item.id === "semantic-source-review");
+  assert.match(check.reasons.join("\n"), /quick 模式全局有效 semantic review 4\/3/);
+});
+
+test("deep gate 要求每个 core 模块抽查全部不足 3 条的 analyzed unit", () => {
+  const { fixture, env, matrixPath, coverage } = prepareStandardArtifacts();
+  const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
+  matrix.semantic_reviews = [semanticReviewFor(coverage.units[0])];
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "deep" } }).status, 3);
+  let report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  let check = report.checks.find((item) => item.id === "semantic-source-review");
+  assert.match(check.reasons.join("\n"), /deep 模式有效 semantic review 1\/2/);
+
+  matrix.semantic_reviews = [semanticReviewFor(coverage.units[0]), semanticReviewFor(coverage.units[1])];
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "deep" } }).status, 0);
+  report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  check = report.checks.find((item) => item.id === "semantic-source-review");
+  assert.deepEqual(check.modules[0].units.length, 2);
+  assert.equal(check.modules[0].denominator, 2);
 });
 
 test("standard gate 拒绝缺失、未知、非 analyzed 和重复的 semantic review", () => {

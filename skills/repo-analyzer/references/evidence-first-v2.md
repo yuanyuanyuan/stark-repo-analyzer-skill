@@ -60,7 +60,15 @@
 }
 ```
 
-`cross_module_dependencies` 和 `open_questions` 可以是空数组，其余字段不可为空。`source_evidence` 必须使用 `文件:行号` 锚点。standard 模式下，每个 core 模块至少需要一条有效 `semantic_reviews`：`unit_id` 引用当前 analyzed unit，`anchor` 与 `judgment` 逐值匹配 coverage 当前字段，`source_observation` 非空，`verdict` 为 `supported`。
+`cross_module_dependencies` 和 `open_questions` 可以是空数组，其余字段不可为空。`source_evidence` 必须使用 `文件:行号` 锚点。每条有效 `semantic_reviews` 都要求：`unit_id` 引用当前 analyzed unit，`anchor` 与 `judgment` 逐值匹配 coverage 当前字段，`source_observation` 非空，`verdict` 为 `supported`。
+
+语义抽查预算按模式变化：
+
+- quick：全局 2-3 条最高影响 analyzed unit；可用 analyzed unit 少于 2 条时全抽。
+- standard：每个 core 模块至少 1 条。
+- deep：每个 core 模块最多 3 条代表性 analyzed unit；不足 3 条时全抽。
+
+选样优先跨模块关系、`refs_status` 不完整、风险路径和影响最终批判性评价的判断。语义抽查降低锚点掺水风险，但不构成真实性证明。
 
 ## Coverage 回填
 

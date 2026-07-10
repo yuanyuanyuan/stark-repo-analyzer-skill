@@ -167,22 +167,44 @@ function referenceCheck(coverage, matrices, reportContent) {
   return check("reference-completeness", reasons.length === 0, reasons, evidence);
 }
 
-function semanticSourceReviewCheck(coverage, matrices, mode) {
-  if (mode !== "standard") {
-    return { ...check("semantic-source-review", true), threshold: { mode, policy: "not-enforced-in-this-slice" }, modules: [] };
-  }
-
+function semanticReviewContext(coverage, matrices) {
   const coreModules = coverage.modules.filter((module) => module.classification === "core");
   const matrixByModule = new Map(matrices.map((item) => [item.value.module, item]));
   const unitById = new Map(coverage.units.map((unit) => [unit.id, unit]));
+  const coreNames = new Set(coreModules.map((module) => module.name));
+  const analyzedCoreUnits = coverage.units.filter((unit) =>
+    coreNames.has(unit.module) && unit.status === "analyzed" && ANCHOR_PATTERN.test(unit.anchor ?? "") && nonEmpty(unit.judgment));
+  return { coreModules, matrixByModule, unitById, analyzedCoreUnits };
+}
+
+function semanticThreshold(mode, module, analyzedCoreUnits) {
+  if (mode === "quick") {
+    const denominator = analyzedCoreUnits.length;
+    return { scope: "global", required: Math.min(2, denominator), max: Math.min(3, denominator), denominator };
+  }
+  const moduleAnalyzed = analyzedCoreUnits.filter((unit) => unit.module === module.name).length;
+  if (mode === "deep") {
+    const required = Math.min(3, moduleAnalyzed);
+    return { scope: "per-core-module", required, max: required, denominator: moduleAnalyzed };
+  }
+  return { scope: "per-core-module", required: Math.min(1, moduleAnalyzed), max: null, denominator: moduleAnalyzed };
+}
+
+function semanticSourceReviewCheck(coverage, matrices, mode) {
+  const { coreModules, matrixByModule, unitById, analyzedCoreUnits } = semanticReviewContext(coverage, matrices);
   const reasons = [];
   const evidence = [];
   const modules = [];
+  const globalReviewed = new Set();
 
   for (const module of coreModules) {
     const matrix = matrixByModule.get(module.name);
     const reviews = matrix?.value.semantic_reviews;
-    const moduleSummary = { module: module.name, required: 1, valid: 0, units: [] };
+    const threshold = semanticThreshold(mode, module, analyzedCoreUnits);
+    const moduleAnalyzed = analyzedCoreUnits.filter((unit) => unit.module === module.name).length;
+    const moduleSummary = mode === "quick"
+      ? { module: module.name, scope: "global-contributor", required: null, max: null, denominator: moduleAnalyzed, valid: 0, units: [] }
+      : { module: module.name, scope: "per-core-module", required: threshold.required, max: threshold.max, denominator: threshold.denominator, valid: 0, units: [] };
     modules.push(moduleSummary);
 
     if (!matrix) {
@@ -191,11 +213,11 @@ function semanticSourceReviewCheck(coverage, matrices, mode) {
     }
     evidence.push(matrix.path);
     if (!Array.isArray(reviews)) {
-      reasons.push(`${module.name}.semantic_reviews 必须是数组。`);
+      if (mode !== "quick") reasons.push(`${module.name}.semantic_reviews 必须是数组。`);
       continue;
     }
     if (reviews.length === 0) {
-      reasons.push(`${module.name} 缺少 standard 模式要求的 semantic review。`);
+      if (mode !== "quick") reasons.push(`${module.name} 缺少 ${mode} 模式要求的 semantic review。`);
       continue;
     }
 
@@ -232,19 +254,34 @@ function semanticSourceReviewCheck(coverage, matrices, mode) {
       } else {
         moduleSummary.valid += 1;
         moduleSummary.units.push(unitId);
+        globalReviewed.add(unitId);
         evidence.push(unitId);
       }
     }
 
-    if (moduleSummary.valid < moduleSummary.required) {
-      reasons.push(`${module.name} standard 模式有效 semantic review ${moduleSummary.valid}/${moduleSummary.required}，未达到阈值。`);
+    if (mode !== "quick" && moduleSummary.valid < moduleSummary.required) {
+      reasons.push(`${module.name} ${mode} 模式有效 semantic review ${moduleSummary.valid}/${moduleSummary.required}，未达到阈值。`);
     }
+    if (mode === "deep" && moduleSummary.max != null && moduleSummary.valid > moduleSummary.max) {
+      reasons.push(`${module.name} deep 模式有效 semantic review ${moduleSummary.valid}/${moduleSummary.max}，超过代表性抽查预算。`);
+    }
+  }
+
+  const globalThreshold = semanticThreshold("quick", null, analyzedCoreUnits);
+  if (mode === "quick" && globalReviewed.size < globalThreshold.required) {
+    reasons.push(`quick 模式全局有效 semantic review ${globalReviewed.size}/${globalThreshold.required}，未达到阈值。`);
+  }
+  if (mode === "quick" && globalReviewed.size > globalThreshold.max) {
+    reasons.push(`quick 模式全局有效 semantic review ${globalReviewed.size}/${globalThreshold.max}，超过抽查预算。`);
   }
 
   return {
     ...check("semantic-source-review", reasons.length === 0, reasons, evidence),
-    threshold: { mode: "standard", per_core_module: 1 },
+    threshold: mode === "quick"
+      ? { mode, scope: "global", min: globalThreshold.required, max: globalThreshold.max, denominator: globalThreshold.denominator }
+      : { mode, scope: "per-core-module", per_core_module: mode === "deep" ? "min(3, analyzed units)" : 1 },
     modules,
+    global: { valid: globalReviewed.size, units: [...globalReviewed] },
   };
 }
 

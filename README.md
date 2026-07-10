@@ -30,6 +30,7 @@ brew install universal-ctags
 - Coverage counts a unit only when status, source anchor, and substantive design judgment are all present.
 - `gate` writes `quality-gate-report.json` and blocks synthesis on missing evidence, insufficient coverage, or undeclared unsupported areas.
 - Quick, Standard, and Deep modes use 30/10, 60/30, and 90/60 percent core/secondary key-unit thresholds.
+- Semantic Source Review re-reads sampled source spans before synthesis: Quick reviews 2-3 high-impact analyzed units globally, Standard reviews at least one per core module, and Deep reviews up to three per core module. This adds bounded review cost to reduce diluted or stale anchors; it is not a proof of truth.
 - Graphify availability is recorded but never blocks Doctor.
 
 ## CLI
@@ -56,7 +57,7 @@ Downstream commands cannot run until `doctor-report.json` has `allowed: true`. F
 | `repo-map.md` | LLM-facing candidate summary with sources and verification questions |
 | `coverage-units.json` | Stable key units, module tiers, references, parse rate, and coverage state |
 | `evidence-plan.md` | Architecture questions, candidate evidence, assignments, and budgets |
-| `module-evidence/*.json` | Machine-readable Evidence Matrix for every core module |
+| `module-evidence/*.json` | Machine-readable Evidence Matrix for every core module, including sampled `semantic_reviews` |
 | `report.md` | Narrative draft with explicit open questions and unsupported areas |
 | `quality-gate-report.json` | Mechanical gate results and synthesis decision |
 

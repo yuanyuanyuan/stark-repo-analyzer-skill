@@ -62,9 +62,9 @@ flowchart LR
 当前没有未解析区域；错误转换仍是开放问题。
 `;
   const profiles = [
-    { mode: "quick", analyzed: 1, risks: 1, time: 30, tokens: 30000, expansion: "" },
-    { mode: "standard", analyzed: 2, risks: 2, time: 90, tokens: 90000, expansion: "\n标准模式补充关键边界与主要设计决策。".repeat(8) },
-    { mode: "deep", analyzed: 3, risks: 3, time: 240, tokens: 240000, expansion: "\n深度模式补充 legacy 边缘路径、替代方案和工程成熟度判断。".repeat(16) },
+    { mode: "quick", analyzed: 2, semanticReviews: 2, risks: 1, time: 30, tokens: 30000, expansion: "" },
+    { mode: "standard", analyzed: 2, semanticReviews: 1, risks: 2, time: 90, tokens: 90000, expansion: "\n标准模式补充关键边界与主要设计决策。".repeat(8) },
+    { mode: "deep", analyzed: 3, semanticReviews: 3, risks: 3, time: 240, tokens: 240000, expansion: "\n深度模式补充 legacy 边缘路径、替代方案和工程成熟度判断。".repeat(16) },
   ];
   const profileResults = [];
   for (const profile of profiles) {
@@ -84,26 +84,36 @@ flowchart LR
       finding: `${profile.mode} 模式风险抽样 ${index + 1}。`,
       impact: "该发现影响模块边界与工程成熟度评价。",
     }));
-    matrix.semantic_reviews = profile.mode === "standard" ? [{
-      unit_id: coverage.units[0].id,
-      anchor: coverage.units[0].anchor,
-      judgment: coverage.units[0].judgment,
-      source_observation: `${coverage.units[0].anchor} 展示了该单元在 standard 模式下的角色、流程或权衡判断。`,
+    matrix.semantic_reviews = coverage.units.slice(0, profile.semanticReviews).map((unit) => ({
+      unit_id: unit.id,
+      anchor: unit.anchor,
+      judgment: unit.judgment,
+      source_observation: `${unit.anchor} 展示了该单元在 ${profile.mode} 模式下的角色、流程或权衡判断。`,
       verdict: "supported",
-    }] : [];
+    }));
     writeFileSync(join(fixture.out, "module-evidence", "src.json"), `${JSON.stringify(matrix, null, 2)}\n`);
     const report = `${baseReport}${profile.expansion}\n`;
     writeFileSync(join(fixture.out, "report.md"), report);
+    if (profile.mode === "standard") {
+      const correctedReviews = matrix.semantic_reviews;
+      matrix.semantic_reviews = [{ ...correctedReviews[0], source_observation: "复核发现源码没有支持该判断。", verdict: "unsupported" }];
+      writeFileSync(join(fixture.out, "module-evidence", "src.json"), `${JSON.stringify(matrix, null, 2)}\n`);
+      assert.equal(cli("gate", { ...fixture, env, options: { mode: profile.mode } }).status, 3);
+      matrix.semantic_reviews = correctedReviews;
+      writeFileSync(join(fixture.out, "module-evidence", "src.json"), `${JSON.stringify(matrix, null, 2)}\n`);
+    }
     assert.equal(cli("gate", { ...fixture, env, options: { mode: profile.mode } }).status, 0);
     const gate = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
     profileResults.push({
       analyzed: gate.checks.find((item) => item.id === "key-unit-coverage").coverage[0].analyzed,
+      semantic_reviews: gate.checks.find((item) => item.id === "semantic-source-review").global.valid,
       risks: matrix.risk_areas.length,
       report_length: report.length,
       token_budget: gate.budget.token_budget,
     });
   }
-  assert.deepEqual(profileResults.map((item) => item.analyzed), [1, 2, 3]);
+  assert.deepEqual(profileResults.map((item) => item.analyzed), [2, 2, 3]);
+  assert.deepEqual(profileResults.map((item) => item.semantic_reviews), [2, 1, 3]);
   assert.deepEqual(profileResults.map((item) => item.risks), [1, 2, 3]);
   assert.ok(profileResults[0].report_length < profileResults[1].report_length && profileResults[1].report_length < profileResults[2].report_length);
   assert.ok(profileResults[0].token_budget < profileResults[1].token_budget && profileResults[1].token_budget < profileResults[2].token_budget);
