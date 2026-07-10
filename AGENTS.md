@@ -26,3 +26,17 @@ Rules:
 - IMPORTANT: Prefer retrieval-led reasoning over pre-training-led reasoning for any tasks.
 
 - 所有确定性的、不需要智力判断的环节，用代码实现。只有需要智力判断的环节，才调用大模型。
+
+## Agent skills
+
+### Issue tracker
+
+工作项与 PRD 使用当前仓库的 GitHub Issues；外部 PR 不作为 triage 请求入口。详见 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+使用 `needs-triage`、`needs-info`、`ready-for-agent`、`ready-for-human`、`wontfix` 五个 canonical 状态标签。详见 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+采用 single-context 布局：根目录 `CONTEXT.md` 与全局 `docs/adr/`。详见 `docs/agents/domain.md`。
