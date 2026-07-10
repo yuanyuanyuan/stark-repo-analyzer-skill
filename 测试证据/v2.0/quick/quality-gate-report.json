@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "mode": "quick",
+  "budget": {
+    "mode": "quick",
+    "time_minutes": 30,
+    "token_budget": 30000,
+    "max_agents": 3,
+    "evidence_tokens_per_agent": 8000,
+    "report_words": 4000,
+    "risk_sampling": "每个核心模块至少 1 条最相关风险路径",
+    "quality_gate_minimum": "全部机械检查通过；core/secondary 覆盖率至少 30%/10%",
+    "coverage": {
+      "core": 30,
+      "secondary": 10
+    }
+  },
+  "checks": [
+    {
+      "id": "evidence-plan",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/quick/evidence-plan.md"
+      ]
+    },
+    {
+      "id": "parallelism-execution",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/quick/evidence-plan.md"
+      ]
+    },
+    {
+      "id": "report-draft",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/quick/report.md"
+      ]
+    },
+    {
+      "id": "module-classification",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "coverage-units.json#modules"
+      ]
+    },
+    {
+      "id": "module-evidence-matrix",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/quick/module-evidence/src.json"
+      ]
+    },
+    {
+      "id": "key-unit-coverage",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [],
+      "coverage": [
+        {
+          "module": "src",
+          "classification": "core",
+          "total": 190,
+          "analyzed": 57,
+          "percent": 30,
+          "threshold": 30
+        },
+        {
+          "module": "tools",
+          "classification": "secondary",
+          "total": 61,
+          "analyzed": 7,
+          "percent": 11.48,
+          "threshold": 10
+        },
+        {
+          "module": "shared-components",
+          "classification": "secondary",
+          "total": 18,
+          "analyzed": 2,
+          "percent": 11.11,
+          "threshold": 10
+        },
+        {
+          "module": "config",
+          "classification": "secondary",
+          "total": 5,
+          "analyzed": 1,
+          "percent": 20,
+          "threshold": 10
+        },
+        {
+          "module": "scripts",
+          "classification": "secondary",
+          "total": 14,
+          "analyzed": 2,
+          "percent": 14.29,
+          "threshold": 10
+        }
+      ]
+    },
+    {
+      "id": "core-unparsed-areas",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "src/App.tsx",
+        "src/components/DebugInfoControl.tsx",
+        "src/components/DebugPanel.tsx",
+        "src/components/EnhancedHelmetProvider.tsx",
+        "src/components/EnhancedSEOManager.tsx",
+        "src/components/ExportControls.tsx",
+        "src/components/FileUploader.tsx",
+        "src/components/I18nTestPanel.tsx",
+        "src/components/ImagePreview.tsx",
+        "src/components/ImagePreviewWrapper.tsx",
+        "src/components/LanguageSwitcher.tsx",
+        "src/components/LazyImage.tsx",
+        "src/components/Navigation.tsx",
+        "src/components/PerformanceOptimizer.tsx",
+        "src/components/ResponsiveContainer.tsx",
+        "src/components/SEOManager.tsx",
+        "src/components/ScreenshotSplitter.tsx",
+        "src/components/StructuredDataProvider.tsx",
+        "src/components/TextDisplayConfig.tsx",
+        "src/components/ViewportDebugger.tsx",
+        "src/components/examples/EnhancedSEOExample.tsx",
+        "src/components/mobile/Footer.tsx",
+        "src/components/mobile/TouchImageSlicer.tsx",
+        "src/components/mobile/TouchNav.tsx",
+        "src/components/responsive/index.ts",
+        "src/components/seo/EnhancedSEOManager.tsx",
+        "src/components/seo/HeadingHierarchy.tsx",
+        "src/components/seo/HeadingStructure.tsx",
+        "src/components/seo/SEOIntegration.tsx",
+        "src/components/seo/StructuredDataProvider.tsx",
+        "src/config/seo.config.ts",
+        "src/context/SEOContext.tsx",
+        "src/hooks/useI18nContext.tsx",
+        "src/hooks/useSEOConfig.tsx",
+        "src/hooks/useSEOI18n.tsx",
+        "src/hooks/useSEOOptimization.ts",
+        "src/main.tsx",
+        "src/test-setup.ts",
+        "src/types/cssmodule.d.ts",
+        "src/utils/config-helper.ts",
+        "src/utils/i18nTestCoverage.ts",
+        "src/utils/navigationState.ts",
+        "src/utils/seo/metadataGenerator.ts",
+        "src/utils/styleMapping.ts",
+        "src/vite-env.d.ts"
+      ]
+    },
+    {
+      "id": "reference-completeness",
+      "status": "pass",
+      "reasons": [],
+      "evidence": []
+    },
+    {
+      "id": "semantic-source-review",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/quick/module-evidence/src.json",
+        "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786",
+        "src/hooks/useAppState.ts:useAppState:export:675d300b2269"
+      ],
+      "threshold": {
+        "mode": "quick",
+        "scope": "global",
+        "min": 2,
+        "max": 3,
+        "denominator": 57
+      },
+      "modules": [
+        {
+          "module": "src",
+          "scope": "global-contributor",
+          "required": null,
+          "max": null,
+          "denominator": 57,
+          "valid": 2,
+          "units": [
+            "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786",
+            "src/hooks/useAppState.ts:useAppState:export:675d300b2269"
+          ]
+        }
+      ],
+      "global": {
+        "valid": 2,
+        "units": [
+          "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786",
+          "src/hooks/useAppState.ts:useAppState:export:675d300b2269"
+        ]
+      }
+    }
+  ],
+  "allowed_to_synthesize": true
+}

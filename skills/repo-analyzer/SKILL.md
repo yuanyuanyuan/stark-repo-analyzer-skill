@@ -123,7 +123,7 @@ repo-analyzer units --repo "$REPO" --out "$WORK_DIR"
 - 架构问题
 - 每个问题的候选文件、关键单元或文档证据
 - 核心/次要/排除模块分级及理由
-- subagent 分工；运行时无 subagent 时写 `parallelism: degraded` 并串行执行
+- subagent 分工；quick 模式或运行时无 subagent 时写 `parallelism: degraded` 并串行执行。standard/deep 模式若要作为完整通过，必须写明实际子代理分工、每个子代理产物和主 Agent 融合过程；`parallelism: degraded` 只能判为 CLI/gate 机械链路通过，不能判为多子代理验收通过。
 - 当前模式的总时间、总 token、subagent 上限、单 agent 证据预算和报告长度预算
 - 风险抽样计划与预期 Unsupported Area
 - 报告章节结构与模块叙事线：选择数据流、分层或问题驱动顺序，并说明模块 A 的什么结论引出模块 B
@@ -140,7 +140,7 @@ repo-analyzer units --repo "$REPO" --out "$WORK_DIR"
 
 三项缺一不计入覆盖率。未分析单元保留在分母中，并填写 `skip_reason`。
 
-并行时按 Evidence Plan 的问题边界分工，不按文件数平均切分。每个模块任务携带当前预算和叙事上下文：前一章节留下什么问题、本模块回答什么、结尾为下一模块铺垫什么。运行时无 subagent 时按同一顺序串行执行。
+并行时按 Evidence Plan 的问题边界分工，不按文件数平均切分。每个模块任务携带当前预算和叙事上下文：前一章节留下什么问题、本模块回答什么、结尾为下一模块铺垫什么。运行时无 subagent 时按同一顺序串行执行，并在 Evidence Plan 明确记录降级；standard/deep 的完整验收需要真实多子代理执行记录，不能只凭 `allowed_to_synthesize:true` 判定通过。
 
 ### Phase 7：风险抽样与交叉验证
 

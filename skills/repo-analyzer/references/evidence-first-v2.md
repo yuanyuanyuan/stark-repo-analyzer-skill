@@ -15,7 +15,13 @@
 - core / secondary / excluded，附理由和来源。
 
 ## 分工
-- subagent scope，或 `parallelism: degraded` 与串行顺序。
+- quick 模式可写 `parallelism: degraded` 与串行顺序。
+- standard/deep 完整通过必须写明：
+  - `parallelism: active`
+  - 实际子代理分工
+  - 每个子代理产物，例如 `module-evidence/{module}.json`
+  - 主 Agent 融合过程
+- standard/deep 若写 `parallelism: degraded`，只能判为 CLI/gate 机械链路通过，不能判为多子代理验收通过。
 
 ## 预算
 - mode、time、token、subagent 上限、单 agent 证据预算、报告长度。

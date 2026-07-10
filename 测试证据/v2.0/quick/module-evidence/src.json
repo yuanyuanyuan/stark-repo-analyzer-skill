@@ -1,0 +1,66 @@
+{
+  "module": "src",
+  "module_role": "quick 模式下，src 是长截图切割工具的核心业务承载层，连接上传、切割、状态管理和导出体验。",
+  "entry_points": [
+    "src/config/seo/configLoader.ts:25"
+  ],
+  "core_data_structures": [
+    "ConfigLoader @ src/config/seo/configLoader.ts:25",
+    "DebugStateProps @ src/hooks/useDebugState.ts:8",
+    "UseImageProcessorProps @ src/hooks/useImageProcessor.ts:5",
+    "LazyLoadingOptions @ src/hooks/useLazyLoading.ts:10",
+    "LazyLoadingResult @ src/hooks/useLazyLoading.ts:18"
+  ],
+  "main_flow": [
+    "src/config/seo/configLoader.ts:25 参与 ConfigLoader 所在流程，验证主链路的角色和边界。",
+    "src/hooks/useAppState.ts:122 参与 useAppState 所在流程，验证主链路的角色和边界。",
+    "src/hooks/useDebugState.ts:8 参与 DebugStateProps 所在流程，验证主链路的角色和边界。",
+    "src/hooks/useI18n.ts:52 参与 saveLanguage 所在流程，验证主链路的角色和边界。",
+    "src/hooks/useImageProcessor.ts:5 参与 UseImageProcessorProps 所在流程，验证主链路的角色和边界。"
+  ],
+  "cross_module_dependencies": [],
+  "key_design_decisions": [
+    "把主要业务复杂度集中在 src，使配置、共享组件和工具脚本保持支撑角色。",
+    "用关键单元覆盖率替代源码行覆盖率，降低低价值阅读成本。",
+    "解析率不足时保留 Unsupported Area，不把未解析区域写成已验证结论。"
+  ],
+  "risk_areas": [
+    {
+      "category": "parse-coverage",
+      "evidence": "src/types/seo.types.ts:117",
+      "finding": "PerformanceConfig 的引用状态为 partial，quick 模式将其作为风险抽样点。",
+      "impact": "该风险影响跨模块结论的可信度，需要在最终报告中保留限制或开放问题。"
+    }
+  ],
+  "semantic_reviews": [
+    {
+      "unit_id": "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786",
+      "anchor": "src/config/seo/configLoader.ts:25",
+      "judgment": "ConfigLoader 在 quick 模式下用于验证 src 模块的核心数据结构、流程位置和取舍边界。",
+      "source_observation": "src/config/seo/configLoader.ts:25 的源码行定义了 ConfigLoader，可支持其作为 src 模块关键单元的角色判断；refs_status=partial 仍限制跨文件完备性。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/hooks/useAppState.ts:useAppState:export:675d300b2269",
+      "anchor": "src/hooks/useAppState.ts:122",
+      "judgment": "useAppState 在 quick 模式下用于验证 src 模块的可调用能力、流程位置和取舍边界。",
+      "source_observation": "src/hooks/useAppState.ts:122 的源码行定义了 useAppState，可支持其作为 src 模块关键单元的角色判断；refs_status=partial 仍限制跨文件完备性。",
+      "verdict": "supported"
+    }
+  ],
+  "source_evidence": [
+    "src/config/seo/configLoader.ts:25",
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useDebugState.ts:8",
+    "src/hooks/useI18n.ts:52",
+    "src/hooks/useImageProcessor.ts:5",
+    "src/hooks/useLazyLoading.ts:10",
+    "src/hooks/useLazyLoading.ts:18",
+    "src/hooks/useLazyLoading.ts:169"
+  ],
+  "open_questions": [
+    "ast-grep 当前解析率约 48.2%，未解析 core 文件需作为 Unsupported Area 保留。",
+    "refs_status 多为 partial，跨模块调用方向只能作为受限判断。"
+  ],
+  "narrative": "quick 模式证据显示，src 承担长截图切割工具的主业务路径；本次只把已锚定且有设计判断的单元计入覆盖率。"
+}

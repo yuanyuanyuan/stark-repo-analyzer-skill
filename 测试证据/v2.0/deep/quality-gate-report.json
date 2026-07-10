@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "mode": "deep",
+  "budget": {
+    "mode": "deep",
+    "time_minutes": 240,
+    "token_budget": 240000,
+    "max_agents": 8,
+    "evidence_tokens_per_agent": 24000,
+    "report_words": 18000,
+    "risk_sampling": "核心模块多路径抽样，并覆盖边缘路径与替代方案",
+    "quality_gate_minimum": "全部机械检查通过；core/secondary 覆盖率至少 90%/60%",
+    "coverage": {
+      "core": 90,
+      "secondary": 60
+    }
+  },
+  "checks": [
+    {
+      "id": "evidence-plan",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/deep/evidence-plan.md"
+      ]
+    },
+    {
+      "id": "parallelism-execution",
+      "status": "fail",
+      "reasons": [
+        "deep 模式记录为 parallelism: degraded，不能作为多子代理执行通过。",
+        "deep 模式 Evidence Plan 必须记录 parallelism: active。",
+        "deep 模式 Evidence Plan 缺少实际子代理分工记录。",
+        "deep 模式 Evidence Plan 缺少每个子代理产物记录。",
+        "deep 模式 Evidence Plan 缺少主 agent 融合过程记录。"
+      ],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/deep/evidence-plan.md"
+      ]
+    },
+    {
+      "id": "report-draft",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/deep/report.md"
+      ]
+    },
+    {
+      "id": "module-classification",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "coverage-units.json#modules"
+      ]
+    },
+    {
+      "id": "module-evidence-matrix",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/deep/module-evidence/src.json"
+      ]
+    },
+    {
+      "id": "key-unit-coverage",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [],
+      "coverage": [
+        {
+          "module": "src",
+          "classification": "core",
+          "total": 190,
+          "analyzed": 171,
+          "percent": 90,
+          "threshold": 90
+        },
+        {
+          "module": "tools",
+          "classification": "secondary",
+          "total": 61,
+          "analyzed": 37,
+          "percent": 60.66,
+          "threshold": 60
+        },
+        {
+          "module": "shared-components",
+          "classification": "secondary",
+          "total": 18,
+          "analyzed": 11,
+          "percent": 61.11,
+          "threshold": 60
+        },
+        {
+          "module": "config",
+          "classification": "secondary",
+          "total": 5,
+          "analyzed": 3,
+          "percent": 60,
+          "threshold": 60
+        },
+        {
+          "module": "scripts",
+          "classification": "secondary",
+          "total": 14,
+          "analyzed": 9,
+          "percent": 64.29,
+          "threshold": 60
+        }
+      ]
+    },
+    {
+      "id": "core-unparsed-areas",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "src/App.tsx",
+        "src/components/DebugInfoControl.tsx",
+        "src/components/DebugPanel.tsx",
+        "src/components/EnhancedHelmetProvider.tsx",
+        "src/components/EnhancedSEOManager.tsx",
+        "src/components/ExportControls.tsx",
+        "src/components/FileUploader.tsx",
+        "src/components/I18nTestPanel.tsx",
+        "src/components/ImagePreview.tsx",
+        "src/components/ImagePreviewWrapper.tsx",
+        "src/components/LanguageSwitcher.tsx",
+        "src/components/LazyImage.tsx",
+        "src/components/Navigation.tsx",
+        "src/components/PerformanceOptimizer.tsx",
+        "src/components/ResponsiveContainer.tsx",
+        "src/components/SEOManager.tsx",
+        "src/components/ScreenshotSplitter.tsx",
+        "src/components/StructuredDataProvider.tsx",
+        "src/components/TextDisplayConfig.tsx",
+        "src/components/ViewportDebugger.tsx",
+        "src/components/examples/EnhancedSEOExample.tsx",
+        "src/components/mobile/Footer.tsx",
+        "src/components/mobile/TouchImageSlicer.tsx",
+        "src/components/mobile/TouchNav.tsx",
+        "src/components/responsive/index.ts",
+        "src/components/seo/EnhancedSEOManager.tsx",
+        "src/components/seo/HeadingHierarchy.tsx",
+        "src/components/seo/HeadingStructure.tsx",
+        "src/components/seo/SEOIntegration.tsx",
+        "src/components/seo/StructuredDataProvider.tsx",
+        "src/config/seo.config.ts",
+        "src/context/SEOContext.tsx",
+        "src/hooks/useI18nContext.tsx",
+        "src/hooks/useSEOConfig.tsx",
+        "src/hooks/useSEOI18n.tsx",
+        "src/hooks/useSEOOptimization.ts",
+        "src/main.tsx",
+        "src/test-setup.ts",
+        "src/types/cssmodule.d.ts",
+        "src/utils/config-helper.ts",
+        "src/utils/i18nTestCoverage.ts",
+        "src/utils/navigationState.ts",
+        "src/utils/seo/metadataGenerator.ts",
+        "src/utils/styleMapping.ts",
+        "src/vite-env.d.ts"
+      ]
+    },
+    {
+      "id": "reference-completeness",
+      "status": "pass",
+      "reasons": [],
+      "evidence": []
+    },
+    {
+      "id": "semantic-source-review",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/deep/module-evidence/src.json",
+        "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786",
+        "src/hooks/useAppState.ts:useAppState:export:675d300b2269",
+        "src/hooks/useDebugState.ts:DebugStateProps:datastruct:2ad074b1e42f"
+      ],
+      "threshold": {
+        "mode": "deep",
+        "scope": "per-core-module",
+        "per_core_module": "min(3, analyzed units)"
+      },
+      "modules": [
+        {
+          "module": "src",
+          "scope": "per-core-module",
+          "required": 3,
+          "max": 3,
+          "denominator": 171,
+          "valid": 3,
+          "units": [
+            "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786",
+            "src/hooks/useAppState.ts:useAppState:export:675d300b2269",
+            "src/hooks/useDebugState.ts:DebugStateProps:datastruct:2ad074b1e42f"
+          ]
+        }
+      ],
+      "global": {
+        "valid": 3,
+        "units": [
+          "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786",
+          "src/hooks/useAppState.ts:useAppState:export:675d300b2269",
+          "src/hooks/useDebugState.ts:DebugStateProps:datastruct:2ad074b1e42f"
+        ]
+      }
+    }
+  ],
+  "allowed_to_synthesize": false
+}

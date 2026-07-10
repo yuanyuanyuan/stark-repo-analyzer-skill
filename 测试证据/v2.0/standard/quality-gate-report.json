@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "mode": "standard",
+  "budget": {
+    "mode": "standard",
+    "time_minutes": 90,
+    "token_budget": 90000,
+    "max_agents": 6,
+    "evidence_tokens_per_agent": 14000,
+    "report_words": 9000,
+    "risk_sampling": "每个核心模块至少 1 条风险路径，重要边界追加抽样",
+    "quality_gate_minimum": "全部机械检查通过；core/secondary 覆盖率至少 60%/30%",
+    "coverage": {
+      "core": 60,
+      "secondary": 30
+    }
+  },
+  "checks": [
+    {
+      "id": "evidence-plan",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/standard/evidence-plan.md"
+      ]
+    },
+    {
+      "id": "parallelism-execution",
+      "status": "fail",
+      "reasons": [
+        "standard 模式记录为 parallelism: degraded，不能作为多子代理执行通过。",
+        "standard 模式 Evidence Plan 必须记录 parallelism: active。",
+        "standard 模式 Evidence Plan 缺少实际子代理分工记录。",
+        "standard 模式 Evidence Plan 缺少每个子代理产物记录。",
+        "standard 模式 Evidence Plan 缺少主 agent 融合过程记录。"
+      ],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/standard/evidence-plan.md"
+      ]
+    },
+    {
+      "id": "report-draft",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/standard/report.md"
+      ]
+    },
+    {
+      "id": "module-classification",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "coverage-units.json#modules"
+      ]
+    },
+    {
+      "id": "module-evidence-matrix",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/standard/module-evidence/src.json"
+      ]
+    },
+    {
+      "id": "key-unit-coverage",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [],
+      "coverage": [
+        {
+          "module": "src",
+          "classification": "core",
+          "total": 190,
+          "analyzed": 114,
+          "percent": 60,
+          "threshold": 60
+        },
+        {
+          "module": "tools",
+          "classification": "secondary",
+          "total": 61,
+          "analyzed": 19,
+          "percent": 31.15,
+          "threshold": 30
+        },
+        {
+          "module": "shared-components",
+          "classification": "secondary",
+          "total": 18,
+          "analyzed": 6,
+          "percent": 33.33,
+          "threshold": 30
+        },
+        {
+          "module": "config",
+          "classification": "secondary",
+          "total": 5,
+          "analyzed": 2,
+          "percent": 40,
+          "threshold": 30
+        },
+        {
+          "module": "scripts",
+          "classification": "secondary",
+          "total": 14,
+          "analyzed": 5,
+          "percent": 35.71,
+          "threshold": 30
+        }
+      ]
+    },
+    {
+      "id": "core-unparsed-areas",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "src/App.tsx",
+        "src/components/DebugInfoControl.tsx",
+        "src/components/DebugPanel.tsx",
+        "src/components/EnhancedHelmetProvider.tsx",
+        "src/components/EnhancedSEOManager.tsx",
+        "src/components/ExportControls.tsx",
+        "src/components/FileUploader.tsx",
+        "src/components/I18nTestPanel.tsx",
+        "src/components/ImagePreview.tsx",
+        "src/components/ImagePreviewWrapper.tsx",
+        "src/components/LanguageSwitcher.tsx",
+        "src/components/LazyImage.tsx",
+        "src/components/Navigation.tsx",
+        "src/components/PerformanceOptimizer.tsx",
+        "src/components/ResponsiveContainer.tsx",
+        "src/components/SEOManager.tsx",
+        "src/components/ScreenshotSplitter.tsx",
+        "src/components/StructuredDataProvider.tsx",
+        "src/components/TextDisplayConfig.tsx",
+        "src/components/ViewportDebugger.tsx",
+        "src/components/examples/EnhancedSEOExample.tsx",
+        "src/components/mobile/Footer.tsx",
+        "src/components/mobile/TouchImageSlicer.tsx",
+        "src/components/mobile/TouchNav.tsx",
+        "src/components/responsive/index.ts",
+        "src/components/seo/EnhancedSEOManager.tsx",
+        "src/components/seo/HeadingHierarchy.tsx",
+        "src/components/seo/HeadingStructure.tsx",
+        "src/components/seo/SEOIntegration.tsx",
+        "src/components/seo/StructuredDataProvider.tsx",
+        "src/config/seo.config.ts",
+        "src/context/SEOContext.tsx",
+        "src/hooks/useI18nContext.tsx",
+        "src/hooks/useSEOConfig.tsx",
+        "src/hooks/useSEOI18n.tsx",
+        "src/hooks/useSEOOptimization.ts",
+        "src/main.tsx",
+        "src/test-setup.ts",
+        "src/types/cssmodule.d.ts",
+        "src/utils/config-helper.ts",
+        "src/utils/i18nTestCoverage.ts",
+        "src/utils/navigationState.ts",
+        "src/utils/seo/metadataGenerator.ts",
+        "src/utils/styleMapping.ts",
+        "src/vite-env.d.ts"
+      ]
+    },
+    {
+      "id": "reference-completeness",
+      "status": "pass",
+      "reasons": [],
+      "evidence": []
+    },
+    {
+      "id": "semantic-source-review",
+      "status": "pass",
+      "reasons": [],
+      "evidence": [
+        "/Users/chuzu/projests/stark-repo-analyzer-skill/测试证据/v2.0/standard/module-evidence/src.json",
+        "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786"
+      ],
+      "threshold": {
+        "mode": "standard",
+        "scope": "per-core-module",
+        "per_core_module": 1
+      },
+      "modules": [
+        {
+          "module": "src",
+          "scope": "per-core-module",
+          "required": 1,
+          "max": null,
+          "denominator": 114,
+          "valid": 1,
+          "units": [
+            "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786"
+          ]
+        }
+      ],
+      "global": {
+        "valid": 1,
+        "units": [
+          "src/config/seo/configLoader.ts:ConfigLoader:datastruct:d6ad6ba59786"
+        ]
+      }
+    }
+  ],
+  "allowed_to_synthesize": false
+}

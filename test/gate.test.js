@@ -88,6 +88,28 @@ function prepareStandardArtifacts() {
   const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
   matrix.semantic_reviews = [semanticReviewFor(coverage.units[0])];
   writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+  writeFileSync(
+    join(prepared.fixture.out, "evidence-plan.md"),
+    `# Evidence Plan
+
+## 架构问题
+- 入口如何约束服务边界？
+
+## 候选证据
+- src/index.js:1
+
+## 分工
+- parallelism: active
+- 子代理分工：subagent-src 负责 src 模块。
+- 子代理产物：subagent-src 写入 module-evidence/src.json。
+- 主 agent 融合过程：主 agent merge 子代理产物后生成 report.md。
+
+## 预算
+- mode: standard
+- time: 30 分钟
+- token: 30000
+`,
+  );
   return { ...prepared, coverage, matrixPath };
 }
 
@@ -189,6 +211,67 @@ test("standard gate 要求每个 core 模块至少一个有效 semantic review",
   assert.equal(check.status, "pass");
   assert.deepEqual(check.modules[0].units.length, 1);
   assert.equal(check.threshold.per_core_module, 1);
+});
+
+test("standard/deep gate 不把 parallelism degraded 视为多子代理执行通过", () => {
+  const { fixture, env } = prepareStandardArtifacts();
+  writeFileSync(
+    join(fixture.out, "evidence-plan.md"),
+    `# Evidence Plan
+
+## 架构问题
+- 入口如何约束服务边界？
+
+## 候选证据
+- src/index.js:1
+
+## 分工
+- parallelism: degraded，主 agent 串行执行。
+
+## 预算
+- mode: standard
+- time: 30 分钟
+- token: 30000
+`,
+  );
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "parallelism-execution");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /parallelism: degraded/);
+  assert.equal(report.allowed_to_synthesize, false);
+});
+
+test("standard/deep gate 要求显式记录 active parallelism", () => {
+  const { fixture, env } = prepareStandardArtifacts();
+  writeFileSync(
+    join(fixture.out, "evidence-plan.md"),
+    `# Evidence Plan
+
+## 架构问题
+- 入口如何约束服务边界？
+
+## 候选证据
+- src/index.js:1
+
+## 分工
+- 子代理分工：subagent-src 负责 src 模块。
+- 子代理产物：subagent-src 写入 module-evidence/src.json。
+- 主 agent 融合过程：主 agent merge 子代理产物后生成 report.md。
+
+## 预算
+- mode: standard
+- time: 30 分钟
+- token: 30000
+`,
+  );
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "parallelism-execution");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /parallelism: active/);
 });
 
 test("quick gate 要求全局 2-3 条 semantic review，可用 analyzed unit 不足时要求全抽", () => {

@@ -77,7 +77,15 @@ flowchart LR
       unit.skip_reason = analyzed ? null : `${profile.mode} 模式预算暂不覆盖该单元。`;
     }
     writeFileSync(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`);
-    writeFileSync(join(fixture.out, "evidence-plan.md"), `# Evidence Plan\n\n## 架构问题\n- 入口为何保持轻量？\n\n## 候选证据\n- src/index.js:1\n\n## 分工\n- parallelism: degraded\n\n## 预算\n- mode: ${profile.mode}\n- time: ${profile.time}\n- token: ${profile.tokens}\n`);
+    const parallelismPlan = profile.mode === "quick"
+      ? "- parallelism: degraded，quick fixture 由主 agent 串行生成证据。"
+      : [
+        "- parallelism: active",
+        "- 子代理分工：subagent-src 负责 src 模块。",
+        "- 子代理产物：subagent-src 写入 module-evidence/src.json。",
+        "- 主 agent 融合过程：主 agent merge 子代理产物后生成 report.md。",
+      ].join("\n");
+    writeFileSync(join(fixture.out, "evidence-plan.md"), `# Evidence Plan\n\n## 架构问题\n- 入口为何保持轻量？\n\n## 候选证据\n- src/index.js:1\n\n## 分工\n${parallelismPlan}\n\n## 预算\n- mode: ${profile.mode}\n- time: ${profile.time}\n- token: ${profile.tokens}\n`);
     matrix.risk_areas = Array.from({ length: profile.risks }, (_, index) => ({
       category: ["error-handling", "compatibility", "configuration"][index],
       evidence: index === 1 ? "src/legacy.js:8001" : index === 2 ? "src/service.js:1" : "src/index.js:1",

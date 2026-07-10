@@ -42,6 +42,33 @@ function evidencePlanCheck(out) {
   return check("evidence-plan", missing.length === 0, missing.map((name) => `Evidence Plan 缺少${name}。`), [path]);
 }
 
+function parallelismExecutionCheck(out, mode) {
+  const path = join(out, "evidence-plan.md");
+  if (!existsSync(path)) return check("parallelism-execution", false, ["缺少 evidence-plan.md，无法验证并行执行记录。"], [path]);
+  const content = readFileSync(path, "utf8");
+  const evidence = [path];
+  const degraded = /parallelism\s*:\s*degraded/i.test(content);
+  const active = /parallelism\s*:\s*active/i.test(content);
+
+  if (mode === "quick") {
+    return check("parallelism-execution", true, [], evidence);
+  }
+
+  const requirements = [
+    ["实际子代理分工", /子代理分工|subagent[-_\w]*\s+(负责|scope|产出|write)/i],
+    ["每个子代理产物", /产物|artifact|module-evidence/i],
+    ["主 agent 融合过程", /融合|merge|synthes/i],
+  ];
+  const reasons = [];
+  if (degraded) reasons.push(`${mode} 模式记录为 parallelism: degraded，不能作为多子代理执行通过。`);
+  if (!active) reasons.push(`${mode} 模式 Evidence Plan 必须记录 parallelism: active。`);
+  for (const [name, pattern] of requirements) {
+    if (!pattern.test(content)) reasons.push(`${mode} 模式 Evidence Plan 缺少${name}记录。`);
+  }
+
+  return check("parallelism-execution", reasons.length === 0, reasons, evidence);
+}
+
 function reportDraftCheck(out) {
   const path = join(out, "report.md");
   if (!existsSync(path)) return check("report-draft", false, ["缺少 report.md 叙事草稿。"], [path]);
@@ -293,6 +320,7 @@ export function gate({ out, mode }) {
   const reportContent = existsSync(reportPath) ? readFileSync(reportPath, "utf8") : "";
   const checks = [
     evidencePlanCheck(out),
+    parallelismExecutionCheck(out, mode),
     reportDraftCheck(out),
     classificationCheck(coverage),
     matrixCheck(coverage, matrices),
