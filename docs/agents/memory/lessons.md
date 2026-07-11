@@ -51,3 +51,11 @@
 - 误伤点：1) 改 checks 数组时函数已写但未挂入 export gate（会导致 check id 缺失而假绿）；2) 旧「仅声明 Unsupported 即可 gate 绿」用例须同步补补读记录；3) 勿把 docs-only 称为真实UAT回归测试。
 - 分支：`feat/16`。
 
+
+## 2026-07-11 · Loop · ticket 16 真实UAT
+
+- 真实UAT：独立 `codex exec` → `测试证据/v2.1-unparsed-read/`
+- 结果：过程有效；`unparsed-manual-review: pass`；补读 7 主路径（App/FileUploader/ExportControls 等）
+- Gate：`allowed_to_synthesize: false`（parse-quality / reference-quality / parallelism degraded）——**不得**伪造成品 ANALYSIS_REPORT；补读未抬高 parse_rate
+- Next LOOP：Done（除非 review 要求改 gate 粒度）
+
