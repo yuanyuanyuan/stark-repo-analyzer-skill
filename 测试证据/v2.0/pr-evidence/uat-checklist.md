@@ -67,5 +67,5 @@ standard 模式 Evidence Plan 必须记录 parallelism: active。
 ## 6. 基线 npm test / typecheck
 
 - [x] **通过**
-- 原始日志: `npm-test.log`、`typecheck.log`
+- 原始日志: `npm-test.full.txt`、`typecheck.full.txt`
 - 汇总: tests 35 · pass 35 · fail 0；typecheck EXIT 0

@@ -1,6 +1,6 @@
 # Verification Report · Ticket 12 / PR #15
 
-> 给人类 reviewer 的**可读证据主文档**。原始全量日志见同目录 `npm-test.log` / `typecheck.log`。
+> 给人类 reviewer 的**可读证据主文档**。原始全量日志见同目录 `npm-test.full.txt` / `typecheck.full.txt`。
 
 | 项 | 值 |
 |---|---|
@@ -252,14 +252,14 @@ EXIT:0
 1. 本文 §1 表格 + §2.2 汇总
 2. §4.2 Evidence Plan 三行 degraded
 3. §5 gate 表（standard/deep fail）
-4. 需要深挖时打开 `npm-test.log` 与 `docs/specs/v2.0-multi-agent-acceptance.md`
+4. 需要深挖时打开 `npm-test.full.txt` 与 `docs/specs/v2.0-multi-agent-acceptance.md`
 5. 对照 Issue #12 AC 勾选状态（§4.4）
 
 ---
 
 ## 9. 原始日志指针
 
-- 全量 unit: [`npm-test.log`](./npm-test.log)
-- 全量 typecheck: [`typecheck.log`](./typecheck.log)
+- 全量 unit: [`npm-test.full.txt`](./npm-test.full.txt)
+- 全量 typecheck: [`typecheck.full.txt`](./typecheck.full.txt)
 - gate 摘要 JSON: [`gate-recheck-summary.json`](./gate-recheck-summary.json)
 - UAT 勾选: [`uat-checklist.md`](./uat-checklist.md)

@@ -14,8 +14,8 @@
 | 文件 | 内容 |
 |---|---|
 | [VERIFICATION_REPORT.md](./VERIFICATION_REPORT.md) | **主阅读入口**：命令、结果、UAT 逐条、与 AC 对照、摘录 |
-| [npm-test.log](./npm-test.log) | 完整 `npm test` 原始输出（35 pass / 0 fail） |
-| [typecheck.log](./typecheck.log) | 完整 `npm run typecheck` 原始输出 |
+| [npm-test.full.txt](./npm-test.full.txt) | 完整 `npm test` 原始输出（35 pass / 0 fail） |
+| [typecheck.full.txt](./typecheck.full.txt) | 完整 `npm run typecheck` 原始输出 |
 | [gate-recheck-summary.json](./gate-recheck-summary.json) | 三模式已提交 gate 工件中 parallelism 与失败项摘要 |
 | [uat-checklist.md](./uat-checklist.md) | UAT 逐条勾选与文件锚点 |
 
