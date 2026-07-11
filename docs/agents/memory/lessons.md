@@ -63,3 +63,10 @@
 - 测试夹具：`prepareArtifacts`/`e2e` 必须默认写入合法 probes，否则既有全绿用例会因新门变红。
 - 宿主干扰：Codex/agent 环境下并行 `node --test` 可能卡在 fixture ctags 子进程；helpers 应剥离 `NODE_OPTIONS`、shebang 用 `process.execPath`；验证时可用「逐条 --test-name-pattern」兜底。
 - 分支：用户可覆写「不新建 feat/T19-1」，在当前工作分支交付。
+
+## 2026-07-11 · Loop · PR #20
+
+- PR: https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/pull/20（正式）
+- 差距：无阻塞 residual；后续 T19-2 负责真正产出 probes 的执行义务
+- Next LOOP：Done（除非 CI/review 意见）
+- time_param：手动：贴入 review/CI 结果后继续

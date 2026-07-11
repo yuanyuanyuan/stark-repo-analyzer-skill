@@ -29,3 +29,9 @@
 - 无高危 finding
 - 建议级：`hit` 不强制 anchors 非空（T19-3 范围）；本票仅 process gate
 - 测试基建：helpers 子进程剥离 NODE_OPTIONS、fixture shebang 用 process.execPath；common.runCommand 增加 timeout/NODE_OPTIONS 清理，避免 agent 宿主环境卡死
+
+
+## G3 · 2026-07-11 21:30
+
+- 用户覆写：不新建分支；G3 在当前分支开正式 PR
+- PR #20 已开，body 含 Unit/E2E(N/A)/UAT 证据节

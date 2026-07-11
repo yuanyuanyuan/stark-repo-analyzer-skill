@@ -5,7 +5,7 @@
 - requirement_ref: docs/specs/v2.2-beats-v1.0-insight-probes-delivery.to-spec.md
 - parent_issue: https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/issues/19
 - branch_policy: user override — **不新建分支**；在当前 `yuanyuanyuan/spec-v2.2-standard-deep-modes-and-rules-based-to` 交付
-- Current Phase: P5 G3+PR
+- Current Phase: P6 Loop (complete)
 - updated: 2026-07-11
 
 ## Phases
@@ -17,8 +17,8 @@
 | P2 Meta route+G2 | complete | no_branching_choice；owner=main-thread + $implement；verification=npm test+typecheck |
 | P3 Branch+Implement | complete | 无新建 branch；gate+schema+tests 已落地 |
 | P4 Review+Verify+UAT | complete | code-review 无高危；npm suites 绿；机械 UAT 过 |
-| P5 G3+PR | in_progress | 准备 commit + PR |
-| P6 Loop | pending | |
+| P5 G3+PR | complete | PR #20 https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/pull/20 |
+| P6 Loop | complete | Done；无阻塞 residual |
 
 ## Goal (locked draft, pending G1)
 

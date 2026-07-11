@@ -24,3 +24,13 @@
 - E2E: N/A 轻量 — e2e 夹具附加 insight-probes.json 后 gate 全绿
 - UAT 机械: schema 文档存在；5 个 insight-probe-process 用例全绿；日志 测试证据/T19-1/
 - graphify update . 已跑
+
+
+## 2026-07-11 21:30 · P5 PR + P6 Loop
+
+- PR: https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/pull/20 （正式）
+- commit: c82acf2
+- Loop 差距：无阻塞 residual；T19-2/3/4/5 不在本票
+- Done / Pause / Next: **Done**
+- Next LOOP packet: 无（除非 review/CI 意见）
+- time_param: 手动：贴入 review/CI 结果后继续
