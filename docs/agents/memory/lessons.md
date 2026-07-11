@@ -30,3 +30,9 @@
 
 - 用户反馈：UAT 重跑报告不对；且易把 `standard/deep/ANALYSIS_REPORT.md` 当成 UAT。
 - 纠正：本轮 UAT 是 docs-only 核对，不是 ANALYSIS 重跑；正式报告定为 `测试证据/v2.0/pr-evidence/UAT_REPORT.md`，并在 PR body 置顶纠错表。
+
+## 2026-07-11 · UAT 必须独立 codex exec
+
+- 用户纠正：同会话 docs-only / 手写 report / 同会话 multiagent 实验 ≠ 完整 UAT。
+- 正确 UAT：单独 `codex exec "严格执行 …/skills/repo-analyzer/SKILL.md 分析 $REPO ，输出报告到 …/测试证据/v2.1-human"`。
+- 规则已落盘 `docs/specs/v2.1-codex-exec-uat.md`，并在 `AGENTS.md` 引用。

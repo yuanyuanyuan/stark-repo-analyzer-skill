@@ -40,3 +40,19 @@ Rules:
 ### Domain docs
 
 采用 single-context 布局：根目录 `CONTEXT.md` 与全局 `docs/adr/`。详见 `docs/agents/domain.md`。
+
+## UAT / codex exec
+
+本仓库「真实 UAT」默认指：**新开独立 `codex exec` 进程**，提示词要求**严格执行** `skills/repo-analyzer/SKILL.md`，对真实目标仓分析，并把工件输出到 `测试证据/` 下**新建**目录（推荐 `测试证据/v2.1-human`）。
+
+- **规则 SSOT**：[`docs/specs/v2.1-codex-exec-uat.md`](docs/specs/v2.1-codex-exec-uat.md)
+- **多子代理口径**（active/degraded）：[`docs/specs/v2.0-multi-agent-acceptance.md`](docs/specs/v2.0-multi-agent-acceptance.md)
+- **不要**用同会话 docs-only 勾选、或仅主线程手写 `report.md`，替代上述 exec UAT
+- 示例：
+
+```bash
+codex exec "严格执行 $(pwd)/skills/repo-analyzer/SKILL.md 分析 /tmp/Long_screenshot_splitting_tool ，输出报告到 $(pwd)/测试证据/v2.1-human"
+```
+
+执行后在输出目录检查 `UAT_EXEC_SUMMARY.md` 与 gate 工件；gate 未放行时不得声称产品分析完整通过。
+
