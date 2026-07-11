@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { basename, extname, join, resolve, sep } from "node:path";
 
 import { readJson, runCommand, writeJson } from "./common.js";
+import { LANGUAGE_BY_EXTENSION } from "./languages.js";
 
 const DATA_KINDS = new Set(["class", "struct", "interface", "enum", "union"]);
 const TYPE_KINDS = new Set(["typedef", "type", "trait"]);
@@ -169,6 +170,17 @@ function mergeAgentFields(unit, previous) {
   };
 }
 
+function healthFor(files, parsedFiles) {
+  const parsed = files.filter((file) => parsedFiles.has(file)).length;
+  const unparsed = files.length - parsed;
+  return {
+    source_files: files.length,
+    parsed_files: parsed,
+    unparsed_files: unparsed,
+    parse_rate: files.length === 0 ? 0 : parsed / files.length,
+  };
+}
+
 export function units({ repo, out, doctor }) {
   const repoPath = resolve(repo);
   const map = readJson(join(out, "repo-map.json"));
@@ -230,6 +242,12 @@ export function units({ repo, out, doctor }) {
   }
   const allParsed = [...parsed].sort();
   const allUnparsed = [...unparsed].sort();
+  const parsedFiles = new Set(allParsed);
+  const health = healthFor(map.files.source, parsedFiles);
+  const largestLanguageSize = map.languages[0]?.lines ?? 0;
+  const primaryLanguages = map.languages.filter((language) => language.lines === largestLanguageSize).map((language) => language.language);
+  const primaryFiles = map.files.source.filter((file) => primaryLanguages.includes(LANGUAGE_BY_EXTENSION[extname(file).toLowerCase()]));
+  const primaryHealth = healthFor(primaryFiles, parsedFiles);
   const report = {
     schema_version: 1,
     repo: { path: repoPath, commit: map.commit, skill_version: "2.0.0", mode: null },
@@ -239,7 +257,12 @@ export function units({ repo, out, doctor }) {
       .map((unit) => mergeAgentFields(unit, previousById.get(unit.id))),
     parsed: allParsed,
     unparsed: allUnparsed,
-    parse_rate: allParsed.length + allUnparsed.length === 0 ? 0 : allParsed.length / (allParsed.length + allUnparsed.length),
+    parse_rate: health.parse_rate,
+    parse_health: {
+      ...health,
+      primary_languages: primaryLanguages,
+      primary: primaryHealth,
+    },
     enumerator: { name: enumerator.name, version: enumerator.version },
   };
   writeJson(artifactPath, report);

@@ -26,7 +26,7 @@
 
 - Doctor 硬门控真实生效：缺少符号枚举器时阻塞。
 - 下游命令遵守 Doctor：`scan` 在 doctor 未放行时拒绝执行。
-- 安装 `ast-grep` 后，真实目标仓库 quick / standard / deep 三模式曾可通过旧 gate；Issue #12 修正后，standard/deep 会被 parallelism gate 阻止。
+- 安装 `ast-grep` 后，真实目标仓库 quick / standard / deep 三模式曾可通过旧 gate；Issue #12 与 #13 修正后，三种模式都会被当前质量门阻止。
 - `coverage-units.json` 成为关键单元分母，三模式核心覆盖率分别达到 30%、60%、90%。
 - gate 通过后才生成 `ANALYSIS_REPORT.md`。
 - 发布包边界更清晰：dry-run 包只包含运行时、skill、文档和许可证。
@@ -41,6 +41,8 @@
 - 大型多语言仓库上的三模式耗时和质量表现。
 - standard/deep 的真实多子代理执行：quick / standard / deep 的 Evidence Plan 都是 `parallelism: degraded`，没有多个子代理参与模块深度分析。
 - 每个子代理产物与主 agent 融合过程：本次只有主 agent 串行写入 `module-evidence/src.json` 和最终报告。
+- 当前目标仓库的 `parse_rate` 为 48.2%、core 未解析文件占比为 53.57%、core 单元 `partial/missing` 引用占比为 100%，低于当前质量门要求。
+- 当前三份报告草稿缺少项目全景和具体改进建议，属于浅报告，不能与 v1.0 baseline 等价。
 
 ## 4. 与 v1.6 的关键区别
 
@@ -50,7 +52,7 @@ v2.0 本次先验证了 doctor 阻塞，再补齐 `ast-grep` 后完成三模式 
 这个区别很重要：
 
 - v1.x 更强调“分析过程是否充分”。
-- v2.0 同时验证“不满足前提时拒绝开始”和“满足前提后 CLI/gate 机械链路可运行”；Issue #12 后，standard/deep 还必须通过多子代理执行检查。
+- v2.0 同时验证“不满足前提时拒绝开始”和“满足前提后 CLI/gate 机械链路可运行”；Issue #12 后，standard/deep 还必须通过多子代理执行检查；Issue #13 后，所有模式还必须通过解析质量、引用质量和叙事深度检查。
 - v2.0 新增的多子代理验收要求不能只看 `allowed_to_synthesize:true`；当 Evidence Plan 写明 `parallelism: degraded` 时，standard/deep 只能算部分通过。
 
 因此 v2.0 相比 v1.6 的核心进步是把手工证据链升级为 CLI 工件链和机器质量门。
@@ -63,6 +65,7 @@ v2.0 本次先验证了 doctor 阻塞，再补齐 `ast-grep` 后完成三模式 
 - graphify 可用，但当前 v2.0 代码只把 graphify 作为可选增强检查，不把它作为 `units` 的符号枚举器。
 - 零分母模块 `.` 和 `test-setup` 需要手工 excluded，说明模块分级和覆盖率分母之间还有自动化改进空间。
 - 当前证据不能证明多子代理执行质量，因为三模式均为 `parallelism: degraded`。
+- 当前证据也不能证明报告质量：旧 gate 曾放行，但新 gate 已明确阻断 synthesis。
 
 ## 6. 总结
 
@@ -72,11 +75,11 @@ v2.0 当前证据证明：
 - 发布边界通过。
 - 真实环境前置门控通过。
 - 安装缺失工具后，真实仓库三模式曾完成旧 gate 正向链路。
-- Issue #12 修正后，quick 当前 gate 通过，standard/deep 当前 gate 因 `parallelism: degraded` 未通过。
-- 历史运行中 gate 通过后生成了最终报告。
+- Issue #12 与 #13 修正后，quick 因 parse/reference/report-depth 失败，standard/deep 还同时因 parallelism 失败。
+- 历史运行中 gate 通过后生成的最终报告是回归样例，不是当前通过证据。
 
-但它没有证明 standard/deep 的多子代理模块分析已经执行。最终判定应更新为：**v2.0 部分通过：CLI/gate 机械链路通过，但多子代理验收未通过**。
+但它没有证明报告质量或 standard/deep 的多子代理模块分析已经达到 v2.0 标准。最终判定应更新为：**v2.0 部分通过：CLI/gate 工件链可运行，但报告质量与多子代理验收未通过**。
 
-后续要恢复完整通过，至少需要重新跑一次 standard 或 deep 模式的多子代理分析，记录实际子代理分工、每个子代理产物和主 agent 融合过程，并让 `module-evidence/*.json` 与最终报告吸收这些产物。随后再继续提高 parse_rate、减少手工 excluded 调整，并评估 graphify 是否应进入正式枚举器链路。
+后续要恢复完整通过，先要提升解析与引用质量、补齐报告叙事深度；之后重新跑一次 standard 或 deep 模式的多子代理分析，记录实际子代理分工、每个子代理产物和主 agent 融合过程，并让 `module-evidence/*.json` 与最终报告吸收这些产物。
 
 如果产品目标是“有 graphify 就能跑三模式”，则这不是测试执行问题，而是 v2.0 实现边界问题：需要先让 `doctor` 和 `units` 正式支持 graphify 生成关键单元分母，再补对应测试。

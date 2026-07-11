@@ -101,4 +101,4 @@
 - `src/legacy/parser.ts`：符号枚举失败，本报告不对该文件及其跨模块关系声明覆盖充分。
 ```
 
-只有包含路径和 `Unsupported Area` 标识的明确声明，质量门才允许未解析 core 区域继续合成。
+只有包含路径和 `Unsupported Area` 标识的明确声明，质量门才允许未解析 core 区域继续合成；它不豁免解析质量阈值。`coverage-units.json` 的 `parse_health` 必须显示全仓和主语言源码解析率至少 80%，核心未解析文件占比不超过 20%。核心单元中 `refs_status: partial/missing` 的占比超过 80% 时同样阻断合成。

@@ -172,7 +172,7 @@ repo-analyzer units --repo "$REPO" --out "$WORK_DIR"
 repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 ```
 
-读取 `quality-gate-report.json`。只有 `allowed_to_synthesize: true` 才能进入最终合成。质量门检查 Evidence Plan、模块分级、核心 Evidence Matrix、源码锚点、风险抽样、双硬条件覆盖率、未解析 core 范围和引用完整性。
+读取 `quality-gate-report.json`。只有 `allowed_to_synthesize: true` 才能进入最终合成。质量门检查 Evidence Plan、模块分级、核心 Evidence Matrix、源码锚点、风险抽样、双硬条件覆盖率、实际解析质量、未解析 core 范围、引用质量和报告叙事深度。
 
 质量门还会检查 `semantic-source-review`：quick 要求全局 2-3 条有效抽查，standard 要求每个 core 模块至少 1 条，deep 要求每个 core 模块最多 3 条且单元不足时全抽。未知或非 analyzed 单元、重复抽查、过期 anchor/judgment、空 `source_observation` 或非 `supported` verdict 都会阻止最终合成，并在质量报告中列出当前模式阈值、有效数量、关联 unit 与失败原因。
 

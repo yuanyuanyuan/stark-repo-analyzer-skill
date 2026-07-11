@@ -5,8 +5,20 @@ import test from "node:test";
 
 import { cli, createFixture } from "./helpers.js";
 
-function reportDraft(extra = "当前没有未解析区域。") {
+function reportDraft(extra = "当前没有未解析区域；错误转换仍需在服务边界中单独验证。") {
   return `# 架构分析报告
+
+## 项目全景
+
+该项目将入口、服务和风险处理保持在可追溯的边界内。
+
+## 核心流程
+
+调用从 \`src/index.js:1\` 进入服务边界，并由 \`src/service.js:1\` 返回结果给调用方。
+
+## 模块协作
+
+入口模块通过 \`src/index.js:1\` 调用 \`src/service.js:1\`，避免调用方直接依赖服务实现。
 
 ## 核心设计与权衡
 
@@ -20,6 +32,10 @@ flowchart LR
 ## 风险、限制与 Unsupported Area
 
 ${extra}
+
+## 具体改进建议
+
+为服务边界补充错误转换层，并在调用方验证服务失败时的可观测降级路径。
 `;
 }
 
@@ -183,13 +199,19 @@ test("gate 要求 core 未覆盖单元记录 skip_reason", () => {
 test("gate 对未解析 core 文件要求报告显式声明 unsupported area", () => {
   const { fixture, env, unitsPath } = prepareArtifacts();
   const coverage = JSON.parse(readFileSync(unitsPath, "utf8"));
-  coverage.parsed = ["src/index.js"];
-  coverage.unparsed = ["src/service.js"];
-  coverage.parse_rate = 0.5;
+  coverage.parsed = ["src/index.js", "src/parsed-a.js", "src/parsed-b.js", "src/parsed-c.js"];
+  coverage.unparsed = ["src/legacy.js"];
+  coverage.parse_rate = 0.8;
+  delete coverage.parse_health;
   writeFileSync(unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const mapPath = join(fixture.out, "repo-map.json");
+  const map = JSON.parse(readFileSync(mapPath, "utf8"));
+  map.files.source = [...coverage.parsed, ...coverage.unparsed];
+  map.languages = [{ language: "JavaScript", files: 5, lines: 100 }];
+  writeFileSync(mapPath, `${JSON.stringify(map, null, 2)}\n`);
 
   assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
-  writeFileSync(join(fixture.out, "report.md"), reportDraft("`src/service.js` 未解析，不对该区域声明覆盖充分。"));
+  writeFileSync(join(fixture.out, "report.md"), reportDraft("`src/legacy.js` 未解析，不对该区域声明覆盖充分，相关跨模块判断保留为开放问题。"));
   assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 0);
 });
 
@@ -200,6 +222,120 @@ test("gate 拒绝缺少 Why、源码锚点和 Mermaid 的空洞报告", () => {
   assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
   const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
   assert.ok(report.checks.find((item) => item.id === "report-draft").reasons.length >= 3);
+});
+
+test("gate 在主语言实际解析质量过低时阻止 synthesis", () => {
+  const { fixture, env, unitsPath } = prepareArtifacts();
+  const coverage = JSON.parse(readFileSync(unitsPath, "utf8"));
+  coverage.parsed = ["src/index.js"];
+  coverage.unparsed = ["src/service.js"];
+  coverage.parse_rate = 0.5;
+  coverage.parse_health = { source_files: 2, parsed_files: 2, unparsed_files: 0, parse_rate: 1 };
+  writeFileSync(unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "parse-quality");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /parse_rate/);
+});
+
+test("gate 不让次要语言的解析结果掩盖主语言 parse health", () => {
+  const { fixture, env, unitsPath } = prepareArtifacts();
+  const coverage = JSON.parse(readFileSync(unitsPath, "utf8"));
+  coverage.parsed = ["src/index.js", "src/service.js", "src/extra-a.js", "src/extra-b.js"];
+  coverage.unparsed = ["tools/primary.ts"];
+  coverage.parse_rate = 0.8;
+  coverage.parse_health = {
+    source_files: 5,
+    parsed_files: 4,
+    unparsed_files: 1,
+    parse_rate: 0.8,
+    primary_languages: ["TypeScript"],
+    primary: { source_files: 1, parsed_files: 1, unparsed_files: 0, parse_rate: 1 },
+  };
+  const mapPath = join(fixture.out, "repo-map.json");
+  const map = JSON.parse(readFileSync(mapPath, "utf8"));
+  map.files.source = [...coverage.parsed, ...coverage.unparsed];
+  map.languages = [{ language: "TypeScript", files: 1, lines: 100 }, { language: "JavaScript", files: 4, lines: 10 }];
+  writeFileSync(mapPath, `${JSON.stringify(map, null, 2)}\n`);
+  writeFileSync(unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "parse-quality");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /主语言/);
+});
+
+test("gate 在 core 单元引用不完整比例过高时阻止 synthesis", () => {
+  const { fixture, env, unitsPath } = prepareArtifacts();
+  const coverage = JSON.parse(readFileSync(unitsPath, "utf8"));
+  for (const unit of coverage.units) {
+    unit.refs = [];
+    unit.refs_status = "partial";
+  }
+  writeFileSync(unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "reference-quality");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /partial\/missing/);
+});
+
+test("gate 拒绝缺少项目叙事、模块协作和改进建议的浅报告", () => {
+  const { fixture, env } = prepareArtifacts();
+  writeFileSync(join(fixture.out, "report.md"), `# 分析报告\n\n## 风险\n\n只列出未支持区域。\n`);
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "report-depth");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /项目全景/);
+  assert.match(check.reasons.join("\n"), /模块协作/);
+  assert.match(check.reasons.join("\n"), /改进建议/);
+});
+
+test("gate 拒绝只有模板句的完整标题报告", () => {
+  const { fixture, env } = prepareArtifacts();
+  writeFileSync(join(fixture.out, "report.md"), `# 架构分析报告
+
+## 项目全景
+
+这是一个没有项目特异性的泛化项目全景模板文本，用于填充表面结构。
+
+## 核心流程
+
+这是一个没有项目特异性的泛化核心流程模板文本，用于填充表面结构。
+
+## 模块协作
+
+这是一个没有项目特异性的泛化模块协作模板文本，用于填充表面结构。
+
+## 核心设计与权衡
+
+这是一个没有项目特异性的泛化权衡模板文本，为什么采用模板没有明确依据。
+
+\`\`\`mermaid
+flowchart LR
+  A --> B
+\`\`\`
+
+## 风险、限制与 Unsupported Area
+
+这是一个没有项目特异性的泛化风险限制模板文本，用于填充表面结构。
+
+## 具体改进建议
+
+这是一个没有项目特异性的泛化改进建议模板文本，用于填充表面结构。
+`);
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "report-depth");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /核心流程/);
 });
 
 test("standard gate 要求每个 core 模块至少一个有效 semantic review", () => {
