@@ -1,5 +1,11 @@
 # Verification Report · Ticket 12 / PR #15
 
+> **命名说明（重要）**  
+> - 本文件是 **PR 总验证包**（unit 细节 + 证据索引 + UAT 摘要）。  
+> - **本轮 UAT 正式报告**请读同目录 **[UAT_REPORT.md](./UAT_REPORT.md)**。  
+> - 本轮 **没有**重跑 multi-agent，也 **没有**重写 `standard/deep/ANALYSIS_REPORT.md`。  
+> - 那两份 ANALYSIS_REPORT 是历史架构分析草稿，**不是** UAT 报告。
+
 > 给人类 reviewer 的**可读证据主文档**。原始全量日志见同目录 `npm-test.full.txt` / `typecheck.full.txt`。
 
 | 项 | 值 |
