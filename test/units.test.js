@@ -22,6 +22,19 @@ test("units 由符号枚举器生成稳定、可审计的关键单元分母", ()
   assert.deepEqual(first.parsed, ["src/index.js", "src/service.js"]);
   assert.deepEqual(first.unparsed, []);
   assert.equal(first.parse_rate, 1);
+  assert.deepEqual(first.parse_health, {
+    source_files: 2,
+    parsed_files: 2,
+    unparsed_files: 0,
+    parse_rate: 1,
+    primary_languages: ["JavaScript"],
+    primary: {
+      source_files: 2,
+      parsed_files: 2,
+      unparsed_files: 0,
+      parse_rate: 1,
+    },
+  });
   assert.deepEqual(first.modules, [{ name: "src", path_globs: ["src/**"], classification: "core", reason: "源码规模最大的模块候选", source: "repo-map.json" }]);
   assert.equal(first.units.length, 2);
   assert.ok(first.units.every((unit) => unit.id && unit.status === "unanalyzed" && unit.module === "src"));

@@ -25,10 +25,10 @@ brew install universal-ctags
 
 - Doctor 成为硬预检门：必需工具、目标语言支持或输出目录权限失败时，分析阻塞并给出修复指引。
 - `scan` 不执行生态命令，确定性生成 `repo-map.json`。
-- `units` 生成稳定关键单元 ID、模块分级、parsed/unparsed、引用来源和覆盖率分母。
+- `units` 生成稳定关键单元 ID、模块分级、parsed/unparsed、可审计的 `parse_health` 摘要、引用来源和覆盖率分母。
 - 每个核心模块必须同时提交机器可读的 `module-evidence/*.json` Evidence Matrix 和叙事分析。
 - 单元只有同时具备 analyzed 状态、源码锚点和实质设计判断才计入覆盖率。
-- `gate` 生成 `quality-gate-report.json`；缺少证据、覆盖率不足或未声明 unsupported 区域时阻止最终合成。
+- `gate` 生成 `quality-gate-report.json`；缺少证据、覆盖率不足、解析或引用质量不足、报告过浅或未声明 unsupported 区域时阻止最终合成。
 - 快速、标准、深度模式的核心/次要关键单元阈值分别为 30/10、60/30、90/60。
 - Semantic Source Review 会在最终合成前重读抽样源码 span：quick 全局复核 2-3 个高影响 analyzed unit，standard 每个 core 模块至少 1 个，deep 每个 core 模块最多 3 个。它会增加受控复核成本，用于降低锚点掺水或过期风险，但不构成真实性证明。
 - Graphify 状态会被记录，但不可用时不阻塞 Doctor。
@@ -55,7 +55,7 @@ repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 | `doctor-report.json` | 预检逐项状态、修复指引和放行决定 |
 | `repo-map.json` | 文件、语言、manifest、依赖、候选信号和排除范围 |
 | `repo-map.md` | 面向模型的候选摘要、来源与待验证问题 |
-| `coverage-units.json` | 稳定关键单元、模块分级、引用、解析率和覆盖状态 |
+| `coverage-units.json` | 稳定关键单元、模块分级、引用、`parse_health` 和覆盖状态 |
 | `evidence-plan.md` | 架构问题、候选证据、分工与预算 |
 | `module-evidence/*.json` | 每个核心模块的机器可读 Evidence Matrix，包含抽样 `semantic_reviews` |
 | `report.md` | 包含开放问题和 Unsupported Area 的叙事草稿 |
@@ -63,7 +63,7 @@ repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 
 ## 分析哲学
 
-确定性工具只能识别候选，不能产出最终架构结论。每个重要判断仍须由源码锚点、项目文档或外部一手来源验证。最终报告继续解释设计动机、权衡、替代方案、跨模块协同、风险和可借鉴经验，不能退化成目录或符号清单。
+确定性工具只能识别候选，不能产出最终架构结论。每个重要判断仍须由源码锚点、项目文档或外部一手来源验证。最终报告必须解释项目全景、核心流程、模块协作、设计动机、权衡、替代方案、风险和具体改进建议，不能退化成目录或符号清单。质量门要求全仓及主语言源码解析率至少 80%、核心未解析文件占比不超过 20%、核心单元中 `partial` 或 `missing` 引用占比不超过 80%。
 
 运行时没有 subagent 时，主 Agent 串行执行，并在 Evidence Plan 中记录 `parallelism: degraded`；证据、覆盖率和质量门要求不降低。
 

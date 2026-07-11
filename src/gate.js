@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { extname, join } from "node:path";
 
 import { budgetFor } from "./budgets.js";
 import { readJson, writeJson } from "./common.js";
+import { LANGUAGE_BY_EXTENSION } from "./languages.js";
 
 const MATRIX_FIELDS = [
   "module_role",
@@ -17,6 +18,11 @@ const MATRIX_FIELDS = [
   "narrative",
 ];
 const ANCHOR_PATTERN = /^.+:\d+(?:-\d+)?$/;
+const QUALITY_THRESHOLDS = {
+  minParseRate: 0.8,
+  maxCoreUnparsedRate: 0.2,
+  maxCoreIncompleteReferenceRate: 0.8,
+};
 
 function check(id, passed, reasons = [], evidence = []) {
   return { id, status: passed ? "pass" : "fail", reasons: passed ? [] : reasons, evidence };
@@ -164,6 +170,117 @@ function classificationCheck(coverage) {
     if (module.classification === "excluded" && !nonEmpty(module.reason)) reasons.push(`excluded 模块 ${module.name} 必须说明排除理由。`);
   }
   return check("module-classification", reasons.length === 0, reasons, ["coverage-units.json#modules"]);
+}
+
+function moduleForFile(coverage, file) {
+  return coverage.modules.find((module) =>
+    module.name === "." ? !file.includes("/") : file === module.name || file.startsWith(`${module.name}/`))?.name;
+}
+
+function parseHealth(coverage, map) {
+  const sourceFiles = map?.files?.source ?? [...coverage.parsed, ...coverage.unparsed];
+  const parsedFiles = new Set(coverage.parsed);
+  const healthFor = (files) => {
+    const parsed = files.filter((file) => parsedFiles.has(file)).length;
+    return { source_files: files.length, parsed_files: parsed, unparsed_files: files.length - parsed, parse_rate: files.length === 0 ? 0 : parsed / files.length };
+  };
+  const largestLanguageSize = map?.languages?.[0]?.lines ?? 0;
+  const primaryLanguages = (map?.languages ?? []).filter((language) => language.lines === largestLanguageSize).map((language) => language.language);
+  const primaryFiles = sourceFiles.filter((file) => primaryLanguages.includes(LANGUAGE_BY_EXTENSION[extname(file).toLowerCase()]));
+  return {
+    ...healthFor(sourceFiles),
+    primary_languages: primaryLanguages,
+    primary: primaryLanguages.length > 0 ? healthFor(primaryFiles) : null,
+  };
+}
+
+function parseQualityCheck(coverage, map) {
+  const health = parseHealth(coverage, map);
+  const coreModules = new Set(coverage.modules.filter((module) => module.classification === "core").map((module) => module.name));
+  const coreSourceFiles = [...coverage.parsed, ...coverage.unparsed].filter((file) => coreModules.has(moduleForFile(coverage, file)));
+  const coreUnparsed = coverage.unparsed.filter((file) => coreModules.has(moduleForFile(coverage, file)));
+  const coreUnparsedRate = coreSourceFiles.length === 0 ? 0 : coreUnparsed.length / coreSourceFiles.length;
+  const reasons = [];
+
+  if (health.source_files === 0) reasons.push("没有可评估的源码文件，无法确认实际解析质量。");
+  if (health.parse_rate < QUALITY_THRESHOLDS.minParseRate) {
+    reasons.push(`parse_rate ${(health.parse_rate * 100).toFixed(2)}% 低于最低阈值 ${(QUALITY_THRESHOLDS.minParseRate * 100).toFixed(0)}%。`);
+  }
+  if (health.primary && health.primary.parse_rate < QUALITY_THRESHOLDS.minParseRate) {
+    reasons.push(`主语言 ${health.primary_languages.join("/") || "源码"} 的 parse_rate ${(health.primary.parse_rate * 100).toFixed(2)}% 低于最低阈值 ${(QUALITY_THRESHOLDS.minParseRate * 100).toFixed(0)}%。`);
+  }
+  if (coreUnparsedRate > QUALITY_THRESHOLDS.maxCoreUnparsedRate) {
+    reasons.push(`core 未解析文件占比 ${(coreUnparsedRate * 100).toFixed(2)}% 超过阈值 ${(QUALITY_THRESHOLDS.maxCoreUnparsedRate * 100).toFixed(0)}%。`);
+  }
+
+  return {
+    ...check("parse-quality", reasons.length === 0, reasons, coreUnparsed),
+    thresholds: {
+      min_parse_rate: QUALITY_THRESHOLDS.minParseRate,
+      max_core_unparsed_rate: QUALITY_THRESHOLDS.maxCoreUnparsedRate,
+    },
+    health,
+    core_source_files: coreSourceFiles.length,
+    core_unparsed_files: coreUnparsed.length,
+    core_unparsed_rate: coreUnparsedRate,
+  };
+}
+
+function referenceQualityCheck(coverage) {
+  const coreModules = new Set(coverage.modules.filter((module) => module.classification === "core").map((module) => module.name));
+  const coreUnits = coverage.units.filter((unit) => coreModules.has(unit.module));
+  const incomplete = coreUnits.filter((unit) => ["partial", "missing"].includes(unit.refs_status));
+  const incompleteRate = coreUnits.length === 0 ? 0 : incomplete.length / coreUnits.length;
+  const reasons = [];
+  if (incompleteRate > QUALITY_THRESHOLDS.maxCoreIncompleteReferenceRate) {
+    reasons.push(`core 单元 refs_status 为 partial/missing 的占比 ${(incompleteRate * 100).toFixed(2)}% 超过阈值 ${(QUALITY_THRESHOLDS.maxCoreIncompleteReferenceRate * 100).toFixed(0)}%。`);
+  }
+  return {
+    ...check("reference-quality", reasons.length === 0, reasons, incomplete.map((unit) => unit.id)),
+    threshold: { max_core_incomplete_reference_rate: QUALITY_THRESHOLDS.maxCoreIncompleteReferenceRate },
+    core_units: coreUnits.length,
+    incomplete_units: incomplete.length,
+    incomplete_rate: incompleteRate,
+  };
+}
+
+function sectionContent(content, pattern) {
+  const lines = content.split(/\r?\n/);
+  const start = lines.findIndex((line) => /^#{1,6}\s+/.test(line) && pattern.test(line));
+  if (start === -1) return null;
+  const end = lines.slice(start + 1).findIndex((line) => /^#{1,6}\s+/.test(line));
+  let inCodeBlock = false;
+  return lines.slice(start + 1, end === -1 ? undefined : start + 1 + end)
+    .filter((line) => {
+      if (line.startsWith("```")) {
+        inCodeBlock = !inCodeBlock;
+        return false;
+      }
+      return !inCodeBlock;
+    })
+    .join("\n")
+    .replace(/[`*_>#-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function reportDepthCheck(out) {
+  const path = join(out, "report.md");
+  if (!existsSync(path)) return check("report-depth", false, ["缺少 report.md，无法验证报告深度。"], [path]);
+  const content = readFileSync(path, "utf8");
+  const requirements = [
+    ["项目全景", /项目全景|项目定位|系统概览|project overview|system overview/i, false],
+    ["核心流程", /核心流程|关键流程|main flow|core flow/i, true],
+    ["模块协作", /模块协作|跨模块|模块关系|module collaboration|cross-module/i, true],
+    ["设计权衡", /为什么|动机|权衡|替代方案|why|trade-off|tradeoff|alternative/i, false],
+    ["风险或限制", /风险|限制|开放问题|unsupported area|risk|limitation|open question/i, false],
+    ["具体改进建议", /改进建议|改进方向|后续建议|recommendation|improvement/i, false],
+  ];
+  const missing = requirements.filter(([, pattern, requiresAnchor]) => {
+    const section = sectionContent(content, pattern);
+    return !section || section.length < 24 || (requiresAnchor && !/\b[^\s`]+\.[A-Za-z0-9]+:\d+(?:-\d+)?\b/.test(section));
+  }).map(([name]) => name);
+  return check("report-depth", missing.length === 0, missing.map((name) => `report.md 缺少${name}，不能作为正常通过的架构报告。`), [path]);
 }
 
 function unsupportedCheck(coverage, reportContent) {
@@ -315,6 +432,7 @@ function semanticSourceReviewCheck(coverage, matrices, mode) {
 export function gate({ out, mode }) {
   const budget = budgetFor(mode);
   const coverage = readJson(join(out, "coverage-units.json"));
+  const map = readJson(join(out, "repo-map.json"));
   const matrices = loadMatrices(out);
   const reportPath = join(out, "report.md");
   const reportContent = existsSync(reportPath) ? readFileSync(reportPath, "utf8") : "";
@@ -323,11 +441,14 @@ export function gate({ out, mode }) {
     parallelismExecutionCheck(out, mode),
     reportDraftCheck(out),
     classificationCheck(coverage),
+    parseQualityCheck(coverage, map),
+    referenceQualityCheck(coverage),
     matrixCheck(coverage, matrices),
     moduleCoverage(coverage, budget),
     unsupportedCheck(coverage, reportContent),
     referenceCheck(coverage, matrices, reportContent),
     semanticSourceReviewCheck(coverage, matrices, mode),
+    reportDepthCheck(out),
   ];
   const result = {
     schema_version: 1,

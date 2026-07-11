@@ -644,6 +644,29 @@ node bin/repo-analyzer.js gate --repo /tmp/Long_screenshot_splitting_tool --out 
 - 主 agent 必须记录如何融合子代理产物进入最终 Evidence Matrix 和报告。
 - `parallelism: degraded` 不能等价于多子代理执行通过，gate 或验收脚本不能只检查 `parallelism` 字段存在。
 
+## 22. Issue #13 复核：低解析质量和浅报告不得通过 gate
+
+操作：
+
+```bash
+node bin/repo-analyzer.js gate --repo /tmp/Long_screenshot_splitting_tool --out 测试证据/v2.0/quick --mode quick
+node bin/repo-analyzer.js gate --repo /tmp/Long_screenshot_splitting_tool --out 测试证据/v2.0/standard --mode standard
+node bin/repo-analyzer.js gate --repo /tmp/Long_screenshot_splitting_tool --out 测试证据/v2.0/deep --mode deep
+```
+
+结果：
+
+- 三个命令均退出码 3，`allowed_to_synthesize:false`。
+- quick 的 `parse-quality` 失败：`parse_rate` 为 48.20%，低于 80%；core 未解析文件占比为 53.57%，高于 20%。
+- quick 的 `reference-quality` 失败：core 单元 `refs_status: partial/missing` 占比为 100%，高于 80%。
+- quick 的 `report-depth` 失败：草稿缺少项目全景和具体改进建议。
+- standard/deep 除以上质量失败外，还保留 `parallelism: degraded` 导致的多子代理执行失败。
+
+决策：
+
+- 历史 `allowed_to_synthesize:true` 和已生成的 `ANALYSIS_REPORT.md` 只作为回归样例，不能作为当前通过证据。
+- 在解析质量、引用质量和报告叙事深度修复前，流程必须停在 synthesis 前。
+
 恢复完整通过的条件：
 
 - 重新跑一次至少 standard 或 deep 模式的多子代理分析。

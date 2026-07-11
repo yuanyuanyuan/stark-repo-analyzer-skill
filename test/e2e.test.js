@@ -48,6 +48,18 @@ test("代表性仓库完成 v2 全链路并生成最小新旧流程对比", (t) 
   };
   const baseReport = `# 架构分析报告
 
+## 项目全景
+
+该 fixture 用入口和服务的最小边界说明可替换实现的架构取舍。
+
+## 核心流程
+
+外部调用从 \`src/index.js:1\` 进入入口，再由 \`src/service.js:1\` 执行服务并返回结果。
+
+## 模块协作
+
+入口模块通过 \`src/index.js:1\` 依赖 \`src/service.js:1\` 的稳定调用点，调用方不直接耦合服务实现。
+
 ## 核心设计与权衡
 
 入口为什么保持轻量：它以一层调用换取服务边界，证据见 \`src/index.js:1\`。
@@ -59,7 +71,11 @@ flowchart LR
 
 ## 风险、限制与 Unsupported Area
 
-当前没有未解析区域；错误转换仍是开放问题。
+当前没有未解析区域；错误转换仍是开放问题，需要结合服务失败路径持续验证。
+
+## 具体改进建议
+
+为入口补充错误转换层，并增加服务失败路径的验证和调用方可观测性说明。
 `;
   const profiles = [
     { mode: "quick", analyzed: 2, semanticReviews: 2, risks: 1, time: 30, tokens: 30000, expansion: "" },

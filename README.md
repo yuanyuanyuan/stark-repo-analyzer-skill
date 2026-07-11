@@ -25,10 +25,10 @@ brew install universal-ctags
 
 - Doctor is a hard preflight gate. Missing required tools, language support, or output permissions block analysis with remediation.
 - `scan` produces a deterministic `repo-map.json` without running package-manager or ecosystem commands.
-- `units` creates stable key-unit IDs, module classifications, parsed/unparsed lists, reference provenance, and the coverage denominator.
+- `units` creates stable key-unit IDs, module classifications, parsed/unparsed lists, an auditable `parse_health` summary, reference provenance, and the coverage denominator.
 - Each core module requires a machine-readable `module-evidence/*.json` Evidence Matrix plus narrative analysis.
 - Coverage counts a unit only when status, source anchor, and substantive design judgment are all present.
-- `gate` writes `quality-gate-report.json` and blocks synthesis on missing evidence, insufficient coverage, or undeclared unsupported areas.
+- `gate` writes `quality-gate-report.json` and blocks synthesis on missing evidence, insufficient coverage, poor parse/reference quality, shallow reports, or undeclared unsupported areas.
 - Quick, Standard, and Deep modes use 30/10, 60/30, and 90/60 percent core/secondary key-unit thresholds.
 - Semantic Source Review re-reads sampled source spans before synthesis: Quick reviews 2-3 high-impact analyzed units globally, Standard reviews at least one per core module, and Deep reviews up to three per core module. This adds bounded review cost to reduce diluted or stale anchors; it is not a proof of truth.
 - Graphify availability is recorded but never blocks Doctor.
@@ -55,7 +55,7 @@ Downstream commands cannot run until `doctor-report.json` has `allowed: true`. F
 | `doctor-report.json` | Per-check preflight status, remediation, and release decision |
 | `repo-map.json` | Deterministic files, languages, manifests, dependencies, candidates, and exclusions |
 | `repo-map.md` | LLM-facing candidate summary with sources and verification questions |
-| `coverage-units.json` | Stable key units, module tiers, references, parse rate, and coverage state |
+| `coverage-units.json` | Stable key units, module tiers, references, `parse_health`, and coverage state |
 | `evidence-plan.md` | Architecture questions, candidate evidence, assignments, and budgets |
 | `module-evidence/*.json` | Machine-readable Evidence Matrix for every core module, including sampled `semantic_reviews` |
 | `report.md` | Narrative draft with explicit open questions and unsupported areas |
@@ -63,7 +63,7 @@ Downstream commands cannot run until `doctor-report.json` has `allowed: true`. F
 
 ## Analysis Philosophy
 
-Deterministic tools identify candidates; they do not produce architectural conclusions. Every important conclusion must be verified against source anchors, project documentation, or primary external sources. Reports still explain motivation, trade-offs, alternatives, cross-module relationships, risks, and practical lessons instead of degrading into file or symbol inventories.
+Deterministic tools identify candidates; they do not produce architectural conclusions. Every important conclusion must be verified against source anchors, project documentation, or primary external sources. Reports still explain the project overview, core flows, module collaboration, motivation, trade-offs, alternatives, risks, and concrete recommendations instead of degrading into file or symbol inventories. The gate requires at least 80% overall and primary-language source parse rate, at most 20% unparsed core files, and at most 80% core units with partial or missing references.
 
 When subagents are unavailable, the workflow runs serially and records `parallelism: degraded`; evidence, coverage, and quality requirements remain unchanged.
 
