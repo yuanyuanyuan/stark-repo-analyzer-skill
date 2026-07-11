@@ -43,17 +43,33 @@ Rules:
 
 ## 真实UAT回归测试
 
-本仓库**真实UAT回归测试**（正式名称）默认指：**新开独立 `codex exec` 进程**，提示词要求**严格执行** `skills/repo-analyzer/SKILL.md`，对真实目标仓分析，并把工件输出到 `测试证据/` 下**新建**目录（推荐 `测试证据/v2.1-human`）。
+本仓库**真实UAT回归测试**（正式名称）默认指：**新开独立 `codex exec` 进程**，提示词要求**严格执行** `skills/repo-analyzer/SKILL.md`，对真实目标仓分析，并把工件输出到 `测试证据/` 下**新建**目录。
+
+### 规则入口（dev-rules · 优先阅读）
+
+- **Dev 规则目录（操作与分档 SSOT）**：[`dev-rules/`](dev-rules/)  
+  - **真实UAT 总览与变更联动**：[`dev-rules/real-uat-regression/README.md`](dev-rules/real-uat-regression/README.md)  
+  - **quick 档**：[`dev-rules/real-uat-regression/quick.md`](dev-rules/real-uat-regression/quick.md)  
+  - **standard 档**：[`dev-rules/real-uat-regression/standard.md`](dev-rules/real-uat-regression/standard.md)  
+  - **deep 档**：[`dev-rules/real-uat-regression/deep.md`](dev-rules/real-uat-regression/deep.md)
+- **产品层定义（独立 exec / 过程 vs 产品分层）**：[`docs/specs/v2.1-codex-exec-uat.md`](docs/specs/v2.1-codex-exec-uat.md)
+- **多子代理口径**（active/degraded）：[`docs/specs/v2.0-multi-agent-acceptance.md`](docs/specs/v2.0-multi-agent-acceptance.md)
+
+### 硬口径摘要
 
 - **正式名称**：**真实UAT回归测试**（标签：`real-uat-regression`）
-- **规则 SSOT**：[`docs/specs/v2.1-codex-exec-uat.md`](docs/specs/v2.1-codex-exec-uat.md)
-- **多子代理口径**（active/degraded）：[`docs/specs/v2.0-multi-agent-acceptance.md`](docs/specs/v2.0-multi-agent-acceptance.md)
-- **不要**用同会话 docs-only 勾选、或仅主线程手写 `report.md`，替代「真实UAT回归测试」
-- 示例：
+- **三档必须分开跑、分开落盘**：quick / standard / deep（命令与检查清单见上列三文件）；禁止用一档结果冒充另一档。
+- **不要**用同会话 docs-only 勾选、或仅主线程手写 `report.md`，替代「真实UAT回归测试」。
+- 执行后在输出目录检查 `UAT_EXEC_SUMMARY.md` 与 gate 工件；gate 未放行时不得声称产品分析完整通过；`parallelism: degraded` 时不得声称 multi-agent 完整通过。
+
+### 变更联动（强制）
+
+当 **代码、skill、gate、需求/Issue/ticket** 发生会改变分析行为或验收语义的变更时，**必须同步更新** [`dev-rules/real-uat-regression/`](dev-rules/real-uat-regression/) 中的真实UAT回归规则（含受影响的 quick/standard/deep 档），并在 PR 中说明规则 diff 或「规则无影响」理由。禁止只改实现不改回归规则。
+
+### 示例（完整提示词以对应 mode 规则文件为准）
 
 ```bash
-codex exec "严格执行 $(pwd)/skills/repo-analyzer/SKILL.md 分析 /tmp/Long_screenshot_splitting_tool ，输出报告到 $(pwd)/测试证据/v2.1-human"
+# standard 示例；quick/deep 见 dev-rules/real-uat-regression/{quick,deep}.md
+codex exec "严格执行 $(pwd)/skills/repo-analyzer/SKILL.md 分析 /tmp/Long_screenshot_splitting_tool ，输出报告到 $(pwd)/测试证据/real-uat-standard-$(date +%Y%m%d) 。模式必须为 standard。"
 ```
-
-执行后在输出目录检查 `UAT_EXEC_SUMMARY.md` 与 gate 工件；gate 未放行时不得声称产品分析完整通过。
 
