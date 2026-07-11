@@ -63,7 +63,7 @@ repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 
 ## 分析哲学
 
-确定性工具只能识别候选，不能产出最终架构结论。每个重要判断仍须由源码锚点、项目文档或外部一手来源验证。最终报告必须解释项目全景、核心流程、模块协作、设计动机、权衡、替代方案、风险和具体改进建议，不能退化成目录或符号清单。质量门要求全仓及主语言源码解析率至少 80%、核心未解析文件占比不超过 20%、核心单元中 `partial` 或 `missing` 引用占比不超过 80%。
+确定性工具只能识别候选，不能产出最终架构结论。每个重要判断仍须由源码锚点、项目文档或外部一手来源验证。最终报告必须解释项目全景、核心流程、模块协作、设计动机、权衡、替代方案、风险和具体改进建议，不能退化成目录或符号清单。质量门要求全仓及主语言源码解析率至少 80%、核心未解析文件占比不超过 20%、核心单元中 `partial` 或 `missing` 引用占比不超过 80%。**Unsupported Area ≠ 禁止分析**：core 模块出现 unparsed 文件时，skill 必须执行 Unparsed File Read Pass（`rg`/`find`/`wc`/读文件），落盘 `manual-read` 观察；补读 **不** 抬高 parse_rate，也 **不** 把文件计为 analyzed unit。
 
 运行时没有 subagent 时，主 Agent 串行执行，并在 Evidence Plan 中记录 `parallelism: degraded`；证据完整度、覆盖率与其它质量门要求不降低。但 **standard/deep 的完整验收**还要求真实多子代理执行记录（`parallelism: active`、子代理分工、每个子代理产物、主 Agent 融合过程）；`parallelism: degraded` 只能证明串行/CLI 机械链路，**不能**判为多子代理完整通过。规则见 `docs/specs/v2.0-multi-agent-acceptance.md`。
 

@@ -42,3 +42,12 @@
 - 用户指定：独立 `codex exec` 严格执行 skill 的测试正式名称是「真实UAT回归测试」。
 - 规则文件与 AGENTS 节标题/正文已标记该正式名称；PR/报告勿再只写含糊「UAT」。
 
+
+
+## 2026-07-11 · ticket 16 · unparsed 强制补读 pass
+
+- 现象：core unparsed 仅声明 Unsupported 路径时，读者拿不到主路径信息；旧 gate 也不拦「只声明不补读」。
+- 正确做法：Seam A skill/references + Seam B `unparsed-manual-review` + Seam C 真实UAT 规则同步；补读 confidence=`manual-read`，不抬高 parse_rate、不豁免 parse-quality。
+- 误伤点：1) 改 checks 数组时函数已写但未挂入 export gate（会导致 check id 缺失而假绿）；2) 旧「仅声明 Unsupported 即可 gate 绿」用例须同步补补读记录；3) 勿把 docs-only 称为真实UAT回归测试。
+- 分支：`feat/16`。
+
