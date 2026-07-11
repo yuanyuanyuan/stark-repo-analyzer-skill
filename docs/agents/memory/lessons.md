@@ -49,3 +49,10 @@
 - 正确做法：rules 为 SSOT；doctor 输出 capability matrix；standard 启发式 units；deep 能力门禁 fail-closed；gate 的 reference-quality 在 standard 放宽。
 - 误伤点：gate 二次 requireDoctor(deep) 会让 deep 预算测试无法在无 Graphify fixture 上跑——gate 只校验工件语义。
 - 分支：用户覆写不建 feat/11，在 yuanyuanyuan/spec-v2.2-standard-deep-modes-and-rules-based-to 交付。
+
+## 2026-07-11 · Loop · PR #18
+
+- PR: https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/pull/18（正式）
+- 差距：无阻塞 residual；Graphify 真实环境 e2e 仍可用 fixture 之外补强（非本票必须）。
+- Next LOOP：Done（除非 CI/review 意见）。
+- time_param：手动：贴入 review/CI 结果后继续。

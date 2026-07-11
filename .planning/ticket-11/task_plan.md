@@ -4,7 +4,7 @@
 落地 v2.2 双模式合同（仅 standard/deep）与 rules-based 工具策略，并开出含详细测试证据的 PR。
 
 ## Current Phase
-P5 G3+PR
+P6 Loop complete
 
 ## Phases
 
@@ -35,12 +35,14 @@ P5 G3+PR
 - **Status:** complete
 
 ### P5 G3+PR
-- [ ] push + gh pr create（body 含 3.8.1 证据）
-- **Status:** in_progress
+- [x] push + gh pr create（body 含 3.8.1 证据）
+- **Status:** complete
+- PR: https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/pull/18
 
 ### P6 Loop
-- [ ] 强制 Loop + memory + planning 收束
-- **Status:** pending
+- [x] 强制 Loop + memory + planning 收束
+- **Status:** complete
+- Decision: Done（无阻塞 residual；AC4 类历史并行验收不在本票）
 
 ## Key Questions
 1. deep 能力如何检测：Graphify 优先 + 能力矩阵，而非固定三件套？

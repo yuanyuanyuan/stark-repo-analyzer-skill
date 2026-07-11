@@ -6,7 +6,7 @@
 
 ## 最近一条
 
-- 2026-07-11 ticket 11：standard/deep + rules-based tools 实现中/待 PR
+- 2026-07-11 ticket 11 / PR #18：standard/deep + rules 正式 PR 已开
 
 ## 索引
 

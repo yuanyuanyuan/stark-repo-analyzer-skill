@@ -65,3 +65,14 @@
 ### P5 G3+PR
 - **Status:** in_progress
 - branch: current (user override no feat/11)
+
+### P5 G3+PR
+- **Status:** complete
+- push: origin/yuanyuanyuan/spec-v2.2-standard-deep-modes-and-rules-based-to
+- PR: https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/pull/18 （正式）
+
+### P6 Loop
+- **Status:** complete
+- Gap diagnosis: 无交付阻塞 residual；Graphify 真实二进制 vs fixture mock 差异记为已知风险（PR body Risk）
+- Decision: Done
+- Next LOOP: 仅在 CI/review 有意见时 Continue
