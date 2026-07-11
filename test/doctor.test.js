@@ -94,6 +94,8 @@ test("doctor 在 ctags 不支持主要语言时选择可用的 ast-grep 作为 d
       REPO_ANALYZER_AST_GREP: fixture.astGrep,
       REPO_ANALYZER_GRAPHIFY: fixture.graphify,
       REPO_ANALYZER_GRAPHIFY_CAPABILITIES: "graph-queries,symbol-enumeration,reference-edges",
+      // 本用例 ctags 不吐 reference tags；用 Graphify units 接线开关仅验证 enumerator 选择逻辑
+      REPO_ANALYZER_GRAPHIFY_UNITS_REFS: "1",
     },
     options: { mode: "deep" },
   });
@@ -116,3 +118,92 @@ test("doctor 记录 graphify 缺失但不阻塞 standard", () => {
   assert.equal(report.allowed, true);
   assert.equal(report.checks.find((check) => check.id === "graphify").status, "fail");
 });
+
+test("doctor 拦截：ctags 无 reference-role 且 Graphify 未接线 units 时 deep 不可用", () => {
+  const fixture = createFixture();
+  writeFileSync(
+    fixture.ctags,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args.includes('--version')) { console.log('Universal Ctags 6.1.0'); process.exit(0); }
+if (args.includes('--list-languages')) { console.log('JavaScript\nTypeScript'); process.exit(0); }
+const file = args.at(-1);
+// 只产出 definition，不产出 roles=reference —— 模拟真实 TS/JS ctags 限制
+if (file?.endsWith('src/index.js')) console.log(JSON.stringify({_type:'tag',name:'main',path:file,line:1,kind:'function'}));
+if (file?.endsWith('src/service.js')) console.log(JSON.stringify({_type:'tag',name:'serve',path:file,line:1,kind:'function'}));
+`,
+  );
+  chmodSync(fixture.ctags, 0o755);
+
+  const result = cli("doctor", {
+    ...fixture,
+    env: {
+      REPO_ANALYZER_CTAGS: fixture.ctags,
+      REPO_ANALYZER_AST_GREP: "/missing/ast-grep",
+      REPO_ANALYZER_GRAPHIFY: fixture.graphify,
+      REPO_ANALYZER_GRAPHIFY_CAPABILITIES: "graph-queries,symbol-enumeration,reference-edges",
+    },
+    options: { mode: "deep" },
+  });
+
+  assert.equal(result.status, 2);
+  const report = JSON.parse(readFileSync(join(fixture.out, "doctor-report.json"), "utf8"));
+  assert.equal(report.allowed_standard, true);
+  assert.equal(report.allowed_deep, false);
+  assert.equal(report.allowed, false);
+  assert.ok(report.capability_matrix.missing_capabilities.deep.includes("reference-edges"));
+  assert.equal(report.capability_matrix.capabilities["reference-edges"].available, false);
+  const probeCheck = report.checks.find((check) => check.id === "reference-edge-usability");
+  assert.equal(probeCheck.status, "fail");
+  assert.ok(probeCheck.ctags_reference_tags === 0);
+  assert.match(probeCheck.reasons.join("\n"), /reference|partial|roles/i);
+  assert.ok(report.reference_probe);
+  assert.equal(report.reference_probe.usable, false);
+});
+
+test("doctor 放行：ctags 抽样能产出 roles=reference 时 deep 可用", () => {
+  const fixture = createFixture();
+  const result = cli("doctor", {
+    ...fixture,
+    env: deepGraphifyEnv(fixture),
+    options: { mode: "deep" },
+  });
+  assert.equal(result.status, 0);
+  const report = JSON.parse(readFileSync(join(fixture.out, "doctor-report.json"), "utf8"));
+  assert.equal(report.allowed_deep, true);
+  const probeCheck = report.checks.find((check) => check.id === "reference-edge-usability");
+  assert.equal(probeCheck.status, "pass");
+  assert.ok(probeCheck.ctags_reference_tags > 0);
+  assert.ok(report.capability_matrix.capabilities["reference-edges"].providers.includes("universal-ctags"));
+});
+
+test("doctor 放行：Graphify units 接线开关打开时即使无 ctags reference 也可 deep", () => {
+  const fixture = createFixture();
+  writeFileSync(
+    fixture.ctags,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args.includes('--version')) { console.log('Universal Ctags 6.1.0'); process.exit(0); }
+if (args.includes('--list-languages')) { console.log('JavaScript'); process.exit(0); }
+const file = args.at(-1);
+if (file?.endsWith('.js')) console.log(JSON.stringify({_type:'tag',name:'main',path:file,line:1,kind:'function'}));
+`,
+  );
+  chmodSync(fixture.ctags, 0o755);
+  const result = cli("doctor", {
+    ...fixture,
+    env: {
+      REPO_ANALYZER_CTAGS: fixture.ctags,
+      REPO_ANALYZER_AST_GREP: "/missing/ast-grep",
+      REPO_ANALYZER_GRAPHIFY: fixture.graphify,
+      REPO_ANALYZER_GRAPHIFY_CAPABILITIES: "graph-queries,symbol-enumeration,reference-edges",
+      REPO_ANALYZER_GRAPHIFY_UNITS_REFS: "1",
+    },
+    options: { mode: "deep" },
+  });
+  assert.equal(result.status, 0);
+  const report = JSON.parse(readFileSync(join(fixture.out, "doctor-report.json"), "utf8"));
+  assert.equal(report.allowed_deep, true);
+  assert.ok(report.capability_matrix.capabilities["reference-edges"].providers.includes("graphify"));
+});
+

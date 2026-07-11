@@ -86,6 +86,7 @@ test("units 使用 Doctor 选中的 ast-grep 枚举 JavaScript 单元", () => {
     REPO_ANALYZER_AST_GREP: fixture.astGrep,
     REPO_ANALYZER_GRAPHIFY: fixture.graphify,
     REPO_ANALYZER_GRAPHIFY_CAPABILITIES: "graph-queries,symbol-enumeration,reference-edges",
+    REPO_ANALYZER_GRAPHIFY_UNITS_REFS: "1",
   };
   assert.equal(cli("doctor", { ...fixture, env, options: { mode: "deep" } }).status, 0);
   assert.equal(cli("scan", { ...fixture, env, options: { mode: "deep" } }).status, 0);
@@ -118,6 +119,8 @@ if (file?.endsWith('src/service.js')) console.log(JSON.stringify({_type:'tag',na
     REPO_ANALYZER_AST_GREP: "/missing/ast-grep",
     REPO_ANALYZER_GRAPHIFY: fixture.graphify,
     REPO_ANALYZER_GRAPHIFY_CAPABILITIES: "graph-queries,symbol-enumeration,reference-edges",
+    // 本用例刻意让 ctags 不吐 reference-role，只测 grep partial refs；用 Graphify units 开关让 doctor 放行 deep
+    REPO_ANALYZER_GRAPHIFY_UNITS_REFS: "1",
     REPO_ANALYZER_RG: "/missing/rg",
     REPO_ANALYZER_GREP: "grep",
   };

@@ -1,0 +1,16 @@
+{
+  "analyzed_by_mod": {
+    "config": 62,
+    "scripts": 12,
+    "shared-components": 68,
+    "src": 649,
+    "tools": 138
+  },
+  "selected_count": 886,
+  "core_incomplete_ref_rate": 1.0,
+  "enumerator": {
+    "name": "universal-ctags",
+    "version": "Universal Ctags 6.2.1, Copyright (C) 2015-2025 Universal Ctags Team"
+  },
+  "parse_rate": 1
+}

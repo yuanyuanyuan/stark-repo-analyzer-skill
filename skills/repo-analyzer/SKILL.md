@@ -74,7 +74,7 @@ repo-analyzer doctor --repo "$REPO" --out "$WORK_DIR" --mode standard
 # repo-analyzer doctor --repo "$REPO" --out "$WORK_DIR" --install-prompt --install-mode deep
 ```
 
-读取 `doctor-report.json` 的 **capability matrix**（available/blocked modes、missing capabilities、detected tools、official-source refs）。standard 只需基线放行；deep 需三能力满足，否则拒绝且不降级。安装 prompt 不得指示修改被分析仓源码/依赖清单（除非用户显式授权）。
+读取 `doctor-report.json` 的 **capability matrix**（available/blocked modes、missing capabilities、detected tools、official-source refs）以及 **reference-edge-usability 探针**。standard 只需基线放行；deep 需三能力满足，且 `reference-edges` 必须在目标仓抽样可验证（ctags `roles=reference` 或已接线的 Graphify units refs），否则拒绝且不降级——避免证据阶段后才因 reference-quality 失败浪费 token。安装 prompt 不得指示修改被分析仓源码/依赖清单（除非用户显式授权）。
 
 ### Phase 1：确定性 Repo Map
 

@@ -1,0 +1,8 @@
+{
+  "issue": "reference-quality",
+  "mode": "deep",
+  "threshold_max_incomplete": 0.8,
+  "observed_core_incomplete_rate": 1.0,
+  "root_cause": "Universal Ctags TS/JS does not emit reference-role tags for enumeratorRefs; findRefs marks partial only. Graphify edges not mapped into coverage-units.refs_status.",
+  "decision": "Do not forge complete refs; allow gate fail; keep analysis artifacts + UAT summary"
+}

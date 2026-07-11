@@ -1,4 +1,5 @@
-import { basename } from "node:path";
+import { basename, extname, join } from "node:path";
+import { readdirSync } from "node:fs";
 
 import { loadCapabilities, loadModes, loadToolRules, resolveMode, rulesVersion } from "./rules.js";
 import { runCommand } from "./common.js";
@@ -79,6 +80,229 @@ function parseCapabilityOverride(raw) {
   if (!raw) return null;
   return raw.split(",").map((item) => item.trim()).filter(Boolean);
 }
+
+
+/**
+ * 廉价探针：判断当前环境对本仓是否真的能产出 units 可用的 complete 引用边。
+ * 仅「工具在 PATH」不足以放行 deep——否则会在 evidence/gate 才失败并浪费 token。
+ *
+ * 当前 units 合同：
+ * - complete 仅来自 universal-ctags 的 reference-role 标签；
+ * - rg/grep 文本引用一律 partial；
+ * - Graphify 边尚未接到 coverage-units.refs_status，除非显式打开
+ *   REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1（测试/未来接线开关）。
+ */
+export function probeReferenceEdgeUsability({ repoPath, languages = [], detected, maxFiles = 6 }) {
+  const { ctags, graphify } = detected.enhanced;
+  const sampleFiles = pickSampleSourceFiles(repoPath, languages, maxFiles);
+  let ctagsReferenceTags = 0;
+  let ctagsDefinitionTags = 0;
+  let filesProbed = 0;
+  const sampleEvidence = [];
+
+  if (ctags.available && sampleFiles.length > 0) {
+    for (const file of sampleFiles) {
+      const absolute = join(repoPath, file);
+      const result = runCommand(ctags.command, [
+        "--output-format=json",
+        "--fields=+nK",
+        "--extras=+r",
+        "--sort=no",
+        "-f",
+        "-",
+        absolute,
+      ]);
+      if (!result.ok) {
+        sampleEvidence.push({ file, ok: false, error: result.stderr || "ctags failed" });
+        continue;
+      }
+      filesProbed += 1;
+      let fileRefs = 0;
+      let fileDefs = 0;
+      for (const line of result.stdout.split(/\r?\n/)) {
+        if (!line.trim()) continue;
+        try {
+          const tag = JSON.parse(line);
+          if (tag._type !== "tag" || !tag.name) continue;
+          const isRef = String(tag.roles ?? "")
+            .split(",")
+            .map((item) => item.trim())
+            .includes("reference");
+          if (isRef) {
+            ctagsReferenceTags += 1;
+            fileRefs += 1;
+          } else {
+            ctagsDefinitionTags += 1;
+            fileDefs += 1;
+          }
+        } catch {
+          // ignore non-tag lines
+        }
+      }
+      sampleEvidence.push({ file, ok: true, definition_tags: fileDefs, reference_tags: fileRefs });
+    }
+  }
+
+  const ctagsUsable = ctags.available && ctagsReferenceTags > 0;
+  const graphifyUnitsWired =
+    process.env.REPO_ANALYZER_GRAPHIFY_UNITS_REFS === "1" ||
+    process.env.REPO_ANALYZER_GRAPHIFY_UNITS_REFS === "true";
+  const graphifyUsable =
+    graphify.available &&
+    graphify.capabilities.includes("reference-edges") &&
+    graphifyUnitsWired;
+
+  const providers = [];
+  if (ctagsUsable) providers.push("universal-ctags");
+  if (graphifyUsable) providers.push("graphify");
+
+  const reasons = [];
+  if (!ctagsUsable && !graphifyUsable) {
+    if (!ctags.available && !graphify.available) {
+      reasons.push("未检测到 universal-ctags 或 graphify，无法提供 units 可用的 reference edges。");
+    } else if (ctags.available && ctagsReferenceTags === 0) {
+      reasons.push(
+        `Universal Ctags 在抽样 ${filesProbed || sampleFiles.length} 个源文件中未产出 roles=reference 标签（definition≈${ctagsDefinitionTags}，reference=0）。units 只会把 rg/grep 命中标为 partial，deep 的 reference-quality 几乎必然失败。`,
+      );
+    }
+    if (graphify.available && graphify.capabilities.includes("reference-edges") && !graphifyUnitsWired) {
+      reasons.push(
+        "Graphify 虽声明 reference-edges，但尚未接入 coverage-units.refs_status；在未设置 REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1 前，不得凭存在性放行 deep。",
+      );
+    }
+    if (sampleFiles.length === 0) {
+      reasons.push("目标仓未找到可抽样源码文件，无法验证 reference-edge 可用性。");
+    }
+  }
+
+  return {
+    usable: providers.length > 0,
+    providers,
+    sample_files: sampleFiles,
+    files_probed: filesProbed,
+    ctags_reference_tags: ctagsReferenceTags,
+    ctags_definition_tags: ctagsDefinitionTags,
+    graphify_units_refs_wired: graphifyUnitsWired,
+    sample_evidence: sampleEvidence,
+    reasons,
+  };
+}
+
+function pickSampleSourceFiles(repoPath, languages, maxFiles) {
+  const preferred = new Set(
+    (languages ?? [])
+      .slice(0, 3)
+      .map((item) => String(item.language || item).toLowerCase()),
+  );
+  const sourceExts = new Set([
+    ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs",
+    ".py", ".go", ".rs", ".java", ".kt", ".kts", ".cs",
+    ".c", ".cc", ".cpp", ".h", ".hpp", ".rb", ".php", ".swift",
+  ]);
+  const preferredFiles = [];
+  const otherFiles = [];
+  const skipDirs = new Set([".git", "node_modules", "vendor", "dist", "build", "coverage", ".next", "graphify-out"]);
+
+  const visit = (directory, rel = "") => {
+    if (preferredFiles.length >= maxFiles) return;
+    let entries;
+    try {
+      entries = readdirSync(directory, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (preferredFiles.length >= maxFiles && otherFiles.length >= maxFiles) return;
+      if (skipDirs.has(entry.name)) continue;
+      const abs = join(directory, entry.name);
+      const childRel = rel ? `${rel}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        visit(abs, childRel);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      const ext = extname(entry.name).toLowerCase();
+      if (!sourceExts.has(ext)) continue;
+      // Prefer non-test application sources for reference probes.
+      if (/\b(test|spec|__tests__|__mocks__)\b/i.test(childRel)) continue;
+      const lang = LANGUAGE_BY_EXT_HINT[ext];
+      if (lang && preferred.has(lang.toLowerCase())) preferredFiles.push(childRel);
+      else otherFiles.push(childRel);
+    }
+  };
+  visit(repoPath);
+  const ordered = [...preferredFiles, ...otherFiles];
+  return ordered.slice(0, maxFiles);
+}
+
+const LANGUAGE_BY_EXT_HINT = {
+  ".js": "JavaScript",
+  ".jsx": "JavaScript",
+  ".mjs": "JavaScript",
+  ".cjs": "JavaScript",
+  ".ts": "TypeScript",
+  ".tsx": "TypeScript",
+  ".py": "Python",
+  ".go": "Go",
+  ".rs": "Rust",
+  ".java": "Java",
+  ".kt": "Kotlin",
+  ".kts": "Kotlin",
+  ".cs": "C#",
+  ".c": "C",
+  ".cc": "C++",
+  ".cpp": "C++",
+  ".rb": "Ruby",
+  ".php": "PHP",
+  ".swift": "Swift",
+};
+
+/**
+ * 用探针结果收紧 reference-edges：工具存在 ≠ 对本仓可产出 complete refs。
+ * 返回更新后的 capabilityState（就地修改并返回）。
+ */
+export function applyReferenceEdgeProbe(capabilityState, probe) {
+  const next = capabilityState;
+  const previousProviders = next["reference-edges"]?.providers ?? [];
+  if (probe.usable) {
+    next["reference-edges"] = {
+      ...(next["reference-edges"] ?? {}),
+      available: true,
+      providers: probe.providers,
+      definition_providers: next["reference-edges"]?.definition_providers ?? ["graphify", "universal-ctags"],
+      description: next["reference-edges"]?.description ?? "引用/调用边或等价 reference edges",
+      usability_probe: summarizeProbe(probe),
+      presence_only_providers: previousProviders.filter((item) => !probe.providers.includes(item)),
+    };
+    return next;
+  }
+
+  next["reference-edges"] = {
+    ...(next["reference-edges"] ?? {}),
+    available: false,
+    providers: [],
+    definition_providers: next["reference-edges"]?.definition_providers ?? ["graphify", "universal-ctags"],
+    description: next["reference-edges"]?.description ?? "引用/调用边或等价 reference edges",
+    usability_probe: summarizeProbe(probe),
+    presence_only_providers: previousProviders,
+    blocked_reason: (probe.reasons ?? []).join(" "),
+  };
+  return next;
+}
+
+function summarizeProbe(probe) {
+  return {
+    usable: probe.usable,
+    providers: probe.providers,
+    sample_files: probe.sample_files,
+    files_probed: probe.files_probed,
+    ctags_reference_tags: probe.ctags_reference_tags,
+    ctags_definition_tags: probe.ctags_definition_tags,
+    graphify_units_refs_wired: probe.graphify_units_refs_wired,
+    reasons: probe.reasons,
+  };
+}
+
 
 export function evaluateCapabilities(detected) {
   const capabilityDefs = loadCapabilities().capabilities;
@@ -257,7 +481,9 @@ function buildRemediation(availability, capabilityState) {
       lines.push("安装 Graphify，或补充 Universal Ctags / ast-grep 以满足 symbol-enumeration。");
     }
     if (cap === "reference-edges") {
-      lines.push("安装 Graphify，或使用支持 reference 的 Universal Ctags 以满足 reference-edges。");
+      lines.push(
+        "deep 需要对本仓可验证的 reference edges：Universal Ctags 须在抽样源文件中产出 roles=reference；或完成 Graphify→units 引用接线并设置 REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1。仅安装工具但无法产出 complete refs 仍会拦截 deep，避免后续 evidence/gate 浪费 token。",
+      );
     }
   }
   if (!lines.length) lines.push("当前环境已满足已检测模式的能力合同。");
@@ -274,7 +500,7 @@ export function buildInstallPrompt({ targetMode = "deep", matrix }) {
 
   const focus = mode === "deep"
     ? missing.length
-      ? `只补齐 deep 缺失能力：${missing.join(", ")}。优先 Graphify；仅在 Graphify 无法覆盖 symbol-enumeration / reference-edges 时补充 Universal Ctags 或 ast-grep。`
+      ? `只补齐 deep 缺失能力：${missing.join(", ")}。优先使 reference-edges 在目标仓可验证：Universal Ctags 须能产出 roles=reference；Graphify 图边在接入 units 前不能单独冒充 complete refs。symbol-enumeration 可再补 ast-grep。`
       : "deep 能力已满足；若用户仍要安装，仅做版本确认并回报，不要重复安装。"
     : "standard 仅需 Git + 文本搜索；不要为 standard 安装 Graphify/Ctags/ast-grep。";
 

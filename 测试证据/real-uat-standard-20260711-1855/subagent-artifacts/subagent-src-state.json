@@ -1,0 +1,1209 @@
+{
+  "agent_id": "subagent-src-state",
+  "scope": "会话状态 + Worker 内容感知切图主链（hooks/worker/utils/App 编排）",
+  "mode": "standard",
+  "parallelism": "active",
+  "unit_count": 150,
+  "findings": [
+    {
+      "unit_id": "src/App.tsx:AppContent:entrypoint:f0ac37f299fd",
+      "anchor": "src/App.tsx:28",
+      "judgment": "唯一编排入口：装配状态/处理/路由/i18n 并按 path 渲染上传-预览-导出。",
+      "file": "src/App.tsx",
+      "symbol": "AppContent",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/App.tsx:App:entrypoint:f5a97b0b8e60",
+      "anchor": "src/App.tsx:735",
+      "judgment": "根组件仅包装 HelmetProvider+I18nProvider，业务集中在 AppContent。",
+      "file": "src/App.tsx",
+      "symbol": "App",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/DebugInfoControl.tsx:DEBUG_LEVELS:export:1ff4c5219de2",
+      "anchor": "src/components/DebugInfoControl.tsx:31",
+      "judgment": "开发期调试面板/信息，生产路径应保持旁路。",
+      "file": "src/components/DebugInfoControl.tsx",
+      "symbol": "DEBUG_LEVELS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/DebugInfoControl.tsx:DebugInfoControl:export:3bb7cea4906e",
+      "anchor": "src/components/DebugInfoControl.tsx:77",
+      "judgment": "开发期调试面板/信息，生产路径应保持旁路。",
+      "file": "src/components/DebugInfoControl.tsx",
+      "symbol": "DebugInfoControl",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/DebugPanel.tsx:DebugPanel:export:228eec477a36",
+      "anchor": "src/components/DebugPanel.tsx:15",
+      "judgment": "开发期调试面板/信息，生产路径应保持旁路。",
+      "file": "src/components/DebugPanel.tsx",
+      "symbol": "DebugPanel",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/EnhancedHelmetProvider.tsx:useEnhancedHelmet:export:9612425c60ef",
+      "anchor": "src/components/EnhancedHelmetProvider.tsx:22",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/EnhancedHelmetProvider.tsx",
+      "symbol": "useEnhancedHelmet",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/EnhancedHelmetProvider.tsx:EnhancedHelmetProvider:export:f58af378c4ec",
+      "anchor": "src/components/EnhancedHelmetProvider.tsx:40",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/EnhancedHelmetProvider.tsx",
+      "symbol": "EnhancedHelmetProvider",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/EnhancedHelmetProvider.tsx:EnhancedHelmet:export:603ff4c5b026",
+      "anchor": "src/components/EnhancedHelmetProvider.tsx:125",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/EnhancedHelmetProvider.tsx",
+      "symbol": "EnhancedHelmet",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/EnhancedHelmetProvider.tsx:SEOPriorityWrapper:export:4d47da6105ac",
+      "anchor": "src/components/EnhancedHelmetProvider.tsx:150",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/EnhancedHelmetProvider.tsx",
+      "symbol": "SEOPriorityWrapper",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/EnhancedHelmetProvider.tsx:ConditionalHelmet:export:3dd977df08d8",
+      "anchor": "src/components/EnhancedHelmetProvider.tsx:173",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/EnhancedHelmetProvider.tsx",
+      "symbol": "ConditionalHelmet",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/EnhancedHelmetProvider.tsx:AsyncHelmetLoader:export:35606041e3e1",
+      "anchor": "src/components/EnhancedHelmetProvider.tsx:185",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/EnhancedHelmetProvider.tsx",
+      "symbol": "AsyncHelmetLoader",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/EnhancedSEOManager.tsx:EnhancedSEOManager:export:40caba1b1377",
+      "anchor": "src/components/EnhancedSEOManager.tsx:144",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/EnhancedSEOManager.tsx",
+      "symbol": "EnhancedSEOManager",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/EnhancedSEOManager.tsx:SEOManager:export:1ce941fac84a",
+      "anchor": "src/components/EnhancedSEOManager.tsx:341",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/EnhancedSEOManager.tsx",
+      "symbol": "SEOManager",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/LanguageSwitcher.tsx:LanguageSwitcher:export:620f17c5e169",
+      "anchor": "src/components/LanguageSwitcher.tsx:14",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/components/LanguageSwitcher.tsx",
+      "symbol": "LanguageSwitcher",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/LanguageSwitcher.tsx:CompactLanguageSwitcher:export:0984317fb5bd",
+      "anchor": "src/components/LanguageSwitcher.tsx:140",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/components/LanguageSwitcher.tsx",
+      "symbol": "CompactLanguageSwitcher",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/LazyImage.tsx:LazyImage:export:93ade6b412a5",
+      "anchor": "src/components/LazyImage.tsx:33",
+      "judgment": "UI 组件 LazyImage 负责呈现与交互入口，状态变更回传 hook/actions。",
+      "file": "src/components/LazyImage.tsx",
+      "symbol": "LazyImage",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/mobile/Footer.tsx:Footer:export:00e2b331be11",
+      "anchor": "src/components/mobile/Footer.tsx:23",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/mobile/Footer.tsx",
+      "symbol": "Footer",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/mobile/Footer.tsx:CompactFooter:export:cb28698ad6a0",
+      "anchor": "src/components/mobile/Footer.tsx:183",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/mobile/Footer.tsx",
+      "symbol": "CompactFooter",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/mobile/TouchImageSlicer.tsx:TouchImageSlicer:export:e00dc67a887d",
+      "anchor": "src/components/mobile/TouchImageSlicer.tsx:56",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/mobile/TouchImageSlicer.tsx",
+      "symbol": "TouchImageSlicer",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/mobile/TouchNav.tsx:TouchNav:export:e581365e6e33",
+      "anchor": "src/components/mobile/TouchNav.tsx:29",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/mobile/TouchNav.tsx",
+      "symbol": "TouchNav",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/mobile/TouchNav.tsx:TabBar:export:1f637d20adef",
+      "anchor": "src/components/mobile/TouchNav.tsx:219",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/mobile/TouchNav.tsx",
+      "symbol": "TabBar",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/PerformanceOptimizer.tsx:PerformanceOptimizer:export:ced76ed3a6f7",
+      "anchor": "src/components/PerformanceOptimizer.tsx:214",
+      "judgment": "性能监控/分析支撑，观测路径不改变切割结果。",
+      "file": "src/components/PerformanceOptimizer.tsx",
+      "symbol": "PerformanceOptimizer",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/PerformanceOptimizer.tsx:usePerformanceOptimizer:export:a9b1df21d07f",
+      "anchor": "src/components/PerformanceOptimizer.tsx:341",
+      "judgment": "性能监控/分析支撑，观测路径不改变切割结果。",
+      "file": "src/components/PerformanceOptimizer.tsx",
+      "symbol": "usePerformanceOptimizer",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/PerformanceOptimizer.tsx:LazyImage:export:bed0e00c61bf",
+      "anchor": "src/components/PerformanceOptimizer.tsx:477",
+      "judgment": "性能监控/分析支撑，观测路径不改变切割结果。",
+      "file": "src/components/PerformanceOptimizer.tsx",
+      "symbol": "LazyImage",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/PerformanceOptimizer.tsx:BatchLazyLoader:export:89021e3189a9",
+      "anchor": "src/components/PerformanceOptimizer.tsx:565",
+      "judgment": "性能监控/分析支撑，观测路径不改变切割结果。",
+      "file": "src/components/PerformanceOptimizer.tsx",
+      "symbol": "BatchLazyLoader",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/ResponsiveContainer.tsx:ResponsiveContainer:export:30a070d4a835",
+      "anchor": "src/components/ResponsiveContainer.tsx:33",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/ResponsiveContainer.tsx",
+      "symbol": "ResponsiveContainer",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/ResponsiveContainer.tsx:ResponsiveFlexContainer:export:93ed17c7d380",
+      "anchor": "src/components/ResponsiveContainer.tsx:73",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/ResponsiveContainer.tsx",
+      "symbol": "ResponsiveFlexContainer",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/ResponsiveContainer.tsx:ResponsiveGridContainer:export:caf8cdacf89c",
+      "anchor": "src/components/ResponsiveContainer.tsx:96",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/ResponsiveContainer.tsx",
+      "symbol": "ResponsiveGridContainer",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/ResponsiveContainer.tsx:ResponsiveButtonContainer:export:1e95f530761e",
+      "anchor": "src/components/ResponsiveContainer.tsx:121",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/ResponsiveContainer.tsx",
+      "symbol": "ResponsiveButtonContainer",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/ResponsiveContainer.tsx:SafeAreaContainer:export:e4d7a980761a",
+      "anchor": "src/components/ResponsiveContainer.tsx:148",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/ResponsiveContainer.tsx",
+      "symbol": "SafeAreaContainer",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/EnhancedSEOManager.tsx:EnhancedSEOManager:export:afed264f8a33",
+      "anchor": "src/components/seo/EnhancedSEOManager.tsx:181",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/EnhancedSEOManager.tsx",
+      "symbol": "EnhancedSEOManager",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/EnhancedSEOManager.tsx:generatePagePath:export:40a8b80d40c8",
+      "anchor": "src/components/seo/EnhancedSEOManager.tsx:412",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/EnhancedSEOManager.tsx",
+      "symbol": "generatePagePath",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/EnhancedSEOManager.tsx:generateHreflangTags:export:1008e3df3d58",
+      "anchor": "src/components/seo/EnhancedSEOManager.tsx:418",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/EnhancedSEOManager.tsx",
+      "symbol": "generateHreflangTags",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/EnhancedSEOManager.tsx:generateFallbackMetadata:export:6941c6b25ecf",
+      "anchor": "src/components/seo/EnhancedSEOManager.tsx:438",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/EnhancedSEOManager.tsx",
+      "symbol": "generateFallbackMetadata",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/EnhancedSEOManager.tsx:generateFallbackStructuredData:export:16d4be4da202",
+      "anchor": "src/components/seo/EnhancedSEOManager.tsx:498",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/EnhancedSEOManager.tsx",
+      "symbol": "generateFallbackStructuredData",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:HeadingProvider:export:1909eb5f666b",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:58",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "HeadingProvider",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:useHeadingHierarchy:export:1c6f2fa3679e",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:276",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "useHeadingHierarchy",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:Heading:export:cccb5ea75caa",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:293",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "Heading",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:H1:export:e74fdc329f21",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:345",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "H1",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:H2:export:ce64960cbfd9",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:347",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "H2",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:H3:export:075389d42240",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:349",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "H3",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:H4:export:5670a6a5586a",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:351",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "H4",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:H5:export:73fd7726d801",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:353",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "H5",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:H6:export:b761a36cef23",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:355",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "H6",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingHierarchy.tsx:HeadingHierarchyDebugger:export:9e9ae8cbaa98",
+      "anchor": "src/components/seo/HeadingHierarchy.tsx:360",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingHierarchy.tsx",
+      "symbol": "HeadingHierarchyDebugger",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingStructure.tsx:HeadingStructure:export:3d42eb50eb0e",
+      "anchor": "src/components/seo/HeadingStructure.tsx:195",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingStructure.tsx",
+      "symbol": "HeadingStructure",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingStructure.tsx:getDefaultHeadingStructure:export:36356a27d8b7",
+      "anchor": "src/components/seo/HeadingStructure.tsx:363",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingStructure.tsx",
+      "symbol": "getDefaultHeadingStructure",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/HeadingStructure.tsx:getSubsectionContent:export:8551619ff95b",
+      "anchor": "src/components/seo/HeadingStructure.tsx:452",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/HeadingStructure.tsx",
+      "symbol": "getSubsectionContent",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/SEOIntegration.tsx:SEOIntegration:export:9c2dc452e4b4",
+      "anchor": "src/components/seo/SEOIntegration.tsx:37",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/SEOIntegration.tsx",
+      "symbol": "SEOIntegration",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/SEOIntegration.tsx:generateSampleContent:export:5f5713e583ca",
+      "anchor": "src/components/seo/SEOIntegration.tsx:325",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/SEOIntegration.tsx",
+      "symbol": "generateSampleContent",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/SEOIntegration.tsx:SEOProvider:export:24cba85083b4",
+      "anchor": "src/components/seo/SEOIntegration.tsx:363",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/SEOIntegration.tsx",
+      "symbol": "SEOProvider",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/StructuredDataProvider.tsx:StructuredDataProvider:export:7ef3827f2581",
+      "anchor": "src/components/seo/StructuredDataProvider.tsx:23",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/StructuredDataProvider.tsx",
+      "symbol": "StructuredDataProvider",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/seo/StructuredDataProvider.tsx:EnhancedStructuredDataProvider:export:9f38a5445b77",
+      "anchor": "src/components/seo/StructuredDataProvider.tsx:181",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/StructuredDataProvider.tsx",
+      "symbol": "EnhancedStructuredDataProvider",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/seo/StructuredDataProvider.tsx:StructuredDataGenerator:export:c3a41aad393d",
+      "anchor": "src/components/seo/StructuredDataProvider.tsx:218",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/seo/StructuredDataProvider.tsx",
+      "symbol": "StructuredDataGenerator",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/SEOManager.tsx:SEOManager:export:a8957e1f3f89",
+      "anchor": "src/components/SEOManager.tsx:364",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/SEOManager.tsx",
+      "symbol": "SEOManager",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/SEOManager.tsx:SEOProvider:export:71dab9a33b7b",
+      "anchor": "src/components/SEOManager.tsx:800",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/SEOManager.tsx",
+      "symbol": "SEOProvider",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/StructuredDataProvider.tsx:StructuredDataProvider:export:d59c5acc763a",
+      "anchor": "src/components/StructuredDataProvider.tsx:43",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/StructuredDataProvider.tsx",
+      "symbol": "StructuredDataProvider",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/StructuredDataProvider.tsx:useStructuredData:export:562b08fb6645",
+      "anchor": "src/components/StructuredDataProvider.tsx:144",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/StructuredDataProvider.tsx",
+      "symbol": "useStructuredData",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/StructuredDataProvider.tsx:StructuredDataDebug:export:78d7d751f7a1",
+      "anchor": "src/components/StructuredDataProvider.tsx:161",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/StructuredDataProvider.tsx",
+      "symbol": "StructuredDataDebug",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/StructuredDataProvider.tsx:StructuredDataIndicator:export:3a12f8cadcfa",
+      "anchor": "src/components/StructuredDataProvider.tsx:363",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/components/StructuredDataProvider.tsx",
+      "symbol": "StructuredDataIndicator",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/components/TextDisplayConfig.tsx:DEFAULT_TEXT_DISPLAY_OPTIONS:export:4eb3a6250f37",
+      "anchor": "src/components/TextDisplayConfig.tsx:35",
+      "judgment": "UI 组件 DEFAULT_TEXT_DISPLAY_OPTIONS 负责呈现与交互入口，状态变更回传 hook/actions。",
+      "file": "src/components/TextDisplayConfig.tsx",
+      "symbol": "DEFAULT_TEXT_DISPLAY_OPTIONS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/TextDisplayConfig.tsx:MINIMAL_TEXT_DISPLAY_OPTIONS:export:78ed6719b189",
+      "anchor": "src/components/TextDisplayConfig.tsx:49",
+      "judgment": "UI 组件 MINIMAL_TEXT_DISPLAY_OPTIONS 负责呈现与交互入口，状态变更回传 hook/actions。",
+      "file": "src/components/TextDisplayConfig.tsx",
+      "symbol": "MINIMAL_TEXT_DISPLAY_OPTIONS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/TextDisplayConfig.tsx:DETAILED_TEXT_DISPLAY_OPTIONS:export:2f23da0c4336",
+      "anchor": "src/components/TextDisplayConfig.tsx:63",
+      "judgment": "UI 组件 DETAILED_TEXT_DISPLAY_OPTIONS 负责呈现与交互入口，状态变更回传 hook/actions。",
+      "file": "src/components/TextDisplayConfig.tsx",
+      "symbol": "DETAILED_TEXT_DISPLAY_OPTIONS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/TextDisplayConfig.tsx:ConfigItem:export:afb8f560af12",
+      "anchor": "src/components/TextDisplayConfig.tsx:101",
+      "judgment": "UI 组件 ConfigItem 负责呈现与交互入口，状态变更回传 hook/actions。",
+      "file": "src/components/TextDisplayConfig.tsx",
+      "symbol": "ConfigItem",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/TextDisplayConfig.tsx:TextDisplayConfig:export:983c614a1395",
+      "anchor": "src/components/TextDisplayConfig.tsx:133",
+      "judgment": "UI 组件 TextDisplayConfig 负责呈现与交互入口，状态变更回传 hook/actions。",
+      "file": "src/components/TextDisplayConfig.tsx",
+      "symbol": "TextDisplayConfig",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/TextDisplayConfig.tsx:useTextDisplayConfig:export:3afec73b2ba4",
+      "anchor": "src/components/TextDisplayConfig.tsx:387",
+      "judgment": "UI 组件 useTextDisplayConfig 负责呈现与交互入口，状态变更回传 hook/actions。",
+      "file": "src/components/TextDisplayConfig.tsx",
+      "symbol": "useTextDisplayConfig",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/ViewportDebugger.tsx:ViewportDebugger:export:b14566a29b08",
+      "anchor": "src/components/ViewportDebugger.tsx:9",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/ViewportDebugger.tsx",
+      "symbol": "ViewportDebugger",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/ViewportDebugger.tsx:ResponsiveGridOverlay:export:0d9d15abfca2",
+      "anchor": "src/components/ViewportDebugger.tsx:158",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/components/ViewportDebugger.tsx",
+      "symbol": "ResponsiveGridOverlay",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/config/seo.config.ts:SEO_CONFIG:export:20745f60ec42",
+      "anchor": "src/config/seo.config.ts:48",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/config/seo.config.ts",
+      "symbol": "SEO_CONFIG",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/config/seo.config.ts:initializeSEOConfig:export:c52345ed7465",
+      "anchor": "src/config/seo.config.ts:170",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/config/seo.config.ts",
+      "symbol": "initializeSEOConfig",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/config/seo.config.ts:getCurrentSEOConfig:export:1c37ced172a0",
+      "anchor": "src/config/seo.config.ts:192",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/config/seo.config.ts",
+      "symbol": "getCurrentSEOConfig",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/config/seo.config.ts:migrateLegacyConfig:export:7c3a862da099",
+      "anchor": "src/config/seo.config.ts:210",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/config/seo.config.ts",
+      "symbol": "migrateLegacyConfig",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/config/seo/configLoader.ts:initializeSEOConfig:export:121d22d72568",
+      "anchor": "src/config/seo/configLoader.ts:363",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/config/seo/configLoader.ts",
+      "symbol": "initializeSEOConfig",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/config/seo/configLoader.ts:getSEOConfig:export:0595a2275adf",
+      "anchor": "src/config/seo/configLoader.ts:373",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/config/seo/configLoader.ts",
+      "symbol": "getSEOConfig",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/config/seo/configLoader.ts:reloadSEOConfig:export:4ced07accbc3",
+      "anchor": "src/config/seo/configLoader.ts:381",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/config/seo/configLoader.ts",
+      "symbol": "reloadSEOConfig",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/config/seo/configLoader.ts:validateSEOConfig:export:0050b202f036",
+      "anchor": "src/config/seo/configLoader.ts:389",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/config/seo/configLoader.ts",
+      "symbol": "validateSEOConfig",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/config/seo/configLoader.ts:configLoader:export:ee7c2189f912",
+      "anchor": "src/config/seo/configLoader.ts:395",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/config/seo/configLoader.ts",
+      "symbol": "configLoader",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/context/SEOContext.tsx:useSEO:export:59162494838a",
+      "anchor": "src/context/SEOContext.tsx:122",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/context/SEOContext.tsx",
+      "symbol": "useSEO",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/context/SEOContext.tsx:SEOProvider:export:c8a05677276f",
+      "anchor": "src/context/SEOContext.tsx:141",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/context/SEOContext.tsx",
+      "symbol": "SEOProvider",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useAppState.ts:createInitialState:export:1650745b9e4e",
+      "anchor": "src/hooks/useAppState.ts:14",
+      "judgment": "从 localStorage 恢复 splitHeight/fileName，其余会话资源初始化为空，避免刷新后丢失用户偏好。",
+      "file": "src/hooks/useAppState.ts",
+      "symbol": "createInitialState",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useAppState.ts:appStateReducer:export:d89ecb17c1ec",
+      "anchor": "src/hooks/useAppState.ts:33",
+      "judgment": "reducer 以 action 类型驱动会话；ADD_IMAGE_SLICE 按 index 写入以对抗异步 onload 乱序。",
+      "file": "src/hooks/useAppState.ts",
+      "symbol": "appStateReducer",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useAppState.ts:useAppState:export:170fb0d97b9e",
+      "anchor": "src/hooks/useAppState.ts:122",
+      "judgment": "对外暴露 state/actions/utils 门面，把持久化副作用与 action creators 收敛在单一 hook。",
+      "file": "src/hooks/useAppState.ts",
+      "symbol": "useAppState",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useDebugState.ts:useDebugState:export:28a7b857016c",
+      "anchor": "src/hooks/useDebugState.ts:16",
+      "judgment": "开发期调试面板/信息，生产路径应保持旁路。",
+      "file": "src/hooks/useDebugState.ts",
+      "symbol": "useDebugState",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useI18n.ts:getDefaultLanguage:export:226da0a25886",
+      "anchor": "src/hooks/useI18n.ts:13",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/hooks/useI18n.ts",
+      "symbol": "getDefaultLanguage",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useI18n.ts:getSavedLanguage:export:ddeda3945791",
+      "anchor": "src/hooks/useI18n.ts:29",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/hooks/useI18n.ts",
+      "symbol": "getSavedLanguage",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useI18n.ts:saveLanguage:export:33bb36049be4",
+      "anchor": "src/hooks/useI18n.ts:52",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/hooks/useI18n.ts",
+      "symbol": "saveLanguage",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useI18n.ts:loadLanguageResource:export:8bfeb8542481",
+      "anchor": "src/hooks/useI18n.ts:67",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/hooks/useI18n.ts",
+      "symbol": "loadLanguageResource",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useI18n.ts:interpolate:export:b165d58d735b",
+      "anchor": "src/hooks/useI18n.ts:97",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/hooks/useI18n.ts",
+      "symbol": "interpolate",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useI18n.ts:useI18n:export:98b10942d73d",
+      "anchor": "src/hooks/useI18n.ts:103",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/hooks/useI18n.ts",
+      "symbol": "useI18n",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useI18nContext.tsx:I18nProvider:export:74133d291300",
+      "anchor": "src/hooks/useI18nContext.tsx:10",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/hooks/useI18nContext.tsx",
+      "symbol": "I18nProvider",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useI18nContext.tsx:useI18nContext:export:df049c343db0",
+      "anchor": "src/hooks/useI18nContext.tsx:17",
+      "judgment": "i18n 文案与语言切换支撑，不拥有 imageSlices 主状态。",
+      "file": "src/hooks/useI18nContext.tsx",
+      "symbol": "useI18nContext",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useImageProcessor.ts:useImageProcessor:export:839c35fb2b6b",
+      "anchor": "src/hooks/useImageProcessor.ts:19",
+      "judgment": "编排 cleanup→解码原图→createWorker→startProcessing，并把 worker chunk 转 ObjectURL+尺寸后入状态。",
+      "file": "src/hooks/useImageProcessor.ts",
+      "symbol": "useImageProcessor",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useLazyLoading.ts:useLazyLoading:export:3f80688d8839",
+      "anchor": "src/hooks/useLazyLoading.ts:28",
+      "judgment": "自定义 hook useLazyLoading 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useLazyLoading.ts",
+      "symbol": "useLazyLoading",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useLazyLoading.ts:useImageLazyLoading:export:c2bee7b4f3dd",
+      "anchor": "src/hooks/useLazyLoading.ts:104",
+      "judgment": "自定义 hook useImageLazyLoading 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useLazyLoading.ts",
+      "symbol": "useImageLazyLoading",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/hooks/useLazyLoading.ts:useBatchImageLazyLoading:export:b02c88ed4712",
+      "anchor": "src/hooks/useLazyLoading.ts:194",
+      "judgment": "自定义 hook useBatchImageLazyLoading 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useLazyLoading.ts",
+      "symbol": "useBatchImageLazyLoading",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/hooks/useLazyLoading.ts:useContentLazyLoading:export:0cdf9a3226df",
+      "anchor": "src/hooks/useLazyLoading.ts:349",
+      "judgment": "自定义 hook useContentLazyLoading 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useLazyLoading.ts",
+      "symbol": "useContentLazyLoading",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/hooks/useNavigationState.ts:useNavigationState:export:a9e65b9f36b8",
+      "anchor": "src/hooks/useNavigationState.ts:53",
+      "judgment": "自定义 hook useNavigationState 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useNavigationState.ts",
+      "symbol": "useNavigationState",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useNavigationState.ts:useNavigationStateSimple:export:614a3efbd76e",
+      "anchor": "src/hooks/useNavigationState.ts:340",
+      "judgment": "自定义 hook useNavigationStateSimple 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useNavigationState.ts",
+      "symbol": "useNavigationStateSimple",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/hooks/useNavigationState.ts:useNavigationProgress:export:e4376027c8f8",
+      "anchor": "src/hooks/useNavigationState.ts:374",
+      "judgment": "自定义 hook useNavigationProgress 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useNavigationState.ts",
+      "symbol": "useNavigationProgress",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/hooks/useNavigationState.ts:useNavigationStateLight:export:15de96f064af",
+      "anchor": "src/hooks/useNavigationState.ts:446",
+      "judgment": "自定义 hook useNavigationStateLight 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useNavigationState.ts",
+      "symbol": "useNavigationStateLight",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/hooks/useResponsiveLayout.ts:LayoutMode:export:a06a4891a90e",
+      "anchor": "src/hooks/useResponsiveLayout.ts:9",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/hooks/useResponsiveLayout.ts",
+      "symbol": "LayoutMode",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useResponsiveLayout.ts:useResponsiveLayout:export:5492790c5b72",
+      "anchor": "src/hooks/useResponsiveLayout.ts:100",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/hooks/useResponsiveLayout.ts",
+      "symbol": "useResponsiveLayout",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useResponsiveLayout.ts:getBreakpoint:export:90d42aa54a1c",
+      "anchor": "src/hooks/useResponsiveLayout.ts:219",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/hooks/useResponsiveLayout.ts",
+      "symbol": "getBreakpoint",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/hooks/useRouter.ts:useRouter:export:837da2628f6e",
+      "anchor": "src/hooks/useRouter.ts:15",
+      "judgment": "自定义 hash 路由与匹配工具，配合导航守卫约束 upload/split/export 步进。",
+      "file": "src/hooks/useRouter.ts",
+      "symbol": "useRouter",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useSEOConfig.tsx:useSEOConfig:export:28daf6692c2e",
+      "anchor": "src/hooks/useSEOConfig.tsx:51",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/hooks/useSEOConfig.tsx",
+      "symbol": "useSEOConfig",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useSEOConfig.tsx:withSEOConfig:export:36c91068f2b8",
+      "anchor": "src/hooks/useSEOConfig.tsx:284",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/hooks/useSEOConfig.tsx",
+      "symbol": "withSEOConfig",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/hooks/useSEOConfig.tsx:WrappedComponent:export:9721393b0851",
+      "anchor": "src/hooks/useSEOConfig.tsx:287",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/hooks/useSEOConfig.tsx",
+      "symbol": "WrappedComponent",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useSEOConfig.tsx:SEOConfigProvider:export:81aafc938b19",
+      "anchor": "src/hooks/useSEOConfig.tsx:300",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/hooks/useSEOConfig.tsx",
+      "symbol": "SEOConfigProvider",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useSEOConfig.tsx:useSEOConfigContext:export:0475adc70b56",
+      "anchor": "src/hooks/useSEOConfig.tsx:312",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/hooks/useSEOConfig.tsx",
+      "symbol": "useSEOConfigContext",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useSEOI18n.tsx:useSEOI18n:export:140b2a042266",
+      "anchor": "src/hooks/useSEOI18n.tsx:52",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/hooks/useSEOI18n.tsx",
+      "symbol": "useSEOI18n",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useSEOI18n.tsx:withSEOI18n:export:012a4a6ce995",
+      "anchor": "src/hooks/useSEOI18n.tsx:386",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/hooks/useSEOI18n.tsx",
+      "symbol": "withSEOI18n",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/hooks/useSEOOptimization.ts:useCoreWebVitals:export:1a5618d360e1",
+      "anchor": "src/hooks/useSEOOptimization.ts:17",
+      "judgment": "SEO/元数据支撑路径，与切割会话数据面解耦，服务可发现性。",
+      "file": "src/hooks/useSEOOptimization.ts",
+      "symbol": "useCoreWebVitals",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:BREAKPOINTS:export:95995ddecf8d",
+      "anchor": "src/hooks/useViewport.ts:7",
+      "judgment": "自定义 hook BREAKPOINTS 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "BREAKPOINTS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:isTouchDevice:export:a1c796ee84f0",
+      "anchor": "src/hooks/useViewport.ts:52",
+      "judgment": "自定义 hook isTouchDevice 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "isTouchDevice",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:getCurrentBreakpoint:export:1fa3213f3c6f",
+      "anchor": "src/hooks/useViewport.ts:66",
+      "judgment": "自定义 hook getCurrentBreakpoint 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "getCurrentBreakpoint",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:getViewportState:export:a71ea4d6ef99",
+      "anchor": "src/hooks/useViewport.ts:78",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "getViewportState",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:MyComponent:export:678ffb7ea287",
+      "anchor": "src/hooks/useViewport.ts:195",
+      "judgment": "自定义 hook MyComponent 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "MyComponent",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:useViewport:export:1544d93c95fc",
+      "anchor": "src/hooks/useViewport.ts:135",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "useViewport",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:MyComponent:export:678ffb7ea287",
+      "anchor": "src/hooks/useViewport.ts:195",
+      "judgment": "自定义 hook MyComponent 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "MyComponent",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:useBreakpoint:export:fc3568ace6e9",
+      "anchor": "src/hooks/useViewport.ts:182",
+      "judgment": "自定义 hook useBreakpoint 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "useBreakpoint",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:MyComponent:export:678ffb7ea287",
+      "anchor": "src/hooks/useViewport.ts:195",
+      "judgment": "自定义 hook MyComponent 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "MyComponent",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:useMediaQuery:export:7e6baeadb54a",
+      "anchor": "src/hooks/useViewport.ts:208",
+      "judgment": "自定义 hook useMediaQuery 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "useMediaQuery",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:useMobileDetection:export:4be9f012f35f",
+      "anchor": "src/hooks/useViewport.ts:218",
+      "judgment": "自定义 hook useMobileDetection 封装 UI/领域副作用，通过 App 组装进入页面。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "useMobileDetection",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useViewport.ts:createResponsiveClasses:export:09b529c8755f",
+      "anchor": "src/hooks/useViewport.ts:242",
+      "judgment": "响应式/触摸优化支撑移动端交互，横切于主链 UI。",
+      "file": "src/hooks/useViewport.ts",
+      "symbol": "createResponsiveClasses",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/hooks/useWorker.ts:useWorker:export:374d5fae6854",
+      "anchor": "src/hooks/useWorker.ts:23",
+      "judgment": "以 module Worker 加载 split.worker，统一 progress/chunk/done/error 消息分发与卸载终止。",
+      "file": "src/hooks/useWorker.ts",
+      "symbol": "useWorker",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/router/index.ts:routerConfig:entrypoint:7eda4e655c9c",
+      "anchor": "src/router/index.ts:66",
+      "judgment": "自定义 hash 路由与匹配工具，配合导航守卫约束 upload/split/export 步进。",
+      "file": "src/router/index.ts",
+      "symbol": "routerConfig",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/router/index.ts:matchRoute:entrypoint:d45433be61d0",
+      "anchor": "src/router/index.ts:111",
+      "judgment": "自定义 hash 路由与匹配工具，配合导航守卫约束 upload/split/export 步进。",
+      "file": "src/router/index.ts",
+      "symbol": "matchRoute",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/router/index.ts:parseParams:entrypoint:2f8658e7b569",
+      "anchor": "src/router/index.ts:139",
+      "judgment": "自定义 hash 路由与匹配工具，配合导航守卫约束 upload/split/export 步进。",
+      "file": "src/router/index.ts",
+      "symbol": "parseParams",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/router/index.ts:parseQuery:entrypoint:b16abadb4015",
+      "anchor": "src/router/index.ts:157",
+      "judgment": "自定义 hash 路由与匹配工具，配合导航守卫约束 upload/split/export 步进。",
+      "file": "src/router/index.ts",
+      "symbol": "parseQuery",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/router/index.ts:buildUrl:entrypoint:562ec17a5102",
+      "anchor": "src/router/index.ts:169",
+      "judgment": "自定义 hash 路由与匹配工具，配合导航守卫约束 upload/split/export 步进。",
+      "file": "src/router/index.ts",
+      "symbol": "buildUrl",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:navigationErrorHandler:export:8971129e3844",
+      "anchor": "src/utils/navigationErrorHandler.ts:286",
+      "judgment": "导航/处理失败时给出 redirect/clearState 恢复策略，保护步进一致性。",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "symbol": "navigationErrorHandler",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:validateNavigation:export:2b018ca38247",
+      "anchor": "src/utils/navigationErrorHandler.ts:289",
+      "judgment": "导航/处理失败时给出 redirect/clearState 恢复策略，保护步进一致性。",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "symbol": "validateNavigation",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:handleNavigationError:export:447d8619d702",
+      "anchor": "src/utils/navigationErrorHandler.ts:293",
+      "judgment": "导航/处理失败时给出 redirect/clearState 恢复策略，保护步进一致性。",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "symbol": "handleNavigationError",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:handleProcessingError:export:c82d7d0e76ee",
+      "anchor": "src/utils/navigationErrorHandler.ts:297",
+      "judgment": "导航/处理失败时给出 redirect/clearState 恢复策略，保护步进一致性。",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "symbol": "handleProcessingError",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:handleStateCorruption:export:451359bb9327",
+      "anchor": "src/utils/navigationErrorHandler.ts:301",
+      "judgment": "导航/处理失败时给出 redirect/clearState 恢复策略，保护步进一致性。",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "symbol": "handleStateCorruption",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/persistence.ts:saveState:export:e32c679187ec",
+      "anchor": "src/utils/persistence.ts:14",
+      "judgment": "仅持久化 splitHeight/fileName/language 等轻量偏好，会话 blobs 不落盘。",
+      "file": "src/utils/persistence.ts",
+      "symbol": "saveState",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/persistence.ts:loadState:export:622c57c553e9",
+      "anchor": "src/utils/persistence.ts:26",
+      "judgment": "仅持久化 splitHeight/fileName/language 等轻量偏好，会话 blobs 不落盘。",
+      "file": "src/utils/persistence.ts",
+      "symbol": "loadState",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/persistence.ts:clearState:export:0ad6546a9bad",
+      "anchor": "src/utils/persistence.ts:42",
+      "judgment": "仅持久化 splitHeight/fileName/language 等轻量偏好，会话 blobs 不落盘。",
+      "file": "src/utils/persistence.ts",
+      "symbol": "clearState",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/persistence.ts:isStorageAvailable:export:b81f3940e005",
+      "anchor": "src/utils/persistence.ts:53",
+      "judgment": "仅持久化 splitHeight/fileName/language 等轻量偏好，会话 blobs 不落盘。",
+      "file": "src/utils/persistence.ts",
+      "symbol": "isStorageAvailable",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "src/utils/persistence.ts:createDebouncedSave:export:d40fb2b39a33",
+      "anchor": "src/utils/persistence.ts:67",
+      "judgment": "仅持久化 splitHeight/fileName/language 等轻量偏好，会话 blobs 不落盘。",
+      "file": "src/utils/persistence.ts",
+      "symbol": "createDebouncedSave",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/persistence.ts:debouncedSave:export:02044b676466",
+      "anchor": "src/utils/persistence.ts:70",
+      "judgment": "仅持久化 splitHeight/fileName/language 等轻量偏好，会话 blobs 不落盘。",
+      "file": "src/utils/persistence.ts",
+      "symbol": "debouncedSave",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/splitAnalyzer.ts:DEFAULT_SPLIT_OPTIONS:export:25e9bc695d54",
+      "anchor": "src/utils/splitAnalyzer.ts:50",
+      "judgment": "集中默认阈值与窗口比例，便于校准而不改算法骨架。",
+      "file": "src/utils/splitAnalyzer.ts",
+      "symbol": "DEFAULT_SPLIT_OPTIONS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/splitAnalyzer.ts:computeVariationProfile:export:e851a412288d",
+      "anchor": "src/utils/splitAnalyzer.ts:88",
+      "judgment": "用水平灰度差累加构造行信号，不依赖背景色，适配多背景长截图。",
+      "file": "src/utils/splitAnalyzer.ts",
+      "symbol": "computeVariationProfile",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/splitAnalyzer.ts:smooth:export:00a0a9a1a8b7",
+      "anchor": "src/utils/splitAnalyzer.ts:122",
+      "judgment": "滑动窗口平滑行信号，抑制细缝噪声以免过度切碎。",
+      "file": "src/utils/splitAnalyzer.ts",
+      "symbol": "smooth",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/splitAnalyzer.ts:findLowVariationBands:export:d91c3e31878b",
+      "anchor": "src/utils/splitAnalyzer.ts:156",
+      "judgment": "低于相对阈值且足够高的连续低变化带成为切割候选空白区。",
+      "file": "src/utils/splitAnalyzer.ts",
+      "symbol": "findLowVariationBands",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/splitAnalyzer.ts:chooseSplitPoints:export:f2fd725b53c2",
+      "anchor": "src/utils/splitAnalyzer.ts:194",
+      "judgment": "以 targetHeight 为节奏在空白带中选点，并用 merge/minPage 保护避免碎页与残页。",
+      "file": "src/utils/splitAnalyzer.ts",
+      "symbol": "chooseSplitPoints",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/splitAnalyzer.ts:analyzeSplitPoints:export:8366e0f2e01d",
+      "anchor": "src/utils/splitAnalyzer.ts:250",
+      "judgment": "纯函数入口：行变化率→平滑→空白带→页高选点；空数组表示等分回退。",
+      "file": "src/utils/splitAnalyzer.ts",
+      "symbol": "analyzeSplitPoints",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/workers/split.worker.js:processImage:export:44a80f1b34ef",
+      "anchor": "src/workers/split.worker.js:75",
+      "judgment": "Worker 主流程：createImageBitmap→OffscreenCanvas→内容感知分析→按边界切片 JPEG 回传。",
+      "file": "src/workers/split.worker.js",
+      "symbol": "processImage",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/workers/split.worker.js:computeSliceBounds:export:3efa5a1f793b",
+      "anchor": "src/workers/split.worker.js:228",
+      "judgment": "有切割点则按点分段，否则固定高度等分回退，保证不比基线更差。",
+      "file": "src/workers/split.worker.js",
+      "symbol": "computeSliceBounds",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/workers/split.worker.js:convertToBlob:export:005429f80af7",
+      "anchor": "src/workers/split.worker.js:259",
+      "judgment": "切片统一转 JPEG quality 0.92，减轻文字边缘振铃并控制体积。",
+      "file": "src/workers/split.worker.js",
+      "symbol": "convertToBlob",
+      "refs_status": "partial"
+    }
+  ]
+}

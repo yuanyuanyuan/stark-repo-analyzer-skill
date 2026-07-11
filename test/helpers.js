@@ -103,6 +103,20 @@ export function deepGraphifyEnv(fixture) {
   };
 }
 
+/**
+ * Graphify 声明三能力，但 ctags 无 reference-role。
+ * 仅当显式打开 units 接线开关时才允许 deep（模拟未来 Graphify→refs 接线）。
+ */
+export function deepGraphifyWiredEnv(fixture) {
+  return {
+    REPO_ANALYZER_CTAGS: "/missing/ctags",
+    REPO_ANALYZER_AST_GREP: fixture.astGrep,
+    REPO_ANALYZER_GRAPHIFY: fixture.graphify,
+    REPO_ANALYZER_GRAPHIFY_CAPABILITIES: "graph-queries,symbol-enumeration,reference-edges",
+    REPO_ANALYZER_GRAPHIFY_UNITS_REFS: "1",
+  };
+}
+
 export function cli(command, { repo, out, env = {}, options = {}, flags = [] }) {
   const entry = new URL("../bin/repo-analyzer.js", import.meta.url);
   const optionArgs = Object.entries(options).flatMap(([key, value]) => [`--${key}`, String(value)]);

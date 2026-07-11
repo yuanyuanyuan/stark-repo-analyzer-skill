@@ -2,11 +2,13 @@ import { accessSync, constants, existsSync, readdirSync, statSync, writeFileSync
 import { extname, join, resolve } from "node:path";
 
 import {
+  applyReferenceEdgeProbe,
   buildCapabilityMatrix,
   buildInstallPrompt,
   chooseDeepEnumerator,
   detectTools,
   evaluateCapabilities,
+  probeReferenceEdgeUsability,
 } from "./capabilities.js";
 import { writeJson } from "./common.js";
 import { AST_GREP_LANGUAGES, LANGUAGE_BY_EXTENSION } from "./languages.js";
@@ -66,6 +68,13 @@ export function doctor({ repo, out, mode, printInstallPrompt = false, installTar
     detected.enhanced.astGrep.languages = [...AST_GREP_LANGUAGES];
   }
   const capabilityState = evaluateCapabilities(detected);
+  // 在「工具存在性」之上增加对本仓的引用边可用性探针，避免 deep 放行后在 evidence/gate 才失败。
+  const referenceProbe = probeReferenceEdgeUsability({
+    repoPath,
+    languages,
+    detected,
+  });
+  applyReferenceEdgeProbe(capabilityState, referenceProbe);
   const matrix = buildCapabilityMatrix({ detected, capabilityState, languages });
   let deepEnumerator = chooseDeepEnumerator(detected, capabilityState);
   const primaryLanguages = languages.length === 0 ? [] : languages.filter(({ files }) => files === languages[0].files);
@@ -127,6 +136,23 @@ export function doctor({ repo, out, mode, printInstallPrompt = false, installTar
       : "deep 补充：安装 universal-ctags 或 ast-grep（当 Graphify 未覆盖 symbol-enumeration 时）。",
     mode_usage: { standard: "forbidden_ignore", deep: "supplemental" },
   });
+  checks.push({
+    id: "reference-edge-usability",
+    required: false,
+    status: referenceProbe.usable ? "pass" : "fail",
+    usable: referenceProbe.usable,
+    providers: referenceProbe.providers,
+    sample_files: referenceProbe.sample_files,
+    files_probed: referenceProbe.files_probed,
+    ctags_reference_tags: referenceProbe.ctags_reference_tags,
+    ctags_definition_tags: referenceProbe.ctags_definition_tags,
+    graphify_units_refs_wired: referenceProbe.graphify_units_refs_wired,
+    reasons: referenceProbe.reasons,
+    remediation: referenceProbe.usable
+      ? null
+      : (referenceProbe.reasons.join(" ") || "deep 需要对本仓可验证的 complete reference edges。"),
+    mode_usage: { standard: "forbidden_ignore", deep: "required_capability_probe" },
+  });
 
   // language-support is informational for deep enumerator fitness; not a baseline hard fail for standard.
   let languageStatus = "pass";
@@ -187,6 +213,7 @@ export function doctor({ repo, out, mode, printInstallPrompt = false, installTar
     },
     capability_matrix: matrix,
     capability_state: matrix.capabilities,
+    reference_probe: referenceProbe,
     checks,
     install_prompt_path: join(outPath, "install-prompt.md"),
   };

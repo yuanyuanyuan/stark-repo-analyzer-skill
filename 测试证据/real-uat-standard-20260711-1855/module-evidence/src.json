@@ -1,0 +1,122 @@
+{
+  "module": "src",
+  "module_role": "浏览器内长截图分割的运行时核心：会话状态、Worker 内容感知切图、预览选择与 PDF/ZIP 导出编排。",
+  "entry_points": [
+    "src/main.tsx:5",
+    "src/App.tsx:28",
+    "src/hooks/useImageProcessor.ts:92",
+    "src/workers/split.worker.js:20"
+  ],
+  "core_data_structures": [
+    "AppState（worker/blobs/objectUrls/imageSlices/selectedSlices/splitHeight）— 会话资源与选择集中于 useReducer",
+    "ImageSlice{blob,url,index,width,height} — 切片身份以 index 为序",
+    "WorkerMessage progress|chunk|done|error — 主线程与 Worker 契约 v1.1",
+    "SplitOptions / Band — 内容感知分析纯函数参数与空白带"
+  ],
+  "main_flow": [
+    "用户选择文件 → FileUploader 校验 → App.handleFileSelect → useImageProcessor.processImage (src/App.tsx:196, src/hooks/useImageProcessor.ts:92)",
+    "cleanupSession 释放旧 ObjectURL/Worker → createImageBitmap 路径在 Worker 中解码 (src/hooks/useAppState.ts:89, src/workers/split.worker.js:75)",
+    "analyzeSplitPoints 得切割点；computeSliceBounds 有点按点、无点等分 (src/utils/splitAnalyzer.ts:250, src/workers/split.worker.js:228)",
+    "chunk 回传 → ObjectURL + 量尺寸 → ADD_IMAGE_SLICE 按 index 写入 (src/hooks/useImageProcessor.ts:30-58, src/hooks/useAppState.ts:47-60)",
+    "切片首次到达后路由跳 /split；用户多选后 exportToPDF/exportToZIP (src/App.tsx:122-136, src/App.tsx:224-248)"
+  ],
+  "cross_module_dependencies": [
+    "src/App.tsx:21 使用 shared-components 的 CopyrightInfo 作为页脚展示，不共享 imageSlices 状态",
+    "src/App.tsx 组装路径依赖 config/routing 语义（/upload|/split|/export），运行时路由实现在 src/hooks/useRouter.ts:15 与 src/router/index.ts:66",
+    "构建期 scripts/generate-seo-files.js:32 与 tools/build-scripts/* 生成/优化产物，不进入切割数据面"
+  ],
+  "key_design_decisions": [
+    "为什么用 Web Worker + OffscreenCanvas：长图解码与全图 getImageData 昂贵，移出主线程避免 UI 卡顿；代价是消息序列化与双端生命周期管理。",
+    "为什么内容感知是纯函数 splitAnalyzer：算法与 I/O 分离可单测；Worker 仅胶水。阈值需真实截图校准。",
+    "为什么 ADD_IMAGE_SLICE 按 index 写入：img.onload 异步到达顺序不稳，push 会乱序；按 index 对齐 worker 产出序。",
+    "为什么导出旁路：PDF/ZIP 只读 selectedSlices，失败不污染会话；空选择硬失败。",
+    "为什么 App.tsx 单文件编排：中等规模优先开发速度；代价是~700 行集中与变更热点。"
+  ],
+  "risk_areas": [
+    {
+      "category": "concurrency-ordering",
+      "evidence": "src/hooks/useAppState.ts:47",
+      "finding": "虽按 index 写入切片，objectUrls 仍 push 追加；若同一 index 重入或稀疏数组长度语义被 UI 误用，仍可能出现空洞。",
+      "impact": "预览/导出排序依赖 index 字段而非数组稠密性，UI 必须 filter 空槽。"
+    },
+    {
+      "category": "resource-lifecycle",
+      "evidence": "src/hooks/useAppState.ts:89",
+      "finding": "CLEANUP_SESSION 统一 revoke ObjectURL 并 terminate worker；useImageProcessor 每次处理先 cleanup。",
+      "impact": "降低泄漏风险，但 processImage 内 200ms 等待 worker 就绪属于脆弱时序。"
+    },
+    {
+      "category": "memory-peak",
+      "evidence": "src/workers/split.worker.js:116",
+      "finding": "全图 getImageData 注释标明 >4000px 分块为未来项；大图峰值内存高。",
+      "impact": "移动端/低内存设备可能 OOM；架构上性能上限取决于整图像素驻留。"
+    },
+    {
+      "category": "error-handling",
+      "evidence": "src/utils/pdfExporter.ts:63",
+      "finding": "无选中切片时 export 抛错；App 层先 alert 拦截。",
+      "impact": "用户错误路径明确，但单片失败 continue 可能导致静默缺页。"
+    }
+  ],
+  "semantic_reviews": [
+    {
+      "unit_id": "src/hooks/useAppState.ts:appStateReducer:export:d89ecb17c1ec",
+      "anchor": "src/hooks/useAppState.ts:33",
+      "judgment": "reducer 以 action 类型驱动会话；ADD_IMAGE_SLICE 按 index 写入以对抗异步 onload 乱序。",
+      "source_observation": "源码 span 显示 ADD_IMAGE_SLICE 使用 newImageSlices[action.payload.index]=payload，并在 CLEANUP_SESSION 中 revoke ObjectURL 与 terminate worker。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/workers/split.worker.js:processImage:export:44a80f1b34ef",
+      "anchor": "src/workers/split.worker.js:75",
+      "judgment": "Worker 主流程：createImageBitmap→OffscreenCanvas→内容感知分析→按边界切片 JPEG 回传。",
+      "source_observation": "processImage 在解码绘制后 getImageData 调用 analyzeSplitPoints，异常时 splitPoints=[] 再 computeSliceBounds 切片回传 chunk。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/utils/splitAnalyzer.ts:analyzeSplitPoints:export:8366e0f2e01d",
+      "anchor": "src/utils/splitAnalyzer.ts:250",
+      "judgment": "纯函数入口：行变化率→平滑→空白带→页高选点；空数组表示等分回退。",
+      "source_observation": "analyzeSplitPoints 串联 computeVariationProfile/smooth/findLowVariationBands/chooseSplitPoints；height<=targetHeight 直接返回 []。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/utils/pdfExporter.ts:exportToPDF:export:6bde35c3a482",
+      "anchor": "src/utils/pdfExporter.ts:208",
+      "judgment": "按 selectedIndices 排序切片并 jsPDF 分页嵌入，空选择硬失败防止空 PDF。",
+      "source_observation": "exportToPDF 快捷函数创建默认 PDFExporter 并转发 imageSlices/selectedIndices；类方法在无选中时 throw。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/hooks/useImageProcessor.ts:useImageProcessor:export:839c35fb2b6b",
+      "anchor": "src/hooks/useImageProcessor.ts:19",
+      "judgment": "编排 cleanup→解码原图→createWorker→startProcessing，并把 worker chunk 转 ObjectURL+尺寸后入状态。",
+      "source_observation": "processImage 先 cleanupSession 再 createWorker+startProcessing；onChunk 内 Image.onload 后 addImageSlice。",
+      "verdict": "supported"
+    }
+  ],
+  "source_evidence": [
+    "src/main.tsx:5",
+    "src/App.tsx:28",
+    "src/App.tsx:196",
+    "src/App.tsx:224",
+    "src/hooks/useAppState.ts:33",
+    "src/hooks/useAppState.ts:47",
+    "src/hooks/useAppState.ts:89",
+    "src/hooks/useImageProcessor.ts:19",
+    "src/hooks/useImageProcessor.ts:92",
+    "src/hooks/useWorker.ts:23",
+    "src/workers/split.worker.js:75",
+    "src/workers/split.worker.js:228",
+    "src/utils/splitAnalyzer.ts:250",
+    "src/utils/pdfExporter.ts:51",
+    "src/utils/zipExporter.ts:44",
+    "src/types/index.ts:3"
+  ],
+  "open_questions": [
+    "standard 基线启发式下全部 refs_status 为 partial/missing，跨文件调用图未达 deep 级完整验证。",
+    "App.tsx 超大编排是否应拆页面容器，尚无重构证据与性能对比。",
+    "内容感知阈值是否已用生产截图完成校准（注释称起始经验值）。"
+  ],
+  "narrative": "src 是本产品的业务主舞台。用户问题是「长截图在手机/网页里难分页分享」，系统选择纯前端完成上传→切→选→导出。状态上，useAppState 用 reducer 集中会话资源，并明确按 index 落库对抗异步乱序；资源释放集中在 CLEANUP_SESSION。计算上，useImageProcessor/useWorker 把重活丢进 module worker：解码、全图绘制、splitAnalyzer 内容感知、JPEG 切片回传。splitAnalyzer 坚持纯函数与安全回退——分析失败或无空白带时等分，保证不比基线差。导出是旁路：jsPDF/JSZip 只消费选中切片。App.tsx 作为唯一编排器串联路由守卫与 UI，换来速度也换来变更热点。shared-components/config/tools 在边界提供页脚、配置与构建能力，但不拥有 imageSlices。"
+}

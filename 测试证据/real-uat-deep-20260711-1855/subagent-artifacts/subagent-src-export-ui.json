@@ -1,0 +1,60 @@
+{
+  "subagent_id": "subagent-src-export-ui",
+  "scope": "upload UI + PDF/ZIP export + type contracts",
+  "mode": "deep",
+  "key_findings": [
+    {
+      "claim": "App handleFileSelect 调 processImage，路由跳转由切片到达驱动",
+      "anchor": "src/App.tsx:196"
+    },
+    {
+      "claim": "handleExport 要求 selectedSlices 非空，分别调用 exportToPDF/exportToZIP",
+      "anchor": "src/App.tsx:224"
+    },
+    {
+      "claim": "PDFExporter/ZIPExporter 对称过滤 selectedIndices 后序列化下载",
+      "anchor": "src/utils/pdfExporter.ts:51"
+    },
+    {
+      "claim": "ImageSlice 是状态/预览/导出共享契约",
+      "anchor": "src/types/index.ts:3"
+    }
+  ],
+  "analyzed_unit_samples": [
+    {
+      "unit_id": "src/utils/pdfExporter.ts:PDFExporter:datastruct:14b7ec96616f",
+      "anchor": "src/utils/pdfExporter.ts:37",
+      "judgment": "jsPDF 按选中切片 index 排序导出；一页一图、可配置边距/质量，旁路于切割主链。",
+      "file": "src/utils/pdfExporter.ts",
+      "symbol": "PDFExporter"
+    },
+    {
+      "unit_id": "src/utils/zipExporter.ts:ZIPExporter:datastruct:09a3d3c10842",
+      "anchor": "src/utils/zipExporter.ts:34",
+      "judgment": "JSZip 打包选中切片，支持命名格式与压缩级别，与 PDF 对称的旁路导出边界。",
+      "file": "src/utils/zipExporter.ts",
+      "symbol": "ZIPExporter"
+    },
+    {
+      "unit_id": "src/types/index.ts:ImageSlice:entrypoint:cd711cf68245",
+      "anchor": "src/types/index.ts:3",
+      "judgment": "切片契约 blob+url+index+尺寸，是状态、预览与导出共享的核心数据结构。",
+      "file": "src/types/index.ts",
+      "symbol": "ImageSlice"
+    }
+  ],
+  "risks": [
+    {
+      "category": "error-handling",
+      "evidence": "src/App.tsx:225",
+      "finding": "无选中用 alert，错误体验偏原始",
+      "impact": "生产可用性与无障碍不足"
+    },
+    {
+      "category": "resource-lifecycle",
+      "evidence": "src/hooks/useAppState.ts:89",
+      "finding": "CLEANUP 释放 URL/terminate worker，但导出进行中并发清理可能竞态",
+      "impact": "导出中清理会导致失败"
+    }
+  ]
+}
