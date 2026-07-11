@@ -77,3 +77,44 @@ allowed_to_synthesize: **false**
 ## 7. 并行说明（防误读）
 
 本轮没有多个子代理同时写 module-evidence。若未来完整通过，必须在 Plan 中出现 parallelism: active 与可追溯子代理产物。
+
+---
+
+## 8. 真 multi-agent 再跑一轮（standard-multiagent）
+
+### 8.1 目录
+
+`测试证据/v2.1/standard-multiagent/`（**新建**，不覆盖 `standard/` degraded 轮）
+
+### 8.2 并行启动（真实并发进程）
+
+```bash
+python3 /tmp/ma_worker_state.py &    # subagent-src-state
+python3 /tmp/ma_worker_export.py &   # subagent-src-export
+python3 /tmp/ma_worker_secondary.py & # subagent-secondary
+wait
+# 记录：launched pids 1951 1952 1953；exits 0 0 0
+```
+
+日志：
+
+- `standard-multiagent/logs/subagent-src-state.txt` → state wrote 66
+- `standard-multiagent/logs/subagent-src-export.txt` → export wrote 40
+- `standard-multiagent/logs/subagent-secondary.txt` → secondary wrote 32
+
+### 8.3 主 agent 融合
+
+- 合并 unit_id → `coverage-units.json`
+- 合成 `module-evidence/src.json`
+- 写 `report.md` + `main-agent-fusion.json`
+- `doctor` + `gate --mode standard`
+
+### 8.4 Gate 结果
+
+- parallelism-execution: **PASS**（active + 子代理分工/产物/融合文案满足 gate 正则）
+- parse-quality / reference-quality: **FAIL**
+- allowed_to_synthesize: **false** → 不写 ANALYSIS_REPORT
+
+### 8.5 验收文档
+
+见 `ACCEPTANCE_RESULT_MULTIAGENT.md`

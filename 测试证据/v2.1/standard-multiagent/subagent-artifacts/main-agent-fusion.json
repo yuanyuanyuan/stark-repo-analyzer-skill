@@ -1,0 +1,28 @@
+{
+  "fused_at": "2026-07-11T09:29:22.983763+00:00",
+  "parallelism": "active",
+  "agents": [
+    "subagent-src-state",
+    "subagent-src-export",
+    "subagent-secondary"
+  ],
+  "agent_unit_counts": {
+    "subagent-src-state": 66,
+    "subagent-src-export": 40,
+    "subagent-secondary": 32
+  },
+  "merged_unique_units": 128,
+  "elapsed_ms_agents": {
+    "subagent-src-state": 5,
+    "subagent-src-export": 6,
+    "subagent-secondary": 5
+  },
+  "merge_policy": "unit_id unique; prefer state > export > secondary on conflict",
+  "main_agent_steps": [
+    "validate subagent artifacts exist",
+    "merge units into coverage-units.json",
+    "compose module-evidence/src.json",
+    "write report.md",
+    "run gate"
+  ]
+}

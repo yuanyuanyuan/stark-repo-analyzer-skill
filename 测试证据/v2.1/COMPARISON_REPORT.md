@@ -17,3 +17,11 @@
 
 v2.1 证明：**可以在当前工具链下重跑 standard 工件链并留下可审计人工分析**；  
 仍不能证明 multi-agent 完整通过，也不能在 parse/refs 不达标时合成最终 ANALYSIS_REPORT。
+
+## multi-agent 轮补充
+
+新增目录 `standard-multiagent/`：
+
+- 证明 **parallelism: active** 可被 gate 接受
+- 不证明 parse/reference 质量达标
+- 与 `standard/` degraded 轮并存，便于 diff 验收口径
