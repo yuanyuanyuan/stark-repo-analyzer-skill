@@ -25,3 +25,8 @@
 - 现象：仅写「35 pass」不够；review 需要命令、全量日志、UAT 锚点、真实工件 gate 表。
 - 做法：在 `测试证据/v2.0/pr-evidence/` 落 VERIFICATION_REPORT + full txt 日志 + uat-checklist + gate-recheck-summary，并更新 PR body 深链。
 - 注意：`*.log` 被 gitignore；证据日志用 `.full.txt`。
+
+## 2026-07-11 · UAT 报告纠错
+
+- 用户反馈：UAT 重跑报告不对；且易把 `standard/deep/ANALYSIS_REPORT.md` 当成 UAT。
+- 纠正：本轮 UAT 是 docs-only 核对，不是 ANALYSIS 重跑；正式报告定为 `测试证据/v2.0/pr-evidence/UAT_REPORT.md`，并在 PR body 置顶纠错表。
