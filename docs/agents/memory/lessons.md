@@ -36,3 +36,9 @@
 - 用户纠正：同会话 docs-only / 手写 report / 同会话 multiagent 实验 ≠ 完整 UAT。
 - 正确 UAT：单独 `codex exec "严格执行 …/skills/repo-analyzer/SKILL.md 分析 $REPO ，输出报告到 …/测试证据/v2.1-human"`。
 - 规则已落盘 `docs/specs/v2.1-codex-exec-uat.md`，并在 `AGENTS.md` 引用。
+
+## 2026-07-11 · 正式命名：真实UAT回归测试
+
+- 用户指定：独立 `codex exec` 严格执行 skill 的测试正式名称是「真实UAT回归测试」。
+- 规则文件与 AGENTS 节标题/正文已标记该正式名称；PR/报告勿再只写含糊「UAT」。
+

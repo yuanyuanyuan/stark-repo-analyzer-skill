@@ -1,5 +1,5 @@
-> **规则提醒**：完整 UAT 定义见 `docs/specs/v2.1-codex-exec-uat.md`（须独立 `codex exec`）。  
-> 本文件若未附可复核的 `codex exec` 命令与 `UAT_EXEC_SUMMARY.md`，则**不算**该规则下的 UAT 通过。详见 `UAT_STATUS.md`。
+> **规则提醒**：「真实UAT回归测试」定义见 `docs/specs/v2.1-codex-exec-uat.md`（须独立 `codex exec`）。  
+> 本文件若未附可复核的 `codex exec` 命令与 `UAT_EXEC_SUMMARY.md`，则**不算**真实UAT回归测试通过。详见 `UAT_STATUS.md`。
 
 # v2.1-human 验收结果
 

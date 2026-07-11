@@ -1,11 +1,13 @@
 # 测试证据 v2.1-human
 
-本目录是 **独立 `codex exec` 严格执行 skill** 的 UAT 落盘位置（规则 SSOT 见下）。
+> 正式测试名：**真实UAT回归测试**
+
+本目录是 **真实UAT回归测试**（独立 `codex exec` 严格执行 skill）的默认落盘位置（规则 SSOT 见下）。
 
 ## 规则（必读）
 
 - 仓库规则：[`docs/specs/v2.1-codex-exec-uat.md`](../../docs/specs/v2.1-codex-exec-uat.md)
-- 入口引用：根目录 [`AGENTS.md`](../../AGENTS.md) →「UAT / codex exec」
+- 入口引用：根目录 [`AGENTS.md`](../../AGENTS.md) →「真实UAT回归测试」
 - 多子代理口径：[`docs/specs/v2.0-multi-agent-acceptance.md`](../../docs/specs/v2.0-multi-agent-acceptance.md)
 
 ## 标准命令

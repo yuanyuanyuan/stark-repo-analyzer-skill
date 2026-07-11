@@ -1,7 +1,8 @@
-# v2.1-human · UAT 状态（对照规则）
+# v2.1-human · 真实UAT回归测试状态（对照规则）
 
+正式名称：**真实UAT回归测试**  
 规则：`docs/specs/v2.1-codex-exec-uat.md`  
-AGENTS 引用：根目录 `AGENTS.md` →「UAT / codex exec」
+AGENTS 引用：根目录 `AGENTS.md` →「真实UAT回归测试」
 
 ## 当前结论
 
@@ -9,7 +10,7 @@ AGENTS 引用：根目录 `AGENTS.md` →「UAT / codex exec」
 |---|---|
 | 目录与工件是否存在 | 是（doctor/units/plan/matrix/report/gate 等） |
 | 是否已证明来自**独立** `codex exec` | **未证明**（`RUN_LOG` 写的是同环境主 agent 串行，未见独立 `codex exec` 命令与会话 ID） |
-| 是否计入规则定义的 UAT 通过 | **否** — 须补跑下方命令，或补全可复核的 exec 证据后改判 |
+| 是否计入「真实UAT回归测试」通过 | **否** — 须补跑下方命令，或补全可复核的 exec 证据后改判 |
 | 产品 gate 完整通过 | 否（见已有 `quality-gate-report.json` / `ACCEPTANCE_RESULT.md`） |
 
 ## 必须补跑（用户指定形态）
@@ -28,4 +29,4 @@ exec 结束后应新增或更新：
 
 ## 已有工件的用途
 
-在独立 exec 补齐前，目录内工件仅可作为 **预跑/对照样例**，**不得**在 PR 中写「v2.1-human UAT 已按 codex exec 规则通过」。
+在独立 exec 补齐前，目录内工件仅可作为 **预跑/对照样例**，**不得**在 PR 中写「真实UAT回归测试已通过」。
