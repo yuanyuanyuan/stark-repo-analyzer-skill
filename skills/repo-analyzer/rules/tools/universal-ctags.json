@@ -1,0 +1,9 @@
+{
+  "tool_name": "universal-ctags",
+  "capability": ["symbol-enumeration", "reference-edges"],
+  "mode_usage": { "standard": "forbidden", "deep": "supplemental_symbols" },
+  "class": "enhanced",
+  "official_source_url": "https://docs.ctags.io/",
+  "verified_date": "2026-07-11",
+  "fallback_or_rejection": "standard 必须忽略；deep 在 Graphify 已满足能力时可不必装；否则作符号/引用补充"
+}

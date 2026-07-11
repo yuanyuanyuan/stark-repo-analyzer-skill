@@ -1,0 +1,134 @@
+{
+  "module": "src",
+  "module_role": "产品运行时核心：集中会话状态、下沉内容感知切图计算、旁路 PDF/ZIP 导出，并粘合上传/预览/导航/SEO/移动优化 UI。",
+  "entry_points": [
+    "src/main.tsx:5",
+    "src/App.tsx:28",
+    "src/App.tsx:196",
+    "src/hooks/useImageProcessor.ts:92",
+    "src/workers/split.worker.js:20"
+  ],
+  "core_data_structures": [
+    "ImageSlice(blob,url,index,width,height) — 预览与导出共享切片契约 (src/types/index.ts:3)",
+    "AppState — worker/blobs/objectUrls/imageSlices/selectedSlices/splitHeight 会话资源与标志 (src/types/index.ts:11)",
+    "WorkerMessage — progress/chunk/done/error 通信契约 (src/types/index.ts:44)",
+    "SplitOptions/Band — 内容感知参数与空白带 (src/utils/splitAnalyzer.ts:17,30)"
+  ],
+  "main_flow": [
+    "1. main 挂载 App；AppContent 组装 useAppState + useImageProcessor (src/main.tsx:5, src/App.tsx:28-36)",
+    "2. 用户选文件 → handleFileSelect → processImage：cleanupSession、setProcessing、加载原图 (src/App.tsx:196, src/hooks/useImageProcessor.ts:92-110)",
+    "3. createWorker(module) 加载 split.worker.js；startProcessing postMessage({file,splitHeight}) (src/hooks/useWorker.ts:42,133)",
+    "4. Worker：createImageBitmap→OffscreenCanvas→analyzeSplitPoints→computeSliceBounds→JPEG chunk (src/workers/split.worker.js:75-180)",
+    "5. 主线程 handleChunk：addBlob + ObjectURL + img.onload 后 addImageSlice(按 index) (src/hooks/useImageProcessor.ts:30-58, src/hooks/useAppState.ts:47-55)",
+    "6. 用户多选切片 → handleExport → exportToPDF/exportToZIP (src/App.tsx:224-255, pdfExporter.ts:51, zipExporter.ts:44)"
+  ],
+  "cross_module_dependencies": [
+    "src → shared-components：App 引用 CopyrightInfo（UI 外壳，非会话）",
+    "src → config：运行时/构建常量候选（部署与文件类型限制等）",
+    "src/workers → src/utils/splitAnalyzer：Graphify EXTRACTED imports_from；算法纯函数被 worker 调用",
+    "src → tools/scripts：构建后 SEO 文件生成与工程优化，不在热路径",
+    "注意：coverage refs_status 对 core 单元均为 partial/missing（ctags TS/JS 无 reference roles）；跨模块边以 Graphify+读码为准，不得宣称为 complete reference 验证"
+  ],
+  "key_design_decisions": [
+    "状态集中 vs 分散组件 state：用 reducer 统一生命周期，代价是 App 与 hooks 耦合面变大",
+    "计算下沉 Worker + 算法纯函数：保 UI 流畅与可测性；代价是 message 契约与 module worker 打包约束",
+    "内容感知优先、等分回退：保证失败不劣化；代价是双路径理解成本与参数校准负担",
+    "导出旁路（jspdf/jszip）：快速交付多格式；代价是与预览选择状态紧耦合、错误 UX 弱",
+    "扁平化单仓：降低多包协调；代价是 SEO/移动/调试面板与核心切图同仓膨胀，模块边界靠约定"
+  ],
+  "risk_areas": [
+    {
+      "category": "error-handling",
+      "evidence": "src/workers/split.worker.js:125",
+      "finding": "内容分析异常被吞并回退等分，用户可能无感知从 content-aware 退化为 equal-split",
+      "impact": "功能正确性看似成功，实际切点质量下降，难以观测"
+    },
+    {
+      "category": "concurrency",
+      "evidence": "src/hooks/useAppState.ts:47",
+      "finding": "按 index 写入修复 onload 乱序，但稀疏数组空洞若未统一过滤会影响 map/导出",
+      "impact": "边缘时序下预览计数与导出集合不一致"
+    },
+    {
+      "category": "performance",
+      "evidence": "src/workers/split.worker.js:112",
+      "finding": "全图 getImageData；注释承认 >4000px 分块为未来项",
+      "impact": "高分辨率长截图内存峰值风险"
+    },
+    {
+      "category": "resource-lifecycle",
+      "evidence": "src/hooks/useAppState.ts:89",
+      "finding": "CLEANUP_SESSION 释放 URL 并 terminate worker，与进行中导出/处理的并发策略不完整",
+      "impact": "快速重传或导航时可能中断进行中任务"
+    },
+    {
+      "category": "parameter-risk",
+      "evidence": "src/utils/splitAnalyzer.ts:50",
+      "finding": "DEFAULT_SPLIT_OPTIONS 标明起始经验值必须用真实长截图校准",
+      "impact": "开箱切点质量依赖内容分布，跨场景不稳"
+    },
+    {
+      "category": "reference-integrity",
+      "evidence": "src/hooks/useAppState.ts:122",
+      "finding": "deep 分母由 ctags 枚举但 TS/JS 无 complete reference roles，core refs 全为 partial/missing；跨模块边依赖 Graphify EXTRACTED 与人工读码。",
+      "impact": "质量门 reference-quality 在 deep 阈值(≤80% incomplete)下预期失败；分析结论依赖 Graphify 与人工锚点"
+    }
+  ],
+  "semantic_reviews": [
+    {
+      "unit_id": "src/hooks/useAppState.ts:useAppState:export:675d300b2269",
+      "anchor": "src/hooks/useAppState.ts:122",
+      "judgment": "会话状态中枢：useReducer 聚合 worker/blobs/imageSlices/selectedSlices，并把 splitHeight/fileName 防抖持久化，切割会话与 UI 偏好解耦。",
+      "source_observation": "源码显示 useAppState 通过 useReducer(appStateReducer) 暴露 state/actions，并对 splitHeight/fileName 做 debouncedSave；会话大对象不持久化。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/utils/splitAnalyzer.ts:analyzeSplitPoints:export:864b0394d827",
+      "anchor": "src/utils/splitAnalyzer.ts:250",
+      "judgment": "纯函数入口：行变化率→平滑→低变化带→页高驱动选点；算法与 I/O 分离可单测。",
+      "source_observation": "源码显示 analyzeSplitPoints 串联 computeVariationProfile→smooth→findLowVariationBands→chooseSplitPoints，短图直接返回空数组触发等分回退。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/workers/split.worker.js:processImage:export:30217a770fc2",
+      "anchor": "src/workers/split.worker.js:75",
+      "judgment": "Worker 主流程：createImageBitmap 解码→OffscreenCanvas→analyzeSplitPoints→computeSliceBounds→JPEG chunk 回流。",
+      "source_observation": "源码显示 processImage 解码后 getImageData 调 analyzeSplitPoints，分析异常 catch 后 splitPoints=[]，再 computeSliceBounds 切片并 postMessage chunk/done。",
+      "verdict": "supported"
+    }
+  ],
+  "source_evidence": [
+    "src/main.tsx:5",
+    "src/App.tsx:28",
+    "src/App.tsx:196",
+    "src/App.tsx:224",
+    "src/hooks/useAppState.ts:14",
+    "src/hooks/useAppState.ts:33",
+    "src/hooks/useAppState.ts:47",
+    "src/hooks/useAppState.ts:89",
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useImageProcessor.ts:19",
+    "src/hooks/useImageProcessor.ts:30",
+    "src/hooks/useImageProcessor.ts:92",
+    "src/hooks/useWorker.ts:23",
+    "src/hooks/useWorker.ts:42",
+    "src/hooks/useWorker.ts:133",
+    "src/workers/split.worker.js:20",
+    "src/workers/split.worker.js:75",
+    "src/workers/split.worker.js:117",
+    "src/workers/split.worker.js:228",
+    "src/utils/splitAnalyzer.ts:50",
+    "src/utils/splitAnalyzer.ts:88",
+    "src/utils/splitAnalyzer.ts:250",
+    "src/utils/pdfExporter.ts:37",
+    "src/utils/zipExporter.ts:34",
+    "src/types/index.ts:3"
+  ],
+  "open_questions": [
+    "内容感知默认参数是否已在真实语料上完成校准并回填？",
+    "imageSlices 稀疏数组在 UI 层是否始终 filter Boolean？",
+    "导出进行中是否应锁定 cleanup/navigation？",
+    "Graphify 最短路径对 hook 符号别名的歧义如何系统消解？"
+  ],
+  "narrative": "src 模块把长截图产品拆成三条清晰约束：会话资源必须可清理（useAppState），像素计算必须离开主线程且算法可测（worker + splitAnalyzer），导出必须基于显式多选而非隐式全量（PDF/ZIP）。这一组合让主路径在浏览器内闭环，同时把 SEO/移动/工程脚本留在旁路；代价是同仓复杂度上升，以及 deep 工具链在 TS/JS 引用完整性上的机械短板需要 Graphify 与人工复核补齐。"
+}

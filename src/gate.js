@@ -56,10 +56,6 @@ function parallelismExecutionCheck(out, mode) {
   const degraded = /parallelism\s*:\s*degraded/i.test(content);
   const active = /parallelism\s*:\s*active/i.test(content);
 
-  if (mode === "quick") {
-    return check("parallelism-execution", true, [], evidence);
-  }
-
   const requirements = [
     ["实际子代理分工", /子代理分工|subagent[-_\w]*\s+(负责|scope|产出|write)/i],
     ["每个子代理产物", /产物|artifact|module-evidence/i],
@@ -226,18 +222,20 @@ function parseQualityCheck(coverage, map) {
   };
 }
 
-function referenceQualityCheck(coverage) {
+function referenceQualityCheck(coverage, mode = "standard") {
   const coreModules = new Set(coverage.modules.filter((module) => module.classification === "core").map((module) => module.name));
   const coreUnits = coverage.units.filter((unit) => coreModules.has(unit.module));
   const incomplete = coreUnits.filter((unit) => ["partial", "missing"].includes(unit.refs_status));
   const incompleteRate = coreUnits.length === 0 ? 0 : incomplete.length / coreUnits.length;
   const reasons = [];
-  if (incompleteRate > QUALITY_THRESHOLDS.maxCoreIncompleteReferenceRate) {
-    reasons.push(`core 单元 refs_status 为 partial/missing 的占比 ${(incompleteRate * 100).toFixed(2)}% 超过阈值 ${(QUALITY_THRESHOLDS.maxCoreIncompleteReferenceRate * 100).toFixed(0)}%。`);
+  // standard 基线/启发式引用天然 partial/missing；披露即可，不做 deep 级引用完整率硬阈值。
+  const maxRate = mode === "deep" ? QUALITY_THRESHOLDS.maxCoreIncompleteReferenceRate : 1;
+  if (incompleteRate > maxRate) {
+    reasons.push(`core 单元 refs_status 为 partial/missing 的占比 ${(incompleteRate * 100).toFixed(2)}% 超过阈值 ${(maxRate * 100).toFixed(0)}%。`);
   }
   return {
     ...check("reference-quality", reasons.length === 0, reasons, incomplete.map((unit) => unit.id)),
-    threshold: { max_core_incomplete_reference_rate: QUALITY_THRESHOLDS.maxCoreIncompleteReferenceRate },
+    threshold: { max_core_incomplete_reference_rate: maxRate, mode },
     core_units: coreUnits.length,
     incomplete_units: incomplete.length,
     incomplete_rate: incompleteRate,
@@ -411,10 +409,6 @@ function semanticReviewContext(coverage, matrices) {
 }
 
 function semanticThreshold(mode, module, analyzedCoreUnits) {
-  if (mode === "quick") {
-    const denominator = analyzedCoreUnits.length;
-    return { scope: "global", required: Math.min(2, denominator), max: Math.min(3, denominator), denominator };
-  }
   const moduleAnalyzed = analyzedCoreUnits.filter((unit) => unit.module === module.name).length;
   if (mode === "deep") {
     const required = Math.min(3, moduleAnalyzed);
@@ -435,9 +429,7 @@ function semanticSourceReviewCheck(coverage, matrices, mode) {
     const reviews = matrix?.value.semantic_reviews;
     const threshold = semanticThreshold(mode, module, analyzedCoreUnits);
     const moduleAnalyzed = analyzedCoreUnits.filter((unit) => unit.module === module.name).length;
-    const moduleSummary = mode === "quick"
-      ? { module: module.name, scope: "global-contributor", required: null, max: null, denominator: moduleAnalyzed, valid: 0, units: [] }
-      : { module: module.name, scope: "per-core-module", required: threshold.required, max: threshold.max, denominator: threshold.denominator, valid: 0, units: [] };
+    const moduleSummary = { module: module.name, scope: "per-core-module", required: threshold.required, max: threshold.max, denominator: threshold.denominator, valid: 0, units: [] };
     modules.push(moduleSummary);
 
     if (!matrix) {
@@ -446,11 +438,11 @@ function semanticSourceReviewCheck(coverage, matrices, mode) {
     }
     evidence.push(matrix.path);
     if (!Array.isArray(reviews)) {
-      if (mode !== "quick") reasons.push(`${module.name}.semantic_reviews 必须是数组。`);
+      reasons.push(`${module.name}.semantic_reviews 必须是数组。`);
       continue;
     }
     if (reviews.length === 0) {
-      if (mode !== "quick") reasons.push(`${module.name} 缺少 ${mode} 模式要求的 semantic review。`);
+      reasons.push(`${module.name} 缺少 ${mode} 模式要求的 semantic review。`);
       continue;
     }
 
@@ -492,7 +484,7 @@ function semanticSourceReviewCheck(coverage, matrices, mode) {
       }
     }
 
-    if (mode !== "quick" && moduleSummary.valid < moduleSummary.required) {
+    if (moduleSummary.valid < moduleSummary.required) {
       reasons.push(`${module.name} ${mode} 模式有效 semantic review ${moduleSummary.valid}/${moduleSummary.required}，未达到阈值。`);
     }
     if (mode === "deep" && moduleSummary.max != null && moduleSummary.valid > moduleSummary.max) {
@@ -500,19 +492,9 @@ function semanticSourceReviewCheck(coverage, matrices, mode) {
     }
   }
 
-  const globalThreshold = semanticThreshold("quick", null, analyzedCoreUnits);
-  if (mode === "quick" && globalReviewed.size < globalThreshold.required) {
-    reasons.push(`quick 模式全局有效 semantic review ${globalReviewed.size}/${globalThreshold.required}，未达到阈值。`);
-  }
-  if (mode === "quick" && globalReviewed.size > globalThreshold.max) {
-    reasons.push(`quick 模式全局有效 semantic review ${globalReviewed.size}/${globalThreshold.max}，超过抽查预算。`);
-  }
-
   return {
     ...check("semantic-source-review", reasons.length === 0, reasons, evidence),
-    threshold: mode === "quick"
-      ? { mode, scope: "global", min: globalThreshold.required, max: globalThreshold.max, denominator: globalThreshold.denominator }
-      : { mode, scope: "per-core-module", per_core_module: mode === "deep" ? "min(3, analyzed units)" : 1 },
+    threshold: { mode, scope: "per-core-module", per_core_module: mode === "deep" ? "min(3, analyzed units)" : 1 },
     modules,
     global: { valid: globalReviewed.size, units: [...globalReviewed] },
   };
@@ -531,7 +513,7 @@ export function gate({ out, mode }) {
     reportDraftCheck(out),
     classificationCheck(coverage),
     parseQualityCheck(coverage, map),
-    referenceQualityCheck(coverage),
+    referenceQualityCheck(coverage, mode),
     matrixCheck(coverage, matrices),
     moduleCoverage(coverage, budget),
     unsupportedCheck(coverage, reportContent),
@@ -543,6 +525,8 @@ export function gate({ out, mode }) {
   const result = {
     schema_version: 1,
     mode,
+    rules_version: budget.rules_version ?? null,
+    tooling_level: budget.tooling_level ?? (mode === "deep" ? "enhanced" : "baseline"),
     budget,
     checks,
     allowed_to_synthesize: checks.every((item) => item.status === "pass"),

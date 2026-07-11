@@ -59,3 +59,16 @@
 - Gate：`allowed_to_synthesize: false`（parse-quality / reference-quality / parallelism degraded）——**不得**伪造成品 ANALYSIS_REPORT；补读未抬高 parse_rate
 - Next LOOP：Done（除非 review 要求改 gate 粒度）
 
+## 2026-07-11 · ticket 11 · standard/deep + rules
+
+- 现象：旧 doctor 把 symbol-enumerator 当全局 required，与 standard 可移植冲突；quick 与 deep bundle 语义混杂。
+- 正确做法：rules 为 SSOT；doctor 输出 capability matrix；standard 启发式 units；deep 能力门禁 fail-closed；gate 的 reference-quality 在 standard 放宽。
+- 误伤点：gate 二次 requireDoctor(deep) 会让 deep 预算测试无法在无 Graphify fixture 上跑——gate 只校验工件语义。
+- 分支：用户覆写不建 feat/11，在 yuanyuanyuan/spec-v2.2-standard-deep-modes-and-rules-based-to 交付。
+
+## 2026-07-11 · Loop · PR #18 / doctor 引用边探针
+
+- PR: https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/pull/18（正式）
+- 后续：doctor 增加 reference-edge-usability 探针，ctags 无 roles=reference 且 Graphify 未接线时拦截 deep，避免 reference-quality 后期浪费 token。
+- 真实UAT：`测试证据/real-uat-standard-20260711-1855` 产品通过；`测试证据/real-uat-deep-20260711-1855` 过程有效、gate 因 reference-quality 未过（合规无 ANALYSIS_REPORT）。
+- Next LOOP：Done（除非 review 要求 Graphify→refs_status 接线）。

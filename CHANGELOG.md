@@ -1,5 +1,13 @@
 # 变更日志
 
+## 2.2.0
+
+- 分析模式收敛为 **standard（默认）** 与 **deep**；移除 quick。
+- 引入可分发 **local rules**（`skills/repo-analyzer/rules/`）作为工具/模式执行策略 SSOT，含官方源与 verified date。
+- doctor 输出 **capability matrix** 与 **AI installation prompt**；deep 按 graph-queries / symbol-enumeration / reference-edges 门禁，缺能力拒绝且不降级。
+- standard 仅用基线工具，忽略 Graphify/Ctags/ast-grep；启发式符号/引用须披露。
+- 报告与 gate 工件增加 mode / rules_version / tooling_level 元数据。
+
 ## 2.0.0
 
 Breaking release：Repo Analyzer 从文档型 v1 工作流升级为 Evidence-First v2。

@@ -1,0 +1,81 @@
+{
+  "agent_id": "subagent-src-export",
+  "scope": "上传 UI + PDF/ZIP 导出边界",
+  "mode": "standard",
+  "parallelism": "active",
+  "unit_count": 9,
+  "findings": [
+    {
+      "unit_id": "src/components/ExportControls.tsx:ExportControls:export:c8de48436580",
+      "anchor": "src/components/ExportControls.tsx:43",
+      "judgment": "PDF/ZIP 格式与选项 UI，委托 onExport，本身不持有会话切片。",
+      "file": "src/components/ExportControls.tsx",
+      "symbol": "ExportControls",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/FileUploader.tsx:FileUploader:export:406f1def1637",
+      "anchor": "src/components/FileUploader.tsx:22",
+      "judgment": "校验类型与大小后回调 onFileSelect，作为主链上传边界。",
+      "file": "src/components/FileUploader.tsx",
+      "symbol": "FileUploader",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/ImagePreview.tsx:ImagePreview:export:a92dc37d9798",
+      "anchor": "src/components/ImagePreview.tsx:31",
+      "judgment": "预览/选择切片的 UI 边界，驱动 selectedSlices 但不执行切割。",
+      "file": "src/components/ImagePreview.tsx",
+      "symbol": "ImagePreview",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/ImagePreviewWrapper.tsx:ImagePreviewWrapper:export:6a8c78456194",
+      "anchor": "src/components/ImagePreviewWrapper.tsx:25",
+      "judgment": "预览/选择切片的 UI 边界，驱动 selectedSlices 但不执行切割。",
+      "file": "src/components/ImagePreviewWrapper.tsx",
+      "symbol": "ImagePreviewWrapper",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/components/ScreenshotSplitter.tsx:ScreenshotSplitter:export:29c105fee915",
+      "anchor": "src/components/ScreenshotSplitter.tsx:25",
+      "judgment": "预览/选择切片的 UI 边界，驱动 selectedSlices 但不执行切割。",
+      "file": "src/components/ScreenshotSplitter.tsx",
+      "symbol": "ScreenshotSplitter",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/pdfExporter.ts:createPDFExporter:export:af021170b699",
+      "anchor": "src/utils/pdfExporter.ts:201",
+      "judgment": "按 selectedIndices 排序切片并 jsPDF 分页嵌入，空选择硬失败防止空 PDF。",
+      "file": "src/utils/pdfExporter.ts",
+      "symbol": "createPDFExporter",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/pdfExporter.ts:exportToPDF:export:6bde35c3a482",
+      "anchor": "src/utils/pdfExporter.ts:208",
+      "judgment": "按 selectedIndices 排序切片并 jsPDF 分页嵌入，空选择硬失败防止空 PDF。",
+      "file": "src/utils/pdfExporter.ts",
+      "symbol": "exportToPDF",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/zipExporter.ts:createZIPExporter:export:8c51652f9509",
+      "anchor": "src/utils/zipExporter.ts:213",
+      "judgment": "JSZip 打包选中切片并触发下载，导出旁路不改会话状态。",
+      "file": "src/utils/zipExporter.ts",
+      "symbol": "createZIPExporter",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "src/utils/zipExporter.ts:exportToZIP:export:13402390cede",
+      "anchor": "src/utils/zipExporter.ts:217",
+      "judgment": "JSZip 打包选中切片并触发下载，导出旁路不改会话状态。",
+      "file": "src/utils/zipExporter.ts",
+      "symbol": "exportToZIP",
+      "refs_status": "partial"
+    }
+  ]
+}

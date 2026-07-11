@@ -1,0 +1,9 @@
+{
+  "tool_name": "ast-grep",
+  "capability": ["symbol-enumeration"],
+  "mode_usage": { "standard": "forbidden", "deep": "supplemental_ast_search" },
+  "class": "enhanced",
+  "official_source_url": "https://ast-grep.github.io/",
+  "verified_date": "2026-07-11",
+  "fallback_or_rejection": "standard 必须忽略；deep 补充 AST 结构搜索/符号；不能单独满足 reference-edges"
+}

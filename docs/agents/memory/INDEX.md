@@ -6,11 +6,12 @@
 
 ## 最近一条
 
-- 2026-07-11 ticket 16 / feat/16：core unparsed 强制 Unparsed File Read Pass（A+B+C）
+- 2026-07-11 ticket 11：doctor reference-edge 探针 + standard/deep 真实UAT；ticket 16 unparsed 补读已合入 main
 
 ## 索引
 
 | 日期 | 主题 | 关联票 | 路径 |
 |------|------|--------|------|
+| 2026-07-11 | doctor 引用边探针与 standard/deep UAT | 11 | lessons.md |
 | 2026-07-11 | unparsed 强制补读 pass（rg/find/wc） | 16 | lessons.md |
 | 2026-07-11 | degraded 验收与 README/spec 对齐 | 12 | lessons.md |

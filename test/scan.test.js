@@ -8,7 +8,12 @@ import { cli, createFixture } from "./helpers.js";
 function passDoctor(fixture) {
   const result = cli("doctor", {
     ...fixture,
-    env: { REPO_ANALYZER_CTAGS: fixture.ctags, REPO_ANALYZER_AST_GREP: "/missing/ast-grep" },
+    env: {
+      REPO_ANALYZER_CTAGS: "/missing/ctags",
+      REPO_ANALYZER_AST_GREP: "/missing/ast-grep",
+      REPO_ANALYZER_GRAPHIFY: "/missing/graphify",
+    },
+    options: { mode: "standard" },
   });
   assert.equal(result.status, 0);
 }

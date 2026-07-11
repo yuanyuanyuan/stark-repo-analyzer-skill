@@ -1,0 +1,710 @@
+{
+  "schema_version": 2,
+  "repo": "/tmp/Long_screenshot_splitting_tool",
+  "output": "/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-20260711-1855",
+  "rules_version": "2.2.0",
+  "mode": "deep",
+  "tooling_level": "enhanced",
+  "allowed": true,
+  "allowed_standard": true,
+  "allowed_deep": true,
+  "enumerator": {
+    "name": "universal-ctags",
+    "command": "ctags",
+    "version": "Universal Ctags 6.2.1, Copyright (C) 2015-2025 Universal Ctags Team",
+    "languages": [
+      "Abaqus",
+      "Abc",
+      "Ada",
+      "AnsiblePlaybook",
+      "Ant",
+      "Asciidoc",
+      "Asm",
+      "Asp",
+      "Autoconf",
+      "AutoIt",
+      "Automake",
+      "Awk",
+      "Basic",
+      "Bats",
+      "BETA",
+      "BibLaTeX",
+      "BibTeX",
+      "C",
+      "C#",
+      "C++",
+      "Cargo [disabled]",
+      "Clojure",
+      "CMake",
+      "Cobol",
+      "CobolFree",
+      "CobolVariable",
+      "CPreProcessor",
+      "CSS",
+      "Ctags",
+      "CUDA",
+      "D",
+      "DBusIntrospect",
+      "Diff",
+      "DosBatch",
+      "DTD",
+      "DTS",
+      "Eiffel",
+      "Elixir",
+      "Elm",
+      "EmacsLisp",
+      "Erlang",
+      "Falcon",
+      "Flex",
+      "Forth",
+      "Fortran",
+      "FrontMatter",
+      "FunctionParameters",
+      "Fypp",
+      "Gdbinit",
+      "GDScript",
+      "GemSpec",
+      "Glade",
+      "Go",
+      "GPerf",
+      "Haskell",
+      "Haxe",
+      "HTML",
+      "I18nRubyGem",
+      "Iniconf",
+      "Inko",
+      "IPythonCell",
+      "ITcl",
+      "Java",
+      "JavaProperties",
+      "JavaScript",
+      "JNI",
+      "JSON",
+      "Julia",
+      "Kconfig",
+      "Kotlin",
+      "LdScript",
+      "LEX",
+      "Lisp",
+      "LiterateHaskell",
+      "Lua",
+      "M4",
+      "Make",
+      "Man",
+      "Markdown",
+      "MatLab",
+      "Maven2",
+      "Meson",
+      "MesonOptions",
+      "Moose",
+      "Myrddin",
+      "NSIS",
+      "ObjectiveC",
+      "OCaml",
+      "OpenAPI",
+      "Org",
+      "Pascal",
+      "Passwd",
+      "Perl",
+      "Perl6",
+      "PHP",
+      "PkgConfig",
+      "PlistXML",
+      "Pod",
+      "PowerShell",
+      "Protobuf",
+      "PuppetManifest",
+      "Python",
+      "PythonEntryPoints",
+      "PythonLoggingConfig",
+      "QemuHX",
+      "QtMoc",
+      "Quarto",
+      "R",
+      "R6Class",
+      "Rake",
+      "Raku",
+      "RDoc",
+      "RelaxNG",
+      "ReStructuredText",
+      "REXX",
+      "RMarkdown",
+      "Robot",
+      "RpmMacros",
+      "RpmSpec",
+      "RSpec",
+      "Ruby",
+      "Rust",
+      "S4Class",
+      "Scdoc",
+      "Scheme",
+      "SCSS",
+      "SELinuxInterface",
+      "SELinuxTypeEnforcement",
+      "Sh",
+      "SLang",
+      "SML",
+      "SQL",
+      "SVG",
+      "SystemdUnit",
+      "SystemTap",
+      "SystemVerilog",
+      "Tcl",
+      "TclOO",
+      "Terraform",
+      "TerraformVariables",
+      "Tex",
+      "TeXBeamer",
+      "Thrift",
+      "TOML [disabled]",
+      "TTCN",
+      "Txt2tags",
+      "TypeScript",
+      "TypeSpec",
+      "Unknown [disabled]",
+      "V",
+      "Varlink",
+      "Vera",
+      "Verilog",
+      "VHDL",
+      "Vim",
+      "WindRes",
+      "XML",
+      "XRC",
+      "XSLT",
+      "YACC",
+      "Yaml",
+      "YumRepo",
+      "Zephir",
+      "Zsh"
+    ],
+    "source": "supplemental_symbols",
+    "graph_provider": "graphify"
+  },
+  "deep_enumerator": {
+    "name": "universal-ctags",
+    "command": "ctags",
+    "version": "Universal Ctags 6.2.1, Copyright (C) 2015-2025 Universal Ctags Team",
+    "languages": [
+      "Abaqus",
+      "Abc",
+      "Ada",
+      "AnsiblePlaybook",
+      "Ant",
+      "Asciidoc",
+      "Asm",
+      "Asp",
+      "Autoconf",
+      "AutoIt",
+      "Automake",
+      "Awk",
+      "Basic",
+      "Bats",
+      "BETA",
+      "BibLaTeX",
+      "BibTeX",
+      "C",
+      "C#",
+      "C++",
+      "Cargo [disabled]",
+      "Clojure",
+      "CMake",
+      "Cobol",
+      "CobolFree",
+      "CobolVariable",
+      "CPreProcessor",
+      "CSS",
+      "Ctags",
+      "CUDA",
+      "D",
+      "DBusIntrospect",
+      "Diff",
+      "DosBatch",
+      "DTD",
+      "DTS",
+      "Eiffel",
+      "Elixir",
+      "Elm",
+      "EmacsLisp",
+      "Erlang",
+      "Falcon",
+      "Flex",
+      "Forth",
+      "Fortran",
+      "FrontMatter",
+      "FunctionParameters",
+      "Fypp",
+      "Gdbinit",
+      "GDScript",
+      "GemSpec",
+      "Glade",
+      "Go",
+      "GPerf",
+      "Haskell",
+      "Haxe",
+      "HTML",
+      "I18nRubyGem",
+      "Iniconf",
+      "Inko",
+      "IPythonCell",
+      "ITcl",
+      "Java",
+      "JavaProperties",
+      "JavaScript",
+      "JNI",
+      "JSON",
+      "Julia",
+      "Kconfig",
+      "Kotlin",
+      "LdScript",
+      "LEX",
+      "Lisp",
+      "LiterateHaskell",
+      "Lua",
+      "M4",
+      "Make",
+      "Man",
+      "Markdown",
+      "MatLab",
+      "Maven2",
+      "Meson",
+      "MesonOptions",
+      "Moose",
+      "Myrddin",
+      "NSIS",
+      "ObjectiveC",
+      "OCaml",
+      "OpenAPI",
+      "Org",
+      "Pascal",
+      "Passwd",
+      "Perl",
+      "Perl6",
+      "PHP",
+      "PkgConfig",
+      "PlistXML",
+      "Pod",
+      "PowerShell",
+      "Protobuf",
+      "PuppetManifest",
+      "Python",
+      "PythonEntryPoints",
+      "PythonLoggingConfig",
+      "QemuHX",
+      "QtMoc",
+      "Quarto",
+      "R",
+      "R6Class",
+      "Rake",
+      "Raku",
+      "RDoc",
+      "RelaxNG",
+      "ReStructuredText",
+      "REXX",
+      "RMarkdown",
+      "Robot",
+      "RpmMacros",
+      "RpmSpec",
+      "RSpec",
+      "Ruby",
+      "Rust",
+      "S4Class",
+      "Scdoc",
+      "Scheme",
+      "SCSS",
+      "SELinuxInterface",
+      "SELinuxTypeEnforcement",
+      "Sh",
+      "SLang",
+      "SML",
+      "SQL",
+      "SVG",
+      "SystemdUnit",
+      "SystemTap",
+      "SystemVerilog",
+      "Tcl",
+      "TclOO",
+      "Terraform",
+      "TerraformVariables",
+      "Tex",
+      "TeXBeamer",
+      "Thrift",
+      "TOML [disabled]",
+      "TTCN",
+      "Txt2tags",
+      "TypeScript",
+      "TypeSpec",
+      "Unknown [disabled]",
+      "V",
+      "Varlink",
+      "Vera",
+      "Verilog",
+      "VHDL",
+      "Vim",
+      "WindRes",
+      "XML",
+      "XRC",
+      "XSLT",
+      "YACC",
+      "Yaml",
+      "YumRepo",
+      "Zephir",
+      "Zsh"
+    ],
+    "source": "supplemental_symbols",
+    "graph_provider": "graphify"
+  },
+  "standard_policy": {
+    "ignores_enhanced_tools": true,
+    "forbidden": [
+      "graphify",
+      "universal-ctags",
+      "ast-grep"
+    ]
+  },
+  "capability_matrix": {
+    "rules_version": "2.2.0",
+    "default_mode": "standard",
+    "available_modes": [
+      "standard",
+      "deep"
+    ],
+    "blocked_modes": [],
+    "missing_capabilities": {
+      "standard": [],
+      "deep": []
+    },
+    "capabilities": {
+      "graph-queries": {
+        "available": true,
+        "providers": [
+          "graphify"
+        ],
+        "definition_providers": [
+          "graphify"
+        ],
+        "description": "跨文件图查询、路径与社区结构"
+      },
+      "symbol-enumeration": {
+        "available": true,
+        "providers": [
+          "graphify",
+          "universal-ctags",
+          "ast-grep"
+        ],
+        "definition_providers": [
+          "graphify",
+          "universal-ctags",
+          "ast-grep"
+        ],
+        "description": "稳定符号/对象枚举作为关键单元分母"
+      },
+      "reference-edges": {
+        "available": true,
+        "providers": [
+          "graphify",
+          "universal-ctags"
+        ],
+        "definition_providers": [
+          "graphify",
+          "universal-ctags"
+        ],
+        "description": "引用/调用边或等价 reference edges"
+      },
+      "baseline-git": {
+        "available": true,
+        "providers": [
+          "git"
+        ],
+        "definition_providers": [
+          "git"
+        ],
+        "description": "Git 元数据与仓库身份"
+      },
+      "baseline-text-search": {
+        "available": true,
+        "providers": [
+          "ripgrep",
+          "grep"
+        ],
+        "definition_providers": [
+          "ripgrep",
+          "grep"
+        ],
+        "description": "文本搜索（rg 优先，grep 回退）"
+      },
+      "baseline-file-discovery": {
+        "available": true,
+        "providers": [
+          "node-fs"
+        ],
+        "definition_providers": [
+          "node-fs"
+        ],
+        "description": "文件系统遍历与行计数"
+      }
+    },
+    "detected_tools": [
+      {
+        "name": "git",
+        "available": true,
+        "version": "git version 2.50.1 (Apple Git-155)",
+        "class": "baseline"
+      },
+      {
+        "name": "ripgrep",
+        "available": true,
+        "version": "ripgrep 15.1.0",
+        "class": "baseline"
+      },
+      {
+        "name": "graphify",
+        "available": true,
+        "version": "graphify 0.9.8",
+        "class": "enhanced",
+        "capabilities": [
+          "graph-queries",
+          "symbol-enumeration",
+          "reference-edges"
+        ]
+      },
+      {
+        "name": "universal-ctags",
+        "available": true,
+        "version": "Universal Ctags 6.2.1, Copyright (C) 2015-2025 Universal Ctags Team",
+        "class": "enhanced"
+      },
+      {
+        "name": "ast-grep",
+        "available": true,
+        "version": "ast-grep 0.44.1",
+        "class": "enhanced"
+      }
+    ],
+    "languages": [
+      {
+        "language": "TypeScript",
+        "files": 139
+      },
+      {
+        "language": "JavaScript",
+        "files": 33
+      }
+    ],
+    "official_source_refs": [
+      {
+        "tool_name": "ast-grep",
+        "official_source_url": "https://ast-grep.github.io/",
+        "verified_date": "2026-07-11",
+        "mode_usage": {
+          "standard": "forbidden",
+          "deep": "supplemental_ast_search"
+        },
+        "class": "enhanced"
+      },
+      {
+        "tool_name": "git",
+        "official_source_url": "https://git-scm.com/doc",
+        "verified_date": "2026-07-11",
+        "mode_usage": {
+          "standard": "required",
+          "deep": "required"
+        },
+        "class": "baseline"
+      },
+      {
+        "tool_name": "graphify",
+        "official_source_url": "https://github.com/safishamsi/graphify",
+        "verified_date": "2026-07-11",
+        "mode_usage": {
+          "standard": "forbidden",
+          "deep": "preferred_graph_provider"
+        },
+        "class": "enhanced"
+      },
+      {
+        "tool_name": "grep",
+        "official_source_url": "https://www.gnu.org/software/grep/manual/",
+        "verified_date": "2026-07-11",
+        "mode_usage": {
+          "standard": "fallback",
+          "deep": "fallback"
+        },
+        "class": "baseline"
+      },
+      {
+        "tool_name": "jq",
+        "official_source_url": "https://jqlang.github.io/jq/",
+        "verified_date": "2026-07-11",
+        "mode_usage": {
+          "standard": "optional",
+          "deep": "optional"
+        },
+        "class": "baseline"
+      },
+      {
+        "tool_name": "ripgrep",
+        "official_source_url": "https://github.com/BurntSushi/ripgrep",
+        "verified_date": "2026-07-11",
+        "mode_usage": {
+          "standard": "preferred",
+          "deep": "preferred"
+        },
+        "class": "baseline"
+      },
+      {
+        "tool_name": "universal-ctags",
+        "official_source_url": "https://docs.ctags.io/",
+        "verified_date": "2026-07-11",
+        "mode_usage": {
+          "standard": "forbidden",
+          "deep": "supplemental_symbols"
+        },
+        "class": "enhanced"
+      }
+    ],
+    "remediation": [
+      "当前环境已满足已检测模式的能力合同。"
+    ]
+  },
+  "capability_state": {
+    "graph-queries": {
+      "available": true,
+      "providers": [
+        "graphify"
+      ],
+      "definition_providers": [
+        "graphify"
+      ],
+      "description": "跨文件图查询、路径与社区结构"
+    },
+    "symbol-enumeration": {
+      "available": true,
+      "providers": [
+        "graphify",
+        "universal-ctags",
+        "ast-grep"
+      ],
+      "definition_providers": [
+        "graphify",
+        "universal-ctags",
+        "ast-grep"
+      ],
+      "description": "稳定符号/对象枚举作为关键单元分母"
+    },
+    "reference-edges": {
+      "available": true,
+      "providers": [
+        "graphify",
+        "universal-ctags"
+      ],
+      "definition_providers": [
+        "graphify",
+        "universal-ctags"
+      ],
+      "description": "引用/调用边或等价 reference edges"
+    },
+    "baseline-git": {
+      "available": true,
+      "providers": [
+        "git"
+      ],
+      "definition_providers": [
+        "git"
+      ],
+      "description": "Git 元数据与仓库身份"
+    },
+    "baseline-text-search": {
+      "available": true,
+      "providers": [
+        "ripgrep",
+        "grep"
+      ],
+      "definition_providers": [
+        "ripgrep",
+        "grep"
+      ],
+      "description": "文本搜索（rg 优先，grep 回退）"
+    },
+    "baseline-file-discovery": {
+      "available": true,
+      "providers": [
+        "node-fs"
+      ],
+      "definition_providers": [
+        "node-fs"
+      ],
+      "description": "文件系统遍历与行计数"
+    }
+  },
+  "checks": [
+    {
+      "id": "git",
+      "required": true,
+      "status": "pass",
+      "command": "git",
+      "version": "git version 2.50.1 (Apple Git-155)",
+      "remediation": null
+    },
+    {
+      "id": "text-search",
+      "required": true,
+      "status": "pass",
+      "command": "rg",
+      "version": "ripgrep 15.1.0",
+      "remediation": null
+    },
+    {
+      "id": "output-writable",
+      "required": true,
+      "status": "pass",
+      "path": "/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-20260711-1855",
+      "remediation": null
+    },
+    {
+      "id": "graphify",
+      "required": false,
+      "status": "pass",
+      "command": "graphify",
+      "version": "graphify 0.9.8",
+      "remediation": null,
+      "mode_usage": {
+        "standard": "forbidden_ignore",
+        "deep": "preferred_graph_provider"
+      }
+    },
+    {
+      "id": "symbol-enumerator",
+      "required": false,
+      "status": "pass",
+      "command": "ctags",
+      "version": "Universal Ctags 6.2.1, Copyright (C) 2015-2025 Universal Ctags Team",
+      "remediation": null,
+      "mode_usage": {
+        "standard": "forbidden_ignore",
+        "deep": "supplemental"
+      }
+    },
+    {
+      "id": "language-support",
+      "required": false,
+      "status": "pass",
+      "languages": [
+        {
+          "language": "TypeScript",
+          "files": 139
+        },
+        {
+          "language": "JavaScript",
+          "files": 33
+        }
+      ],
+      "primary_languages": [
+        "TypeScript"
+      ],
+      "unsupported": [],
+      "remediation": null
+    }
+  ],
+  "install_prompt_path": "/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-20260711-1855/install-prompt.md"
+}
