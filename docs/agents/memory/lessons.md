@@ -19,3 +19,9 @@
 - 差距：无阻塞 residual；AC4 multi-agent 完整重跑仍为可选升级，未纳入本 PR（诚实声明）。
 - Next LOOP：Done（除非用户要做 AC4 或修 PR review 意见）。
 - time_param：手动：贴入 review/CI 结果后继续。
+
+## 2026-07-11 · 用户反馈 · PR 需要可读测试证据
+
+- 现象：仅写「35 pass」不够；review 需要命令、全量日志、UAT 锚点、真实工件 gate 表。
+- 做法：在 `测试证据/v2.0/pr-evidence/` 落 VERIFICATION_REPORT + full txt 日志 + uat-checklist + gate-recheck-summary，并更新 PR body 深链。
+- 注意：`*.log` 被 gitignore；证据日志用 `.full.txt`。
