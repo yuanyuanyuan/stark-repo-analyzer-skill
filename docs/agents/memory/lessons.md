@@ -42,3 +42,10 @@
 - 用户指定：独立 `codex exec` 严格执行 skill 的测试正式名称是「真实UAT回归测试」。
 - 规则文件与 AGENTS 节标题/正文已标记该正式名称；PR/报告勿再只写含糊「UAT」。
 
+
+## 2026-07-11 · ticket 11 · standard/deep + rules
+
+- 现象：旧 doctor 把 symbol-enumerator 当全局 required，与 standard 可移植冲突；quick 与 deep bundle 语义混杂。
+- 正确做法：rules 为 SSOT；doctor 输出 capability matrix；standard 启发式 units；deep 能力门禁 fail-closed；gate 的 reference-quality 在 standard 放宽。
+- 误伤点：gate 二次 requireDoctor(deep) 会让 deep 预算测试无法在无 Graphify fixture 上跑——gate 只校验工件语义。
+- 分支：用户覆写不建 feat/11，在 yuanyuanyuan/spec-v2.2-standard-deep-modes-and-rules-based-to 交付。

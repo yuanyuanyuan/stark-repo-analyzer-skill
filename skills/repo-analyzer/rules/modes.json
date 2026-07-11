@@ -1,0 +1,25 @@
+{
+  "rules_version": "2.2.0",
+  "default_mode": "standard",
+  "modes": {
+    "standard": {
+      "description": "可移植默认路径：仅基线确定性工具；忽略增强工具。",
+      "allowed_tool_classes": ["baseline"],
+      "forbidden_tools": ["graphify", "universal-ctags", "ast-grep"],
+      "tooling_level": "baseline",
+      "on_missing_capability": "continue_with_heuristic_disclosure",
+      "coverage": { "core": 60, "secondary": 30 }
+    },
+    "deep": {
+      "description": "增强路径：按能力合同门禁；缺能力拒绝且不降级。",
+      "allowed_tool_classes": ["baseline", "enhanced"],
+      "required_capabilities": ["graph-queries", "symbol-enumeration", "reference-edges"],
+      "preferred_graph_provider": "graphify",
+      "supplemental_symbol_providers": ["universal-ctags", "ast-grep"],
+      "tooling_level": "enhanced",
+      "on_missing_capability": "reject_no_downgrade",
+      "coverage": { "core": 90, "secondary": 60 }
+    }
+  },
+  "removed_modes": ["quick"]
+}

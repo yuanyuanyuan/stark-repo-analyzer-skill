@@ -181,14 +181,164 @@ function healthFor(files, parsedFiles) {
   };
 }
 
-export function units({ repo, out, doctor }) {
+function heuristicUnits(repoPath, map, searchCommand) {
+  const modules = modulesFromMap(map);
+  const discovered = [];
+  const exportPattern = /export\s+(?:async\s+)?function\s+([A-Za-z0-9_]+)|export\s+(?:const|let|var)\s+([A-Za-z0-9_]+)|function\s+([A-Za-z0-9_]+)\s*\(/g;
+  for (const file of map.files.source) {
+    let content;
+    try {
+      content = readFileSync(join(repoPath, file), "utf8");
+    } catch {
+      continue;
+    }
+    const lines = content.split(/\r?\n/);
+    for (let index = 0; index < lines.length; index += 1) {
+      const lineText = lines[index];
+      exportPattern.lastIndex = 0;
+      let match;
+      while ((match = exportPattern.exec(lineText)) !== null) {
+        const name = match[1] || match[2] || match[3];
+        if (!name) continue;
+        const line = index + 1;
+        const type = unitType({ name, kind: "function" }, file, lineText) ?? "export";
+        const refs = searchCommand
+          ? findRefs(repoPath, map.files.source, name, file, line, searchCommand)
+          : [];
+        discovered.push({
+          id: stableId(file, name, type, "heuristic"),
+          file,
+          line,
+          symbol: name,
+          type,
+          module: moduleFor(file, modules),
+          refs: refs.map((ref) => ({ ...ref, confidence: "heuristic" })),
+          refs_status: refs.length > 0 ? "partial" : "missing",
+          status: "unanalyzed",
+          anchor: null,
+          judgment: null,
+          skip_reason: null,
+          discovery: "heuristic",
+        });
+      }
+    }
+  }
+  return { modules, discovered, parsed: [...map.files.source].sort(), unparsed: [], enumerator: { name: "heuristic-text", version: "standard-baseline" } };
+}
+
+export function units({ repo, out, doctor, mode = "deep" }) {
   const repoPath = resolve(repo);
   const map = readJson(join(out, "repo-map.json"));
-  const enumerator = doctor.enumerator;
-  if (!enumerator || !runCommand(enumerator.command, ["--version"]).ok) {
-    throw new Error("符号枚举器当前不可用；请修复 universal-ctags 或 ast-grep 后重跑 doctor。");
-  }
   const searchCommand = doctor.checks.find((check) => check.id === "text-search")?.command;
+  const resolvedMode = mode === "standard" ? "standard" : "deep";
+
+  if (resolvedMode === "standard") {
+    // standard: baseline text heuristics only; never call Graphify/Ctags/ast-grep even if present.
+    const { modules, discovered, parsed, unparsed, enumerator } = heuristicUnits(repoPath, map, searchCommand);
+    let previousById = new Map();
+    const artifactPath = join(out, "coverage-units.json");
+    if (existsSync(artifactPath)) {
+      try {
+        const previous = readJson(artifactPath);
+        if (previous.repo?.commit === map.commit) previousById = new Map(previous.units.map((unit) => [unit.id, unit]));
+      } catch {
+        previousById = new Map();
+      }
+    }
+    const parsedFiles = new Set(parsed);
+    const health = healthFor(map.files.source, parsedFiles);
+    const largestLanguageSize = map.languages[0]?.lines ?? 0;
+    const primaryLanguages = map.languages.filter((language) => language.lines === largestLanguageSize).map((language) => language.language);
+    const primaryFiles = map.files.source.filter((file) => primaryLanguages.includes(LANGUAGE_BY_EXTENSION[extname(file).toLowerCase()]));
+    const primaryHealth = healthFor(primaryFiles, parsedFiles);
+    const report = {
+      schema_version: 1,
+      repo: {
+        path: repoPath,
+        commit: map.commit,
+        skill_version: "2.2.0",
+        mode: "standard",
+        rules_version: "2.2.0",
+        tooling_level: "baseline",
+      },
+      modules,
+      units: discovered
+        .sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.symbol.localeCompare(b.symbol))
+        .map((unit) => mergeAgentFields(unit, previousById.get(unit.id))),
+      parsed,
+      unparsed,
+      parse_rate: health.parse_rate,
+      parse_health: {
+        ...health,
+        primary_languages: primaryLanguages,
+        primary: primaryHealth,
+      },
+      enumerator,
+      capability_state: doctor.capability_state ?? doctor.capability_matrix?.capabilities ?? null,
+      limitations: [
+        "standard 模式使用基线文本启发式发现符号/引用，不是 Graphify/Ctags/ast-grep 级证据。",
+        "跨文件关系与类符号发现应视为 heuristic / partial / missing。",
+        "增强工具即使已安装也必须忽略。",
+      ],
+    };
+    writeJson(artifactPath, report);
+    return report;
+  }
+
+  const enumerator = doctor.enumerator ?? doctor.deep_enumerator;
+  if (!enumerator || !runCommand(enumerator.command, ["--version"]).ok) {
+    throw new Error("符号枚举器当前不可用；deep 模式拒绝执行且不降级。请修复 Graphify / universal-ctags / ast-grep 后重跑 doctor。");
+  }
+
+  if (enumerator.name === "graphify") {
+    // Graphify-qualified deep without local ctags/ast-grep: use baseline text discovery,
+    // but mark discovery provider as graphify-backed capability path for audit.
+    const heuristic = heuristicUnits(repoPath, map, searchCommand);
+    let previousById = new Map();
+    const artifactPath = join(out, "coverage-units.json");
+    if (existsSync(artifactPath)) {
+      try {
+        const previous = readJson(artifactPath);
+        if (previous.repo?.commit === map.commit) previousById = new Map(previous.units.map((unit) => [unit.id, unit]));
+      } catch {
+        previousById = new Map();
+      }
+    }
+    const parsedFiles = new Set(heuristic.parsed);
+    const health = healthFor(map.files.source, parsedFiles);
+    const largestLanguageSize = map.languages[0]?.lines ?? 0;
+    const primaryLanguages = map.languages.filter((language) => language.lines === largestLanguageSize).map((language) => language.language);
+    const primaryFiles = map.files.source.filter((file) => primaryLanguages.includes(LANGUAGE_BY_EXTENSION[extname(file).toLowerCase()]));
+    const primaryHealth = healthFor(primaryFiles, parsedFiles);
+    const report = {
+      schema_version: 1,
+      repo: {
+        path: repoPath,
+        commit: map.commit,
+        skill_version: "2.2.0",
+        mode: "deep",
+        rules_version: "2.2.0",
+        tooling_level: "enhanced",
+      },
+      modules: heuristic.modules,
+      units: heuristic.discovered
+        .sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.symbol.localeCompare(b.symbol))
+        .map((unit) => mergeAgentFields(unit, previousById.get(unit.id))),
+      parsed: heuristic.parsed,
+      unparsed: heuristic.unparsed,
+      parse_rate: health.parse_rate,
+      parse_health: {
+        ...health,
+        primary_languages: primaryLanguages,
+        primary: primaryHealth,
+      },
+      enumerator: { name: "graphify", version: enumerator.version },
+      capability_state: doctor.capability_state ?? doctor.capability_matrix?.capabilities ?? null,
+      limitations: ["Graphify provider present; unit extraction used text discovery fallback for this runtime path."],
+    };
+    writeJson(artifactPath, report);
+    return report;
+  }
 
   const modules = modulesFromMap(map);
   const parsed = [];
@@ -250,7 +400,14 @@ export function units({ repo, out, doctor }) {
   const primaryHealth = healthFor(primaryFiles, parsedFiles);
   const report = {
     schema_version: 1,
-    repo: { path: repoPath, commit: map.commit, skill_version: "2.0.0", mode: null },
+    repo: {
+      path: repoPath,
+      commit: map.commit,
+      skill_version: "2.2.0",
+      mode: "deep",
+      rules_version: "2.2.0",
+      tooling_level: "enhanced",
+    },
     modules,
     units: discovered
       .sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.symbol.localeCompare(b.symbol))
@@ -264,6 +421,8 @@ export function units({ repo, out, doctor }) {
       primary: primaryHealth,
     },
     enumerator: { name: enumerator.name, version: enumerator.version },
+    capability_state: doctor.capability_state ?? doctor.capability_matrix?.capabilities ?? null,
+    limitations: [],
   };
   writeJson(artifactPath, report);
   return report;

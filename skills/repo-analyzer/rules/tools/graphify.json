@@ -1,0 +1,9 @@
+{
+  "tool_name": "graphify",
+  "capability": ["graph-queries", "symbol-enumeration", "reference-edges"],
+  "mode_usage": { "standard": "forbidden", "deep": "preferred_graph_provider" },
+  "class": "enhanced",
+  "official_source_url": "https://github.com/safishamsi/graphify",
+  "verified_date": "2026-07-11",
+  "fallback_or_rejection": "standard 必须忽略；deep 缺 graph-queries 时拒绝执行且不降级"
+}

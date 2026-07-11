@@ -15,7 +15,7 @@
 - core / secondary / excluded，附理由和来源。
 
 ## 分工
-- quick 模式可写 `parallelism: degraded` 与串行顺序。
+- 运行时无 subagent 时可写 `parallelism: degraded` 与串行顺序。
 - standard/deep 完整通过必须写明：
   - `parallelism: active`
   - 实际子代理分工
@@ -70,7 +70,6 @@
 
 语义抽查预算按模式变化：
 
-- quick：全局 2-3 条最高影响 analyzed unit；可用 analyzed unit 少于 2 条时全抽。
 - standard：每个 core 模块至少 1 条。
 - deep：每个 core 模块最多 3 条代表性 analyzed unit；不足 3 条时全抽。
 

@@ -1,24 +1,16 @@
-import { accessSync, constants, existsSync, readdirSync, statSync } from "node:fs";
+import { accessSync, constants, existsSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
 
+import {
+  buildCapabilityMatrix,
+  buildInstallPrompt,
+  chooseDeepEnumerator,
+  detectTools,
+  evaluateCapabilities,
+} from "./capabilities.js";
+import { writeJson } from "./common.js";
 import { AST_GREP_LANGUAGES, LANGUAGE_BY_EXTENSION } from "./languages.js";
-import { runCommand, writeJson } from "./common.js";
-
-function executable(envName, fallback) {
-  return process.env[envName] ?? fallback;
-}
-
-function commandCheck(id, command, args, remediation, required = true) {
-  const result = runCommand(command, args);
-  return {
-    id,
-    required,
-    status: result.ok ? "pass" : "fail",
-    command,
-    version: result.ok ? result.stdout.split("\n")[0] : null,
-    remediation: result.ok ? null : remediation,
-  };
-}
+import { defaultMode, resolveMode, rulesVersion } from "./rules.js";
 
 function walkLanguages(root) {
   const counts = new Map();
@@ -39,84 +31,7 @@ function walkLanguages(root) {
     .map(([language, files]) => ({ language, files }));
 }
 
-function detectCtags(command) {
-  const version = runCommand(command, ["--version"]);
-  if (!version.ok || !/Universal Ctags/i.test(version.stdout)) return null;
-  const languages = runCommand(command, ["--list-languages"]);
-  return {
-    name: "universal-ctags",
-    command,
-    version: version.stdout.split("\n")[0],
-    languages: languages.ok ? languages.stdout.split("\n").filter(Boolean) : [],
-  };
-}
-
-function detectAstGrep(command) {
-  const version = runCommand(command, ["--version"]);
-  if (!version.ok) return null;
-  return {
-    name: "ast-grep",
-    command,
-    version: version.stdout.split("\n")[0],
-    languages: [...AST_GREP_LANGUAGES],
-  };
-}
-
-export function doctor({ repo, out }) {
-  const repoPath = resolve(repo);
-  const outPath = resolve(out);
-  if (!existsSync(repoPath) || !statSync(repoPath).isDirectory()) {
-    throw new Error(`目标仓库不存在或不是目录: ${repoPath}`);
-  }
-
-  const languages = walkLanguages(repoPath);
-  const checks = [];
-  checks.push(commandCheck("git", executable("REPO_ANALYZER_GIT", "git"), ["--version"], "安装 Git，并确保 git 位于 PATH。"));
-
-  const rg = commandCheck("text-search-rg", executable("REPO_ANALYZER_RG", "rg"), ["--version"], "安装 ripgrep，或确保 grep 可用。", false);
-  const grep = commandCheck("text-search-grep", executable("REPO_ANALYZER_GREP", "grep"), ["--version"], "安装 grep 或 ripgrep。", false);
-  checks.push({
-    id: "text-search",
-    required: true,
-    status: rg.status === "pass" || grep.status === "pass" ? "pass" : "fail",
-    command: rg.status === "pass" ? rg.command : grep.command,
-    version: rg.status === "pass" ? rg.version : grep.version,
-    remediation: rg.status === "fail" && grep.status === "fail" ? "安装 ripgrep 或 grep，并确保命令位于 PATH。" : null,
-  });
-
-  const ctags = detectCtags(executable("REPO_ANALYZER_CTAGS", "ctags"));
-  const astGrep = detectAstGrep(executable("REPO_ANALYZER_AST_GREP", "ast-grep"));
-  const primaryLanguages = languages.length === 0 ? [] : languages.filter(({ files }) => files === languages[0].files);
-  const supportsPrimary = (candidate) => candidate && primaryLanguages.every(({ language }) =>
-    candidate.languages.some((item) => item.toLowerCase() === language.toLowerCase()));
-  const enumerator = [ctags, astGrep].find(supportsPrimary) ?? ctags ?? astGrep;
-  checks.push({
-    id: "symbol-enumerator",
-    required: true,
-    status: enumerator ? "pass" : "fail",
-    command: enumerator?.command ?? null,
-    version: enumerator?.version ?? null,
-    remediation: enumerator ? null : "安装 universal-ctags 或 ast-grep，然后重新运行 doctor。",
-  });
-
-  const unsupportedLanguages = enumerator
-    ? primaryLanguages.filter(({ language }) => !enumerator.languages.some((item) => item.toLowerCase() === language.toLowerCase()))
-    : primaryLanguages;
-  checks.push({
-    id: "language-support",
-    required: true,
-    status: languages.length > 0 && unsupportedLanguages.length === 0 ? "pass" : "fail",
-    languages,
-    primary_languages: primaryLanguages.map(({ language }) => language),
-    unsupported: unsupportedLanguages.map(({ language }) => language),
-    remediation:
-      languages.length === 0
-        ? "目标仓库中未识别到受支持的源码语言，请确认仓库路径或扩展语言映射。"
-        : unsupportedLanguages.length > 0
-          ? `当前枚举器不支持: ${unsupportedLanguages.map(({ language }) => language).join(", ")}。请安装支持这些语言的枚举器。`
-          : null,
-  });
-
+function writableCheck(outPath) {
   let writable = true;
   try {
     accessSync(outPath, constants.W_OK);
@@ -127,32 +42,159 @@ export function doctor({ repo, out }) {
       writable = false;
     }
   }
-  checks.push({
+  return {
     id: "output-writable",
     required: true,
     status: writable ? "pass" : "fail",
     path: outPath,
     remediation: writable ? null : `授予输出目录写权限: chmod u+w ${outPath}`,
+  };
+}
+
+export function doctor({ repo, out, mode, printInstallPrompt = false, installTargetMode }) {
+  const repoPath = resolve(repo);
+  const outPath = resolve(out);
+  if (!existsSync(repoPath) || !statSync(repoPath).isDirectory()) {
+    throw new Error(`目标仓库不存在或不是目录: ${repoPath}`);
+  }
+
+  const targetMode = resolveMode(mode ?? defaultMode());
+  const languages = walkLanguages(repoPath);
+  const detected = detectTools();
+  // Annotate ast-grep languages for language support diagnostics in deep.
+  if (detected.enhanced.astGrep.available) {
+    detected.enhanced.astGrep.languages = [...AST_GREP_LANGUAGES];
+  }
+  const capabilityState = evaluateCapabilities(detected);
+  const matrix = buildCapabilityMatrix({ detected, capabilityState, languages });
+  let deepEnumerator = chooseDeepEnumerator(detected, capabilityState);
+  const primaryLanguages = languages.length === 0 ? [] : languages.filter(({ files }) => files === languages[0].files);
+  const supportsPrimary = (candidate) => candidate && primaryLanguages.every(({ language }) =>
+    (candidate.languages ?? []).some((item) => item.toLowerCase() === language.toLowerCase())
+    || candidate.name === "ast-grep"
+    || candidate.name === "graphify"
+  );
+  if (deepEnumerator && !supportsPrimary(deepEnumerator) && detected.enhanced.astGrep.available) {
+    deepEnumerator = {
+      name: "ast-grep",
+      command: detected.enhanced.astGrep.command,
+      version: detected.enhanced.astGrep.version,
+      languages: detected.enhanced.astGrep.languages ?? [],
+      source: "supplemental_ast_search",
+      graph_provider: detected.enhanced.graphify.available ? "graphify" : null,
+    };
+  }
+
+  const checks = [];
+  checks.push({
+    id: "git",
+    required: true,
+    status: detected.baseline.git.status,
+    command: detected.baseline.git.command,
+    version: detected.baseline.git.version,
+    remediation: detected.baseline.git.remediation,
+  });
+  checks.push({
+    id: "text-search",
+    required: true,
+    status: detected.baseline.textSearch.status,
+    command: detected.baseline.textSearch.command,
+    version: detected.baseline.textSearch.version,
+    remediation: detected.baseline.textSearch.remediation,
+  });
+  checks.push(writableCheck(outPath));
+
+  // Enhanced tools: always detected, never required for standard baseline allow.
+  checks.push({
+    id: "graphify",
+    required: false,
+    status: detected.enhanced.graphify.available ? "pass" : "fail",
+    command: detected.enhanced.graphify.command,
+    version: detected.enhanced.graphify.version,
+    remediation: detected.enhanced.graphify.available
+      ? null
+      : "可选（deep 优先）：安装 graphify 以满足 graph-queries / 可能的 symbol 与 reference 能力。",
+    mode_usage: { standard: "forbidden_ignore", deep: "preferred_graph_provider" },
+  });
+  checks.push({
+    id: "symbol-enumerator",
+    required: false,
+    status: deepEnumerator ? "pass" : "fail",
+    command: deepEnumerator?.command ?? null,
+    version: deepEnumerator?.version ?? null,
+    remediation: deepEnumerator
+      ? null
+      : "deep 补充：安装 universal-ctags 或 ast-grep（当 Graphify 未覆盖 symbol-enumeration 时）。",
+    mode_usage: { standard: "forbidden_ignore", deep: "supplemental" },
   });
 
-  const graphify = commandCheck(
-    "graphify",
-    executable("REPO_ANALYZER_GRAPHIFY", "graphify"),
-    ["--version"],
-    "可选：安装 graphify 以增强跨文件关系查询。",
-    false,
-  );
-  checks.push(graphify);
+  // language-support is informational for deep enumerator fitness; not a baseline hard fail for standard.
+  let languageStatus = "pass";
+  let languageRemediation = null;
+  const unsupported = [];
+  if (languages.length === 0) {
+    languageStatus = "fail";
+    languageRemediation = "目标仓库中未识别到受支持的源码语言，请确认仓库路径或扩展语言映射。";
+  } else if (deepEnumerator?.name === "universal-ctags") {
+    for (const { language } of primaryLanguages) {
+      if (!deepEnumerator.languages?.some((item) => item.toLowerCase() === language.toLowerCase())) {
+        unsupported.push(language);
+      }
+    }
+    if (unsupported.length) {
+      languageStatus = "fail";
+      languageRemediation = `当前枚举器不支持: ${unsupported.join(", ")}。请安装支持这些语言的枚举器。`;
+    }
+  }
+  checks.push({
+    id: "language-support",
+    required: false,
+    status: languageStatus,
+    languages,
+    primary_languages: primaryLanguages.map(({ language }) => language),
+    unsupported,
+    remediation: languageRemediation,
+  });
 
-  const allowed = checks.filter((check) => check.required).every((check) => check.status === "pass");
+  // Baseline allowed = standard runnable (git + text search + writable). Deep is separate.
+  const baselineAllowed = checks
+    .filter((check) => check.required)
+    .every((check) => check.status === "pass");
+  const deepAllowed = baselineAllowed && matrix.available_modes.includes("deep");
+  const modeAllowed = targetMode === "deep" ? deepAllowed : baselineAllowed;
+
+  const installPrompt = buildInstallPrompt({
+    targetMode: installTargetMode ?? (targetMode === "standard" ? "deep" : targetMode),
+    matrix,
+  });
+
   const report = {
-    schema_version: 1,
+    schema_version: 2,
     repo: repoPath,
     output: outPath,
-    allowed,
-    enumerator,
+    rules_version: rulesVersion(),
+    mode: targetMode,
+    tooling_level: targetMode === "deep" ? "enhanced" : "baseline",
+    allowed: modeAllowed,
+    allowed_standard: baselineAllowed,
+    allowed_deep: deepAllowed,
+    // enumerator is only meaningful for deep/units enhanced path; standard must ignore it.
+    enumerator: targetMode === "deep" ? deepEnumerator : null,
+    deep_enumerator: deepEnumerator,
+    standard_policy: {
+      ignores_enhanced_tools: true,
+      forbidden: ["graphify", "universal-ctags", "ast-grep"],
+    },
+    capability_matrix: matrix,
+    capability_state: matrix.capabilities,
     checks,
+    install_prompt_path: join(outPath, "install-prompt.md"),
   };
+
   writeJson(join(outPath, "doctor-report.json"), report);
+  writeFileSync(join(outPath, "install-prompt.md"), installPrompt);
+  if (printInstallPrompt) {
+    process.stdout.write(installPrompt);
+  }
   return report;
 }

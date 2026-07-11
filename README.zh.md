@@ -30,7 +30,7 @@ brew install universal-ctags
 - 单元只有同时具备 analyzed 状态、源码锚点和实质设计判断才计入覆盖率。
 - `gate` 生成 `quality-gate-report.json`；缺少证据、覆盖率不足、解析或引用质量不足、报告过浅或未声明 unsupported 区域时阻止最终合成。
 - 快速、标准、深度模式的核心/次要关键单元阈值分别为 30/10、60/30、90/60。
-- Semantic Source Review 会在最终合成前重读抽样源码 span：quick 全局复核 2-3 个高影响 analyzed unit，standard 每个 core 模块至少 1 个，deep 每个 core 模块最多 3 个。它会增加受控复核成本，用于降低锚点掺水或过期风险，但不构成真实性证明。
+- Semantic Source Review 会在最终合成前重读抽样源码 span：standard 每个 core 模块至少 1 个，deep 每个 core 模块最多 3 个。它会增加受控复核成本，用于降低锚点掺水或过期风险，但不构成真实性证明。quick 已移除。
 - Graphify 状态会被记录，但不可用时不阻塞 Doctor。
 
 ## CLI 命令链

@@ -6,7 +6,7 @@
 
 ## 最近一条
 
-- 2026-07-11 ticket 12 / PR #15：degraded 口径收口已开正式 PR；AC4 仍可选
+- 2026-07-11 ticket 11：standard/deep + rules-based tools 实现中/待 PR
 
 ## 索引
 

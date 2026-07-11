@@ -60,14 +60,54 @@ if (pattern.startsWith('function') && file?.endsWith('src/service.js')) console.
 `,
   );
   chmodSync(astGrep, 0o755);
-  return { root, repo, out, ctags, astGrep };
+
+  const graphify = join(bin, "graphify");
+  writeFileSync(
+    graphify,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args.includes('--version')) { console.log('graphify 0.1.0-fixture'); process.exit(0); }
+console.log(JSON.stringify({ ok: true, query: args.join(' ') }));
+`,
+  );
+  chmodSync(graphify, 0o755);
+
+  return { root, repo, out, ctags, astGrep, graphify };
 }
 
-export function cli(command, { repo, out, env = {}, options = {} }) {
+/** standard-only: baseline tools; enhanced missing */
+export function standardOnlyEnv(fixture) {
+  return {
+    REPO_ANALYZER_CTAGS: "/missing/ctags",
+    REPO_ANALYZER_AST_GREP: "/missing/ast-grep",
+    REPO_ANALYZER_GRAPHIFY: "/missing/graphify",
+  };
+}
+
+/** enhanced present but deep still needs graph capabilities; ctags alone is not deep-complete */
+export function ctagsOnlyEnv(fixture) {
+  return {
+    REPO_ANALYZER_CTAGS: fixture.ctags,
+    REPO_ANALYZER_AST_GREP: "/missing/ast-grep",
+    REPO_ANALYZER_GRAPHIFY: "/missing/graphify",
+  };
+}
+
+/** Graphify-qualified deep environment (fixture mock) */
+export function deepGraphifyEnv(fixture) {
+  return {
+    REPO_ANALYZER_CTAGS: fixture.ctags,
+    REPO_ANALYZER_AST_GREP: "/missing/ast-grep",
+    REPO_ANALYZER_GRAPHIFY: fixture.graphify,
+    REPO_ANALYZER_GRAPHIFY_CAPABILITIES: "graph-queries,symbol-enumeration,reference-edges",
+  };
+}
+
+export function cli(command, { repo, out, env = {}, options = {}, flags = [] }) {
   const entry = new URL("../bin/repo-analyzer.js", import.meta.url);
   const optionArgs = Object.entries(options).flatMap(([key, value]) => [`--${key}`, String(value)]);
   try {
-    const stdout = execFileSync(process.execPath, [entry.pathname, command, "--repo", repo, "--out", out, ...optionArgs], {
+    const stdout = execFileSync(process.execPath, [entry.pathname, command, "--repo", repo, "--out", out, ...optionArgs, ...flags], {
       encoding: "utf8",
       env: { ...process.env, ...env },
       stdio: ["ignore", "pipe", "pipe"],

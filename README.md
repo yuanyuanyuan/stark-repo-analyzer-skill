@@ -29,7 +29,7 @@ brew install universal-ctags
 - Each core module requires a machine-readable `module-evidence/*.json` Evidence Matrix plus narrative analysis.
 - Coverage counts a unit only when status, source anchor, and substantive design judgment are all present.
 - `gate` writes `quality-gate-report.json` and blocks synthesis on missing evidence, insufficient coverage, poor parse/reference quality, shallow reports, or undeclared unsupported areas.
-- Quick, Standard, and Deep modes use 30/10, 60/30, and 90/60 percent core/secondary key-unit thresholds.
+- Standard and Deep modes use 60/30 and 90/60 percent core/secondary key-unit thresholds (quick removed).
 - Semantic Source Review re-reads sampled source spans before synthesis: Quick reviews 2-3 high-impact analyzed units globally, Standard reviews at least one per core module, and Deep reviews up to three per core module. This adds bounded review cost to reduce diluted or stale anchors; it is not a proof of truth.
 - Graphify availability is recorded but never blocks Doctor.
 

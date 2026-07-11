@@ -5,12 +5,18 @@ import { dirname, join, resolve } from "node:path";
 export function parseArgs(args) {
   const [command, ...rest] = args;
   const options = {};
+  const flags = {};
+  const booleanFlags = new Set(["install-prompt", "help"]);
   for (let index = 0; index < rest.length; index += 1) {
     const item = rest[index];
     if (!item.startsWith("--")) {
       throw new Error(`无法识别的参数: ${item}`);
     }
     const key = item.slice(2);
+    if (booleanFlags.has(key)) {
+      flags[key] = true;
+      continue;
+    }
     const value = rest[index + 1];
     if (!value || value.startsWith("--")) {
       throw new Error(`参数 --${key} 缺少值`);
@@ -18,7 +24,7 @@ export function parseArgs(args) {
     options[key] = value;
     index += 1;
   }
-  return { command, options };
+  return { command, options, flags };
 }
 
 export function runCommand(command, args = [], options = {}) {
@@ -57,7 +63,7 @@ export function requiredPath(options, name) {
   return resolve(value);
 }
 
-export function requireDoctor(repo, out) {
+export function requireDoctor(repo, out, mode = "standard") {
   const reportPath = join(out, "doctor-report.json");
   let report;
   try {
@@ -65,11 +71,17 @@ export function requireDoctor(repo, out) {
   } catch {
     throw new Error(`Doctor 未放行：请先运行 doctor 生成 ${reportPath}`);
   }
-  if (!report.allowed) {
-    throw new Error("Doctor 未放行：修复 doctor-report.json 中的必需检查后重跑 doctor。");
-  }
   if (resolve(report.repo) !== resolve(repo) || resolve(report.output) !== resolve(out)) {
     throw new Error("Doctor 报告与当前 --repo/--out 不匹配；请针对当前目标重新运行 doctor。");
+  }
+  const standardOk = report.allowed_standard ?? report.allowed;
+  const deepOk = report.allowed_deep ?? false;
+  if (mode === "deep") {
+    if (!deepOk) {
+      throw new Error("Doctor 未放行 deep：缺失能力合同，拒绝执行且不降级。请查看 capability matrix / install-prompt.md。");
+    }
+  } else if (!standardOk) {
+    throw new Error("Doctor 未放行：修复 doctor-report.json 中的必需检查后重跑 doctor。");
   }
   return report;
 }
