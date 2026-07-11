@@ -6,10 +6,11 @@
 
 ## 最近一条
 
-- 2026-07-11 ticket 11 / PR #18：standard/deep + rules 正式 PR 已开
+- 2026-07-11 ticket T19-1：Insight Probe schema + process gate
 
 ## 索引
 
 | 日期 | 主题 | 关联票 | 路径 |
 |------|------|--------|------|
+| 2026-07-11 | Insight Probe schema + process gate | T19-1 | lessons.md |
 | 2026-07-11 | degraded 验收与 README/spec 对齐 | 12 | lessons.md |

@@ -6,6 +6,22 @@ import test from "node:test";
 
 import { cli, createFixture, deepGraphifyEnv, standardOnlyEnv } from "./helpers.js";
 
+function writeE2eInsightProbes(out, mode) {
+  writeFileSync(
+    join(out, "insight-probes.json"),
+    `${JSON.stringify({
+      version: 1,
+      mode,
+      probes: [
+        { category: "ui_promise_runtime_path", status: "miss", summary: "e2e 夹具 miss。", anchors: [], report_ref: "" },
+        { category: "multi_source_rules", status: "miss", summary: "e2e 夹具 miss。", anchors: [], report_ref: "" },
+        { category: "config_dual_write_dead_impl", status: "miss", summary: "e2e 夹具 miss。", anchors: [], report_ref: "" },
+      ],
+    }, null, 2)}\n`,
+  );
+}
+
+
 const REQUIRED_ARTIFACTS = [
   "doctor-report.json",
   "repo-map.json",
@@ -135,6 +151,7 @@ flowchart LR
     writeFileSync(join(fixture.out, "module-evidence", "src.json"), `${JSON.stringify(matrix, null, 2)}\n`);
     const report = `${baseReport}${profile.expansion}\n`;
     writeFileSync(join(fixture.out, "report.md"), report);
+    writeE2eInsightProbes(fixture.out, profile.mode);
     if (profile.mode === "standard") {
       const correctedReviews = matrix.semantic_reviews;
       matrix.semantic_reviews = [{ ...correctedReviews[0], source_observation: "复核发现源码没有支持该判断。", verdict: "unsupported" }];

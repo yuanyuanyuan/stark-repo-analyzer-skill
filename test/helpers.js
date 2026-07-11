@@ -32,7 +32,7 @@ export function createFixture() {
   const ctags = join(bin, "ctags");
   writeFileSync(
     ctags,
-    `#!/usr/bin/env node
+    `#!${process.execPath}
 const args = process.argv.slice(2);
 if (args.includes('--version')) { console.log('Universal Ctags 6.1.0'); process.exit(0); }
 if (args.includes('--list-languages')) { console.log('JavaScript\\nTypeScript'); process.exit(0); }
@@ -50,7 +50,7 @@ if (file?.endsWith('src/legacy.js')) console.log(JSON.stringify({_type:'tag',nam
   const astGrep = join(bin, "ast-grep");
   writeFileSync(
     astGrep,
-    `#!/usr/bin/env node
+    `#!${process.execPath}
 const args = process.argv.slice(2);
 if (args.includes('--version')) { console.log('ast-grep 0.40.0'); process.exit(0); }
 const file = args.at(-1);
@@ -64,7 +64,7 @@ if (pattern.startsWith('function') && file?.endsWith('src/service.js')) console.
   const graphify = join(bin, "graphify");
   writeFileSync(
     graphify,
-    `#!/usr/bin/env node
+    `#!${process.execPath}
 const args = process.argv.slice(2);
 if (args.includes('--version')) { console.log('graphify 0.1.0-fixture'); process.exit(0); }
 console.log(JSON.stringify({ ok: true, query: args.join(' ') }));
@@ -121,9 +121,11 @@ export function cli(command, { repo, out, env = {}, options = {}, flags = [] }) 
   const entry = new URL("../bin/repo-analyzer.js", import.meta.url);
   const optionArgs = Object.entries(options).flatMap(([key, value]) => [`--${key}`, String(value)]);
   try {
+    // Drop debugger flags inherited from host agent so parallel/child CLIs do not hang on inspect port.
+    const { NODE_OPTIONS: _nodeOptions, ...baseEnv } = process.env;
     const stdout = execFileSync(process.execPath, [entry.pathname, command, "--repo", repo, "--out", out, ...optionArgs, ...flags], {
       encoding: "utf8",
-      env: { ...process.env, ...env },
+      env: { ...baseEnv, ...env, NODE_OPTIONS: "" },
       stdio: ["ignore", "pipe", "pipe"],
     });
     return { status: 0, stdout, stderr: "" };

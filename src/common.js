@@ -34,7 +34,9 @@ export function runCommand(command, args = [], options = {}) {
       stdout: execFileSync(command, args, {
         cwd: options.cwd,
         encoding: "utf8",
+        env: { ...process.env, NODE_OPTIONS: "", ...(options.env ?? {}) },
         stdio: ["ignore", "pipe", "pipe"],
+        timeout: options.timeout ?? 60_000,
       }).trim(),
     };
   } catch (error) {

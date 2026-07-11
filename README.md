@@ -28,7 +28,7 @@ brew install universal-ctags
 - `units` creates stable key-unit IDs, module classifications, parsed/unparsed lists, an auditable `parse_health` summary, reference provenance, and the coverage denominator.
 - Each core module requires a machine-readable `module-evidence/*.json` Evidence Matrix plus narrative analysis.
 - Coverage counts a unit only when status, source anchor, and substantive design judgment are all present.
-- `gate` writes `quality-gate-report.json` and blocks synthesis on missing evidence, insufficient coverage, poor parse/reference quality, shallow reports, or undeclared unsupported areas.
+- `gate` writes `quality-gate-report.json` and blocks synthesis on missing evidence, insufficient coverage, poor parse/reference quality, shallow reports, undeclared unsupported areas, or incomplete Insight Probe process (`insight-probes.json`).
 - Standard and Deep modes use 60/30 and 90/60 percent core/secondary key-unit thresholds (quick removed).
 - Semantic Source Review re-reads sampled source spans before synthesis: Quick reviews 2-3 high-impact analyzed units globally, Standard reviews at least one per core module, and Deep reviews up to three per core module. This adds bounded review cost to reduce diluted or stale anchors; it is not a proof of truth.
 - Graphify availability is recorded but never blocks Doctor.
@@ -59,6 +59,7 @@ Downstream commands cannot run until `doctor-report.json` has `allowed: true`. F
 | `evidence-plan.md` | Architecture questions, candidate evidence, assignments, and budgets |
 | `module-evidence/*.json` | Machine-readable Evidence Matrix for every core module, including sampled `semantic_reviews` |
 | `report.md` | Narrative draft with explicit open questions and unsupported areas |
+| `insight-probes.json` | Insight Probe process conclusions (Catalog categories; Process Gate) |
 | `quality-gate-report.json` | Mechanical gate results and synthesis decision |
 
 ## Analysis Philosophy

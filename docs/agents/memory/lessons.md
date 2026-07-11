@@ -56,3 +56,10 @@
 - 差距：无阻塞 residual；Graphify 真实环境 e2e 仍可用 fixture 之外补强（非本票必须）。
 - Next LOOP：Done（除非 CI/review 意见）。
 - time_param：手动：贴入 review/CI 结果后继续。
+
+## 2026-07-11 · ticket T19-1 · Insight Probe Process Gate
+
+- 实现：`insight-probes.json` schema 文档 + `insight-probe-process` gate；Catalog 三类稳定 id；`miss`/`n_a` 不挡门。
+- 测试夹具：`prepareArtifacts`/`e2e` 必须默认写入合法 probes，否则既有全绿用例会因新门变红。
+- 宿主干扰：Codex/agent 环境下并行 `node --test` 可能卡在 fixture ctags 子进程；helpers 应剥离 `NODE_OPTIONS`、shebang 用 `process.execPath`；验证时可用「逐条 --test-name-pattern」兜底。
+- 分支：用户可覆写「不新建 feat/T19-1」，在当前工作分支交付。

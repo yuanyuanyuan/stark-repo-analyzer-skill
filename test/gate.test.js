@@ -1,9 +1,45 @@
 import assert from "node:assert/strict";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
 import { cli, createFixture } from "./helpers.js";
+
+function writeInsightProbes(out, overrides = {}) {
+  const base = {
+    version: 1,
+    mode: "standard",
+    probes: [
+      {
+        category: "ui_promise_runtime_path",
+        status: "miss",
+        summary: "夹具：未发现 UI 承诺未挂接 runtime 的硬伤。",
+        anchors: [],
+        report_ref: "",
+        candidates_considered: 0,
+      },
+      {
+        category: "multi_source_rules",
+        status: "miss",
+        summary: "夹具：未发现多源冲突规则。",
+        anchors: [],
+        report_ref: "",
+      },
+      {
+        category: "config_dual_write_dead_impl",
+        status: "miss",
+        summary: "夹具：未发现配置双写或死实现。",
+        anchors: [],
+        report_ref: "",
+      },
+    ],
+  };
+  const doc = { ...base, ...overrides };
+  if (overrides.probes) doc.probes = overrides.probes;
+  writeFileSync(join(out, "insight-probes.json"), `${JSON.stringify(doc, null, 2)}\n`);
+  return doc;
+}
+
 
 function reportDraft(extra = "当前没有未解析区域；错误转换仍需在服务边界中单独验证。") {
   return `# 架构分析报告
@@ -87,6 +123,7 @@ function prepareArtifacts() {
     }, null, 2)}\n`,
   );
   writeFileSync(join(fixture.out, "report.md"), reportDraft());
+  writeInsightProbes(fixture.out);
   return { fixture, env, coverage, unitsPath };
 }
 
@@ -480,4 +517,132 @@ test("standard gate 拒绝过期 anchor、过期 judgment、空 observation 和�
   assert.match(reasons, /judgment 与 coverage 当前值不一致/);
   assert.match(reasons, /source_observation 缺失或为空/);
   assert.match(reasons, /verdict 必须为 supported/);
+});
+
+
+test("insight-probe-process 缺 insight-probes.json 时 fail 并阻止 synthesis", () => {
+  const { fixture, env } = prepareStandardArtifacts();
+  unlinkSync(join(fixture.out, "insight-probes.json"));
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "insight-probe-process");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /缺少 insight-probes\.json/);
+  assert.equal(report.allowed_to_synthesize, false);
+});
+
+test("insight-probe-process 缺一类 Catalog 结论时 fail", () => {
+  const { fixture, env } = prepareStandardArtifacts();
+  writeInsightProbes(fixture.out, {
+    probes: [
+      {
+        category: "ui_promise_runtime_path",
+        status: "miss",
+        summary: "仅两类之一。",
+        anchors: [],
+        report_ref: "",
+      },
+      {
+        category: "multi_source_rules",
+        status: "miss",
+        summary: "仅两类之二。",
+        anchors: [],
+        report_ref: "",
+      },
+    ],
+  });
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "insight-probe-process");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /config_dual_write_dead_impl/);
+  assert.equal(report.allowed_to_synthesize, false);
+});
+
+test("insight-probe-process 非法 status 时 fail", () => {
+  const { fixture, env } = prepareStandardArtifacts();
+  writeInsightProbes(fixture.out, {
+    probes: [
+      {
+        category: "ui_promise_runtime_path",
+        status: "maybe",
+        summary: "非法状态。",
+        anchors: [],
+        report_ref: "",
+      },
+      {
+        category: "multi_source_rules",
+        status: "miss",
+        summary: "ok",
+        anchors: [],
+        report_ref: "",
+      },
+      {
+        category: "config_dual_write_dead_impl",
+        status: "miss",
+        summary: "ok",
+        anchors: [],
+        report_ref: "",
+      },
+    ],
+  });
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "insight-probe-process");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /status 非法/);
+  assert.equal(report.allowed_to_synthesize, false);
+});
+
+test("insight-probe-process 三类合法 miss 不因探针内容 fail，且其它门绿时可 synthesis", () => {
+  const { fixture, env } = prepareStandardArtifacts();
+  writeInsightProbes(fixture.out); // all miss
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 0);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "insight-probe-process");
+  assert.equal(check.status, "pass");
+  assert.deepEqual(check.catalog, [
+    "ui_promise_runtime_path",
+    "multi_source_rules",
+    "config_dual_write_dead_impl",
+  ]);
+  assert.equal(report.allowed_to_synthesize, true);
+});
+
+test("insight-probe-process 合法 n_a（summary 作理由）可通过流程门", () => {
+  const { fixture, env } = prepareStandardArtifacts();
+  writeInsightProbes(fixture.out, {
+    probes: [
+      {
+        category: "ui_promise_runtime_path",
+        status: "n_a",
+        summary: "无 UI/表单表面，类别不适用。",
+        anchors: [],
+        report_ref: "",
+      },
+      {
+        category: "multi_source_rules",
+        status: "miss",
+        summary: "未发现多源规则。",
+        anchors: [],
+        report_ref: "",
+      },
+      {
+        category: "config_dual_write_dead_impl",
+        status: "miss",
+        summary: "未发现双写。",
+        anchors: [],
+        report_ref: "",
+      },
+    ],
+  });
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "standard" } }).status, 0);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  assert.equal(report.checks.find((item) => item.id === "insight-probe-process").status, "pass");
+  assert.equal(report.allowed_to_synthesize, true);
 });

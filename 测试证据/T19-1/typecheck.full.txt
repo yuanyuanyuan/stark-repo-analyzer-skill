@@ -1,0 +1,4 @@
+
+> repo-analyzer@2.2.0 typecheck
+> node --check bin/repo-analyzer.js && node --check src/*.js
+

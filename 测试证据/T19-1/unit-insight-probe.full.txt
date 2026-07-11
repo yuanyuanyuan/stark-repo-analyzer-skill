@@ -1,0 +1,13 @@
+✔ insight-probe-process 缺 insight-probes.json 时 fail 并阻止 synthesis (1266.36975ms)
+✔ insight-probe-process 缺一类 Catalog 结论时 fail (1254.896583ms)
+✔ insight-probe-process 非法 status 时 fail (1214.862459ms)
+✔ insight-probe-process 三类合法 miss 不因探针内容 fail，且其它门绿时可 synthesis (1226.404167ms)
+✔ insight-probe-process 合法 n_a（summary 作理由）可通过流程门 (1264.168583ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6340.6695

@@ -24,6 +24,15 @@ const QUALITY_THRESHOLDS = {
   maxCoreIncompleteReferenceRate: 0.8,
 };
 
+/** Insight Probe Catalog — stable category ids (T19-1 / Beats-v1.0 P1). */
+export const INSIGHT_PROBE_CATALOG = [
+  "ui_promise_runtime_path",
+  "multi_source_rules",
+  "config_dual_write_dead_impl",
+];
+
+const PROBE_STATUSES = new Set(["hit", "miss", "n_a"]);
+
 function check(id, passed, reasons = [], evidence = []) {
   return { id, status: passed ? "pass" : "fail", reasons: passed ? [] : reasons, evidence };
 }
@@ -411,6 +420,87 @@ function semanticSourceReviewCheck(coverage, matrices, mode) {
   };
 }
 
+
+/**
+ * Probe Process Gate: 产物存在 + Catalog 三类齐全 + 字段/status 合法。
+ * status=miss 不导致失败；不实现 LLM 判定。
+ */
+function insightProbeProcessCheck(out) {
+  const path = join(out, "insight-probes.json");
+  if (!existsSync(path)) {
+    return check("insight-probe-process", false, ["缺少 insight-probes.json。"], [path]);
+  }
+
+  let doc;
+  try {
+    doc = JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    return check("insight-probe-process", false, ["insight-probes.json 无法解析为 JSON。"], [path]);
+  }
+
+  const reasons = [];
+  const evidence = [path];
+
+  if (doc.version !== 1) {
+    reasons.push("version 必须为数字 1。");
+  }
+  if (typeof doc.mode !== "string" || !doc.mode.trim()) {
+    reasons.push("mode 必须为非空字符串。");
+  }
+  if (!Array.isArray(doc.probes)) {
+    return {
+      ...check("insight-probe-process", false, ["probes 必须是数组。", ...reasons], evidence),
+      catalog: INSIGHT_PROBE_CATALOG,
+    };
+  }
+
+  const seen = new Set();
+  for (const [index, probe] of doc.probes.entries()) {
+    const label = `probes[${index}]`;
+    if (!probe || typeof probe !== "object") {
+      reasons.push(`${label} 必须是对象。`);
+      continue;
+    }
+
+    if (!INSIGHT_PROBE_CATALOG.includes(probe.category)) {
+      reasons.push(`${label}.category 非法或缺失（允许: ${INSIGHT_PROBE_CATALOG.join(", ")}）。`);
+    } else {
+      seen.add(probe.category);
+    }
+
+    if (!PROBE_STATUSES.has(probe.status)) {
+      reasons.push(`${label}.status 非法或缺失（允许 hit|miss|n_a）。`);
+    }
+
+    if (typeof probe.summary !== "string" || !probe.summary.trim()) {
+      reasons.push(`${label}.summary 必须为非空字符串（n_a 时作为形态理由）。`);
+    }
+
+    if (!Array.isArray(probe.anchors)) {
+      reasons.push(`${label}.anchors 必须是数组。`);
+    }
+
+    if (typeof probe.report_ref !== "string") {
+      reasons.push(`${label}.report_ref 必须是字符串。`);
+    }
+
+    if (probe.candidates_considered != null && typeof probe.candidates_considered !== "number") {
+      reasons.push(`${label}.candidates_considered 若存在必须为数字。`);
+    }
+  }
+
+  for (const category of INSIGHT_PROBE_CATALOG) {
+    if (!seen.has(category)) {
+      reasons.push(`Catalog 缺少类别结论: ${category}。`);
+    }
+  }
+
+  return {
+    ...check("insight-probe-process", reasons.length === 0, reasons, evidence),
+    catalog: INSIGHT_PROBE_CATALOG,
+  };
+}
+
 export function gate({ out, mode }) {
   const budget = budgetFor(mode);
   const coverage = readJson(join(out, "coverage-units.json"));
@@ -431,6 +521,7 @@ export function gate({ out, mode }) {
     referenceCheck(coverage, matrices, reportContent),
     semanticSourceReviewCheck(coverage, matrices, mode),
     reportDepthCheck(out),
+    insightProbeProcessCheck(out),
   ];
   const result = {
     schema_version: 1,

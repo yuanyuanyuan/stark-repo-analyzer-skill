@@ -28,7 +28,7 @@ brew install universal-ctags
 - `units` 生成稳定关键单元 ID、模块分级、parsed/unparsed、可审计的 `parse_health` 摘要、引用来源和覆盖率分母。
 - 每个核心模块必须同时提交机器可读的 `module-evidence/*.json` Evidence Matrix 和叙事分析。
 - 单元只有同时具备 analyzed 状态、源码锚点和实质设计判断才计入覆盖率。
-- `gate` 生成 `quality-gate-report.json`；缺少证据、覆盖率不足、解析或引用质量不足、报告过浅或未声明 unsupported 区域时阻止最终合成。
+- `gate` 生成 `quality-gate-report.json`；缺少证据、覆盖率不足、解析或引用质量不足、报告过浅、未声明 unsupported 区域，或 Insight Probe 流程产物不全（`insight-probes.json`）时阻止最终合成（Full）。
 - 快速、标准、深度模式的核心/次要关键单元阈值分别为 30/10、60/30、90/60。
 - Semantic Source Review 会在最终合成前重读抽样源码 span：standard 每个 core 模块至少 1 个，deep 每个 core 模块最多 3 个。它会增加受控复核成本，用于降低锚点掺水或过期风险，但不构成真实性证明。quick 已移除。
 - Graphify 状态会被记录，但不可用时不阻塞 Doctor。
@@ -59,6 +59,7 @@ repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 | `evidence-plan.md` | 架构问题、候选证据、分工与预算 |
 | `module-evidence/*.json` | 每个核心模块的机器可读 Evidence Matrix，包含抽样 `semantic_reviews` |
 | `report.md` | 包含开放问题和 Unsupported Area 的叙事草稿 |
+| `insight-probes.json` | Insight Probe 流程结论（Catalog 类别；Process Gate） |
 | `quality-gate-report.json` | 机械质量门结果与最终合成决定 |
 
 ## 分析哲学
