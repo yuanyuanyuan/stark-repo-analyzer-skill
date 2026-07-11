@@ -1,0 +1,428 @@
+{
+  "agent_id": "subagent-src-export",
+  "role": "上传 UI + PDF/ZIP 导出",
+  "started_at": "2026-07-11T09:28:59.189157+00:00",
+  "parallel_group": "wave-module-analysis",
+  "source_files_read": [
+    "src/utils/pdfExporter.ts",
+    "src/utils/zipExporter.ts",
+    "src/components/FileUploader.tsx",
+    "src/components/ExportControls.tsx"
+  ],
+  "key_findings": [
+    "Exporter 均 sort by index 后输出",
+    "空 selectedIndices 时抛错",
+    "FileUploader 负责校验，processImage 在 hook 层"
+  ],
+  "risks": [
+    {
+      "category": "error-handling",
+      "evidence": "src/utils/pdfExporter.ts:63",
+      "finding": "空选择抛错",
+      "impact": "UI 需禁用导出按钮或提示"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "src/utils/pdfExporter.ts:PDFExportOptions:datastruct:6f66e43fd54a",
+      "file": "src/utils/pdfExporter.ts",
+      "line": 7,
+      "symbol": "PDFExportOptions",
+      "module": "src",
+      "anchor": "src/utils/pdfExporter.ts:7",
+      "judgment": "PDF 导出过滤并排序选中切片，jsPDF 分页嵌入；空选择失败，算法与 UI 分离。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/pdfExporter.ts:PDFExporter:datastruct:14b7ec96616f",
+      "file": "src/utils/pdfExporter.ts",
+      "line": 37,
+      "symbol": "PDFExporter",
+      "module": "src",
+      "anchor": "src/utils/pdfExporter.ts:37",
+      "judgment": "PDF 导出过滤并排序选中切片，jsPDF 分页嵌入；空选择失败，算法与 UI 分离。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/zipExporter.ts:ZIPExportOptions:datastruct:47af88004d1c",
+      "file": "src/utils/zipExporter.ts",
+      "line": 7,
+      "symbol": "ZIPExportOptions",
+      "module": "src",
+      "anchor": "src/utils/zipExporter.ts:7",
+      "judgment": "ZIP 导出打包选中切片下载，压缩/命名可配，与 PDF 共享选中集语义。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/zipExporter.ts:ZIPExporter:datastruct:09a3d3c10842",
+      "file": "src/utils/zipExporter.ts",
+      "line": 34,
+      "symbol": "ZIPExporter",
+      "module": "src",
+      "anchor": "src/utils/zipExporter.ts:34",
+      "judgment": "ZIP 导出打包选中切片下载，压缩/命名可配，与 PDF 共享选中集语义。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/BuildErrorHandler.ts:BuildError:datastruct:ae3bd6cc7721",
+      "file": "src/utils/BuildErrorHandler.ts",
+      "line": 6,
+      "symbol": "BuildError",
+      "module": "src",
+      "anchor": "src/utils/BuildErrorHandler.ts:6",
+      "judgment": "BuildError 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/BuildErrorHandler.ts:BuildErrorContext:datastruct:3a929a68090c",
+      "file": "src/utils/BuildErrorHandler.ts",
+      "line": 14,
+      "symbol": "BuildErrorContext",
+      "module": "src",
+      "anchor": "src/utils/BuildErrorHandler.ts:14",
+      "judgment": "BuildErrorContext 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/BuildErrorHandler.ts:BuildErrorHandler:datastruct:46816b07960b",
+      "file": "src/utils/BuildErrorHandler.ts",
+      "line": 21,
+      "symbol": "BuildErrorHandler",
+      "module": "src",
+      "anchor": "src/utils/BuildErrorHandler.ts:21",
+      "judgment": "BuildErrorHandler 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/DependencyResolver.ts:DependencyResolutionOptions:datastruct:8940a15d20bf",
+      "file": "src/utils/DependencyResolver.ts",
+      "line": 6,
+      "symbol": "DependencyResolutionOptions",
+      "module": "src",
+      "anchor": "src/utils/DependencyResolver.ts:6",
+      "judgment": "DependencyResolutionOptions 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/DependencyResolver.ts:DependencyResolutionResult:datastruct:7af384c2e41e",
+      "file": "src/utils/DependencyResolver.ts",
+      "line": 12,
+      "symbol": "DependencyResolutionResult",
+      "module": "src",
+      "anchor": "src/utils/DependencyResolver.ts:12",
+      "judgment": "DependencyResolutionResult 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/DependencyResolver.ts:DependencyResolver:datastruct:cda3f6a35888",
+      "file": "src/utils/DependencyResolver.ts",
+      "line": 19,
+      "symbol": "DependencyResolver",
+      "module": "src",
+      "anchor": "src/utils/DependencyResolver.ts:19",
+      "judgment": "DependencyResolver 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/analytics/performanceMonitor.ts:PerformanceMetricData:datastruct:1b7603c8a423",
+      "file": "src/utils/analytics/performanceMonitor.ts",
+      "line": 13,
+      "symbol": "PerformanceMetricData",
+      "module": "src",
+      "anchor": "src/utils/analytics/performanceMonitor.ts:13",
+      "judgment": "PerformanceMetricData 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/analytics/performanceMonitor.ts:PerformanceMonitorConfig:datastruct:8553fce0395f",
+      "file": "src/utils/analytics/performanceMonitor.ts",
+      "line": 27,
+      "symbol": "PerformanceMonitorConfig",
+      "module": "src",
+      "anchor": "src/utils/analytics/performanceMonitor.ts:27",
+      "judgment": "PerformanceMonitorConfig 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/analytics/performanceMonitor.ts:PerformanceReport:datastruct:0fefa90e239f",
+      "file": "src/utils/analytics/performanceMonitor.ts",
+      "line": 53,
+      "symbol": "PerformanceReport",
+      "module": "src",
+      "anchor": "src/utils/analytics/performanceMonitor.ts:53",
+      "judgment": "PerformanceReport 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/analytics/performanceMonitor.ts:PerformanceStats:datastruct:6f01ca6f3b10",
+      "file": "src/utils/analytics/performanceMonitor.ts",
+      "line": 77,
+      "symbol": "PerformanceStats",
+      "module": "src",
+      "anchor": "src/utils/analytics/performanceMonitor.ts:77",
+      "judgment": "PerformanceStats 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/analytics/performanceMonitor.ts:PerformanceMonitor:datastruct:bb81780a158c",
+      "file": "src/utils/analytics/performanceMonitor.ts",
+      "line": 122,
+      "symbol": "PerformanceMonitor",
+      "module": "src",
+      "anchor": "src/utils/analytics/performanceMonitor.ts:122",
+      "judgment": "PerformanceMonitor 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/assetPath.js:getAssetPath:export:961fd8fff3cf",
+      "file": "src/utils/assetPath.js",
+      "line": 14,
+      "symbol": "getAssetPath",
+      "module": "src",
+      "anchor": "src/utils/assetPath.js:14",
+      "judgment": "getAssetPath 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/assetPath.js:generateScriptTag:export:09f9fb1d8816",
+      "file": "src/utils/assetPath.js",
+      "line": 41,
+      "symbol": "generateScriptTag",
+      "module": "src",
+      "anchor": "src/utils/assetPath.js:41",
+      "judgment": "generateScriptTag 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/assetPath.js:generateStyleTag:export:5dca0576eada",
+      "file": "src/utils/assetPath.js",
+      "line": 53,
+      "symbol": "generateStyleTag",
+      "module": "src",
+      "anchor": "src/utils/assetPath.js:53",
+      "judgment": "generateStyleTag 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/assetPath.js:generateModulePreloadTag:export:b05dd8b8a69f",
+      "file": "src/utils/assetPath.js",
+      "line": 64,
+      "symbol": "generateModulePreloadTag",
+      "module": "src",
+      "anchor": "src/utils/assetPath.js:64",
+      "judgment": "generateModulePreloadTag 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/languageDetector.ts:LanguageDetectionResult:datastruct:74b382d63961",
+      "file": "src/utils/languageDetector.ts",
+      "line": 6,
+      "symbol": "LanguageDetectionResult",
+      "module": "src",
+      "anchor": "src/utils/languageDetector.ts:6",
+      "judgment": "LanguageDetectionResult 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/languageDetector.ts:LanguageDetector:datastruct:a9e5eab672ee",
+      "file": "src/utils/languageDetector.ts",
+      "line": 12,
+      "symbol": "LanguageDetector",
+      "module": "src",
+      "anchor": "src/utils/languageDetector.ts:12",
+      "judgment": "LanguageDetector 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/mobileCaching.ts:CacheConfig:datastruct:7acd7ceef427",
+      "file": "src/utils/mobileCaching.ts",
+      "line": 25,
+      "symbol": "CacheConfig",
+      "module": "src",
+      "anchor": "src/utils/mobileCaching.ts:25",
+      "judgment": "CacheConfig 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/mobileCaching.ts:CacheEntry:datastruct:cbfe4051323f",
+      "file": "src/utils/mobileCaching.ts",
+      "line": 35,
+      "symbol": "CacheEntry",
+      "module": "src",
+      "anchor": "src/utils/mobileCaching.ts:35",
+      "judgment": "CacheEntry 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/mobileCaching.ts:StorageAdapter:datastruct:e85dbe00e028",
+      "file": "src/utils/mobileCaching.ts",
+      "line": 48,
+      "symbol": "StorageAdapter",
+      "module": "src",
+      "anchor": "src/utils/mobileCaching.ts:48",
+      "judgment": "StorageAdapter 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/mobileCaching.ts:MobileCacheManager:datastruct:f8c5af111a8d",
+      "file": "src/utils/mobileCaching.ts",
+      "line": 200,
+      "symbol": "MobileCacheManager",
+      "module": "src",
+      "anchor": "src/utils/mobileCaching.ts:200",
+      "judgment": "MobileCacheManager 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/mobileCaching.ts:useMobileCache:export:c9088ffd2b36",
+      "file": "src/utils/mobileCaching.ts",
+      "line": 625,
+      "symbol": "useMobileCache",
+      "module": "src",
+      "anchor": "src/utils/mobileCaching.ts:625",
+      "judgment": "useMobileCache 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/mobileCaching.ts:withMobileCache:export:02b457c6b0f9",
+      "file": "src/utils/mobileCaching.ts",
+      "line": 642,
+      "symbol": "withMobileCache",
+      "module": "src",
+      "anchor": "src/utils/mobileCaching.ts:642",
+      "judgment": "withMobileCache 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:NavigationError:datastruct:e82d6f0bfaec",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "line": 19,
+      "symbol": "NavigationError",
+      "module": "src",
+      "anchor": "src/utils/navigationErrorHandler.ts:19",
+      "judgment": "NavigationError 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:RecoveryStrategy:datastruct:2bb007564abf",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "line": 30,
+      "symbol": "RecoveryStrategy",
+      "module": "src",
+      "anchor": "src/utils/navigationErrorHandler.ts:30",
+      "judgment": "RecoveryStrategy 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:NavigationErrorHandler:datastruct:57aa226d62c3",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "line": 38,
+      "symbol": "NavigationErrorHandler",
+      "module": "src",
+      "anchor": "src/utils/navigationErrorHandler.ts:38",
+      "judgment": "NavigationErrorHandler 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:validateNavigation:export:fa51af488107",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "line": 289,
+      "symbol": "validateNavigation",
+      "module": "src",
+      "anchor": "src/utils/navigationErrorHandler.ts:289",
+      "judgment": "validateNavigation 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:handleNavigationError:export:a0da8fd4a247",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "line": 293,
+      "symbol": "handleNavigationError",
+      "module": "src",
+      "anchor": "src/utils/navigationErrorHandler.ts:293",
+      "judgment": "handleNavigationError 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:handleProcessingError:export:04dd91aac889",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "line": 297,
+      "symbol": "handleProcessingError",
+      "module": "src",
+      "anchor": "src/utils/navigationErrorHandler.ts:297",
+      "judgment": "handleProcessingError 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationErrorHandler.ts:handleStateCorruption:export:715981fa5958",
+      "file": "src/utils/navigationErrorHandler.ts",
+      "line": 301,
+      "symbol": "handleStateCorruption",
+      "module": "src",
+      "anchor": "src/utils/navigationErrorHandler.ts:301",
+      "judgment": "handleStateCorruption 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationNetworkHandler.ts:NetworkState:datastruct:5f1a9c0ce166",
+      "file": "src/utils/navigationNetworkHandler.ts",
+      "line": 28,
+      "symbol": "NetworkState",
+      "module": "src",
+      "anchor": "src/utils/navigationNetworkHandler.ts:28",
+      "judgment": "NetworkState 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationNetworkHandler.ts:RetryConfig:datastruct:9e90d699d0fd",
+      "file": "src/utils/navigationNetworkHandler.ts",
+      "line": 37,
+      "symbol": "RetryConfig",
+      "module": "src",
+      "anchor": "src/utils/navigationNetworkHandler.ts:37",
+      "judgment": "RetryConfig 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationNetworkHandler.ts:NavigationNetworkHandler:datastruct:ad1cc8465a97",
+      "file": "src/utils/navigationNetworkHandler.ts",
+      "line": 61,
+      "symbol": "NavigationNetworkHandler",
+      "module": "src",
+      "anchor": "src/utils/navigationNetworkHandler.ts:61",
+      "judgment": "NavigationNetworkHandler 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationPerformanceMonitor.ts:PerformanceMetrics:datastruct:217f8e2e4cab",
+      "file": "src/utils/navigationPerformanceMonitor.ts",
+      "line": 9,
+      "symbol": "PerformanceMetrics",
+      "module": "src",
+      "anchor": "src/utils/navigationPerformanceMonitor.ts:9",
+      "judgment": "PerformanceMetrics 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationPerformanceMonitor.ts:PerformanceEvent:datastruct:021badf12633",
+      "file": "src/utils/navigationPerformanceMonitor.ts",
+      "line": 19,
+      "symbol": "PerformanceEvent",
+      "module": "src",
+      "anchor": "src/utils/navigationPerformanceMonitor.ts:19",
+      "judgment": "PerformanceEvent 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    },
+    {
+      "unit_id": "src/utils/navigationPerformanceMonitor.ts:PerformanceThresholds:datastruct:6011f5590838",
+      "file": "src/utils/navigationPerformanceMonitor.ts",
+      "line": 27,
+      "symbol": "PerformanceThresholds",
+      "module": "src",
+      "anchor": "src/utils/navigationPerformanceMonitor.ts:27",
+      "judgment": "PerformanceThresholds 位于导出或上传边界，影响交付物生成或输入校验。",
+      "agent": "subagent-src-export"
+    }
+  ],
+  "elapsed_ms": 6
+}

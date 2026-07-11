@@ -1,0 +1,107 @@
+{
+  "module": "src",
+  "module_role": "产品主应用：组装上传、内容感知 Web Worker 切图、会话状态、预览选择与 PDF/ZIP 导出，并叠加 i18n/SEO/响应式。",
+  "entry_points": [
+    "src/main.tsx:5",
+    "src/App.tsx:29",
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useImageProcessor.ts:19",
+    "src/workers/split.worker.js:75"
+  ],
+  "core_data_structures": [
+    "AppState（worker/blobs/objectUrls/originalImage/imageSlices/selectedSlices/isProcessing/splitHeight/fileName）",
+    "ImageSlice（blob/url/index/width/height；index 为排序主键）",
+    "WorkerMessage（progress/chunk/done/error 契约 v1.1）",
+    "Band / SplitOptions / ChoosePointsOptions（内容感知纯函数模型）",
+    "PDFExportOptions / ZIPExportOptions"
+  ],
+  "main_flow": [
+    "src/main.tsx:5 createRoot 挂载 App",
+    "AppContent 组装 useAppState + useImageProcessor + useRouter（src/App.tsx:29-38）",
+    "FileUploader 校验类型/大小后调用 processImage(file)",
+    "useImageProcessor.processImage：cleanupSession → setProcessing → createWorker → startProcessing(file, splitHeight)（:92-128）",
+    "split.worker processImage：decode → OffscreenCanvas → analyzeSplitPoints → computeSliceBounds → JPEG chunk（:75-180）",
+    "chunk 回调：addBlob + createObjectURL + onload → ADD_IMAGE_SLICE 按 index 写入（useImageProcessor:30-58 / useAppState:47-55）",
+    "切片从 0 变为 >0 时路由 /upload→/split（App effect）",
+    "用户多选后 ExportControls 触发 PDFExporter/ZIPExporter filter+sort 导出"
+  ],
+  "cross_module_dependencies": [
+    "src/App.tsx:22 引用 shared-components CopyrightInfo（展示层；组件文件 unparsed，跨模块结论部分验证）",
+    "src 经 config/* 与 src/config/seo/configLoader.ts 读取部署/SEO 配置（元数据面，非 imageSlices）",
+    "tools/scripts 不在运行时主路径（未两端闭环，见 open_questions）"
+  ],
+  "key_design_decisions": [
+    "Web Worker + OffscreenCanvas 做重像素运算，避免主线程卡顿；代价是消息协议与生命周期复杂度",
+    "内容感知切割（splitAnalyzer 纯函数）失败必须回退固定高度等分，保证“绝不更差”",
+    "ADD_IMAGE_SLICE 按 index 写入，修复 img.onload 乱序导致的导出页序错误",
+    "会话状态集中 useReducer，而非 Redux/散落 local state；仅 I18n/SEO 用 Context",
+    "导出算法放在 utils，UI 只收集选中集与选项；空选中抛错",
+    "持久化仅 splitHeight/fileName/language，不序列化 Blob"
+  ],
+  "risk_areas": [
+    {
+      "category": "async-ordering",
+      "evidence": "src/hooks/useAppState.ts:49",
+      "finding": "切片经异步 onload 回填；若不用 index 写入会乱序破坏导出页序",
+      "impact": "直接导致用户交付物顺序错误，属于正确性关键风险"
+    },
+    {
+      "category": "resource-lifecycle",
+      "evidence": "src/hooks/useAppState.ts:89",
+      "finding": "CLEANUP_SESSION 需 revoke 全部 ObjectURL 并 terminate worker；迟到 chunk 无世代号防护",
+      "impact": "内存泄漏或 cleanup 后脏写；长会话下内存上涨"
+    },
+    {
+      "category": "error-handling",
+      "evidence": "src/utils/pdfExporter.ts:63",
+      "finding": "无选中切片时导出抛错；需 UI 层 canExport 协同",
+      "impact": "若 UI 未禁用会暴露失败路径，影响体验"
+    },
+    {
+      "category": "memory-ceiling",
+      "evidence": "src/workers/split.worker.js:116",
+      "finding": "全图 getImageData 做内容分析；超长图内存峰值高，分块读取仍是未来项",
+      "impact": "极限长图可能导致 worker OOM 或标签页崩溃"
+    }
+  ],
+  "semantic_reviews": [
+    {
+      "unit_id": "src/hooks/useAppState.ts:useAppState:export:675d300b2269",
+      "anchor": "src/hooks/useAppState.ts:122",
+      "judgment": "会话状态用 reducer 集中管理 worker/blobs/objectUrls/imageSlices；ADD_IMAGE_SLICE 按 index 写入抗 onload 乱序，CLEANUP_SESSION 统一 revoke 与 terminate。",
+      "source_observation": "源码 useAppState 导出 useReducer 会话；ADD_IMAGE_SLICE 用 newImageSlices[index]=payload 按序写入，CLEANUP_SESSION 遍历 revokeObjectURL 并 terminate worker，同时保留 splitHeight/fileName。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/hooks/useImageProcessor.ts:UseImageProcessorProps:datastruct:cf85d7623cae",
+      "anchor": "src/hooks/useImageProcessor.ts:5",
+      "judgment": "切图编排接口：注入 state/actions，使 processImage 可在 cleanup 后经 Worker chunk 回填 ObjectURL 与尺寸，把重计算移出主线程。",
+      "source_observation": "UseImageProcessorProps 要求注入 addBlob/addImageSlice/cleanupSession 等 actions；processImage 先 cleanup 再 createWorker+startProcessing(file, splitHeight)，chunk 路径 createObjectURL 后 onload 回填切片。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/workers/split.worker.js:processImage:export:30217a770fc2",
+      "anchor": "src/workers/split.worker.js:75",
+      "judgment": "Worker 主流程：decode→OffscreenCanvas→analyzeSplitPoints→按 bounds 切片 postMessage chunk，失败分析回退等分。",
+      "source_observation": "processImage 在 worker 内 createImageBitmap→OffscreenCanvas→getImageData→analyzeSplitPoints；异常时 splitPoints=[] 回退等分，再 computeSliceBounds 循环 convertToBlob 发送 chunk。",
+      "verdict": "supported"
+    }
+  ],
+  "source_evidence": [
+    "src/main.tsx:5",
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useImageProcessor.ts:19",
+    "src/hooks/useWorker.ts:42",
+    "src/workers/split.worker.js:75",
+    "src/utils/splitAnalyzer.ts:88",
+    "src/utils/pdfExporter.ts:37",
+    "src/utils/zipExporter.ts:34"
+  ],
+  "open_questions": [
+    "大量 src/components/*.tsx 处于 unparsed，组件层细节（含 SEO 管理器内部）未完全源码核验",
+    "shared-components 与 src 的打包/版本边界在扁平单仓下的长期策略未从构建配置完全证实",
+    "Worker 迟到消息是否会在 CLEANUP 后写回状态：未见会话世代号，需运行时验证",
+    "tools/scripts 与运行时主路径的边界仅抽样，未做完整依赖图"
+  ],
+  "narrative": "src 把“长图切割”做成浏览器内会话：useAppState 管切片与资源生命周期，useImageProcessor/useWorker 把计算丢到 module Worker，splitAnalyzer 以纯函数提供内容感知切点并在失败时安全回退，pdf/zip 导出器只消费选中集合。UI 组件尽量薄，主复杂度在 hooks/utils/worker；这也解释了 parse 不全时仍能从 hooks 读懂主链路，却不能声称组件层全覆盖。"
+}

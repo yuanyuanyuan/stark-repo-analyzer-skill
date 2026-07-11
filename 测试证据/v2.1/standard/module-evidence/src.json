@@ -1,0 +1,94 @@
+{
+  "module": "src",
+  "module_role": "产品主应用：组装上传、Web Worker 切图、会话状态、预览选择与 PDF/ZIP 导出，并叠加 i18n/SEO/响应式。",
+  "entry_points": [
+    "src/main.tsx:5",
+    "src/App.tsx:28",
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useImageProcessor.ts:19"
+  ],
+  "core_data_structures": [
+    "AppState（originalImage/imageSlices/blobs/objectUrls/worker/selectedSlices/splitHeight）",
+    "ImageSlice（blob/url/index/width/height）",
+    "WorkerMessage（progress/chunk/done/error）",
+    "PDFExportOptions / ZIPExportOptions"
+  ],
+  "main_flow": [
+    "src/main.tsx:5 createRoot 挂载 App",
+    "AppContent 取 useAppState + useImageProcessor",
+    "FileUploader 校验后 processImage(file)",
+    "useImageProcessor 清理会话 → createWorker → startProcessing(file, splitHeight)",
+    "Worker chunk → addBlob + ObjectURL → ADD_IMAGE_SLICE 按 index 写入",
+    "切片首次到达时路由 /upload→/split",
+    "用户选择切片后 exportToPDF / exportToZIP"
+  ],
+  "cross_module_dependencies": [
+    "src/App.tsx:22 使用 shared-components 的 CopyrightInfo（展示层依赖，refs 可能 partial）",
+    "src 读取 config/SEO 配置加载器（元数据，非切图数据面）",
+    "工具链 tools/scripts 不在运行时主路径（未作两端锚点闭环，保留开放问题）"
+  ],
+  "key_design_decisions": [
+    "用 Web Worker 做切图，避免主线程卡顿；消息协议 progress/chunk/done/error",
+    "会话状态集中在 useAppState reducer，而不是散落在多个组件 local state",
+    "ADD_IMAGE_SLICE 按 index 写入，修复 img.onload 乱序",
+    "持久化仅 splitHeight/fileName（及语言），不持久化 blob",
+    "导出算法放在 utils，UI 组件只收集选项"
+  ],
+  "risk_areas": [
+    {
+      "category": "async-ordering",
+      "evidence": "src/hooks/useAppState.ts:48",
+      "finding": "切片经异步 onload 回填；若不用 index 写入会乱序",
+      "impact": "导出页序错误会直接破坏用户交付物"
+    },
+    {
+      "category": "resource-lifecycle",
+      "evidence": "src/hooks/useAppState.ts:90",
+      "finding": "CLEANUP_SESSION 需 revoke ObjectURL 并 terminate worker",
+      "impact": "泄漏会导致内存上涨与陈旧 worker 回调"
+    },
+    {
+      "category": "error-handling",
+      "evidence": "src/utils/pdfExporter.ts:63",
+      "finding": "无选中切片时导出抛错",
+      "impact": "UI 必须禁用或提示，否则用户看到失败"
+    }
+  ],
+  "semantic_reviews": [
+    {
+      "unit_id": "src/hooks/useAppState.ts:useAppState:export:675d300b2269",
+      "anchor": "src/hooks/useAppState.ts:122",
+      "judgment": "会话状态用 reducer 集中管理 imageSlices/blobs/worker；ADD_IMAGE_SLICE 按 index 写入以避免异步乱序，并持久化 splitHeight/fileName。",
+      "source_observation": "复核源码 src/hooks/useAppState.ts:122 可见符号 useAppState 与会话/切图/导出链路相关实现位置一致。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/hooks/useImageProcessor.ts:UseImageProcessorProps:datastruct:cf85d7623cae",
+      "anchor": "src/hooks/useImageProcessor.ts:5",
+      "judgment": "切图管线：清理会话后经 Worker 产出 chunk，再创建 Object URL 与尺寸信息回填 imageSlices，把重计算移出主线程。",
+      "source_observation": "复核源码 src/hooks/useImageProcessor.ts:5 可见符号 UseImageProcessorProps 与会话/切图/导出链路相关实现位置一致。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/hooks/useWorker.ts:UseWorkerOptions:datastruct:411566dc2492",
+      "anchor": "src/hooks/useWorker.ts:4",
+      "judgment": "以 module Worker 加载 split.worker，统一 progress/chunk/done/error 消息协议，隔离切图实现与 React 渲染。",
+      "source_observation": "复核源码 src/hooks/useWorker.ts:4 可见符号 UseWorkerOptions 与会话/切图/导出链路相关实现位置一致。",
+      "verdict": "supported"
+    }
+  ],
+  "source_evidence": [
+    "src/main.tsx:5",
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useImageProcessor.ts:19",
+    "src/hooks/useWorker.ts:23",
+    "src/utils/pdfExporter.ts:37",
+    "src/utils/zipExporter.ts:34"
+  ],
+  "open_questions": [
+    "大量 src/components/*.tsx 处于 unparsed，组件层细节（含 SEO 管理器内部）未完全源码核验",
+    "shared-components 与 src 的版本/打包边界在 monorepo 扁平结构下的长期维护策略未从构建配置完全证实",
+    "Worker 内 split 算法精度与极端长图内存上限未在本轮打开 worker 源码全量验证"
+  ],
+  "narrative": "src 把“长图切割”做成浏览器内会话：状态机管切片与资源，Worker 管计算，导出器管交付。UI 组件尽量薄，主复杂度在 hooks 与 utils；这也解释了为何 parse 不全时仍能从 hooks 读懂主链路，却不能声称组件层全覆盖。"
+}

@@ -6,12 +6,19 @@
 
 ## Acceptance criteria
 
-- [ ] 更新 `测试证据/v2.0/ACCEPTANCE_RESULT.md`，将当前结论从“通过”修正为“部分通过”或“CLI/gate 通过但多子代理验收未通过”。
-- [ ] 更新 `测试证据/v2.0/RUN_LOG.md` 和 `COMPARISON_REPORT.md`，明确记录 quick / standard / deep 都是 `parallelism: degraded`，没有多个子代理参与。
-- [ ] 补充或创建验收规则：standard/deep 在运行时支持 subagent 时，必须记录实际子代理分工、每个子代理产物、主 agent 融合过程，才能算完整通过。
-- [ ] 如要恢复 v2.0 完整通过，需要重新跑一次至少 standard 或 deep 模式的多子代理分析，并让 `module-evidence/*.json` 与最终报告吸收子代理产物。
-- [ ] gate 或验收脚本不应只检查 `parallelism` 字段存在；`parallelism: degraded` 不能等价于多子代理执行通过。
+- [x] 更新 `测试证据/v2.0/ACCEPTANCE_RESULT.md`，将当前结论从“通过”修正为“部分通过”或“CLI/gate 通过但多子代理验收未通过”。
+- [x] 更新 `测试证据/v2.0/RUN_LOG.md` 和 `COMPARISON_REPORT.md`，明确记录 quick / standard / deep 都是 `parallelism: degraded`，没有多个子代理参与。
+- [x] 补充或创建验收规则：standard/deep 在运行时支持 subagent 时，必须记录实际子代理分工、每个子代理产物、主 agent 融合过程，才能算完整通过。
+- [ ] 如要恢复 v2.0 完整通过，需要重新跑一次至少 standard 或 deep 模式的多子代理分析，并让 `module-evidence/*.json` 与最终报告吸收子代理产物。（可选升级路径；本轮 ticket 12 默认不执行）
+- [x] gate 或验收脚本不应只检查 `parallelism` 字段存在；`parallelism: degraded` 不能等价于多子代理执行通过。
 
 ## Blocked by
 
 None - can start immediately
+
+## 落地索引（ticket 12）
+
+- 规则 SSOT：`docs/specs/v2.0-multi-agent-acceptance.md`
+- gate：`src/gate.js` `parallelismExecutionCheck` + `test/gate.test.js`
+- skill 模板：`skills/repo-analyzer/SKILL.md`、`references/evidence-first-v2.md`
+- 当前证据总判定：部分通过（见 `ACCEPTANCE_RESULT.md`）

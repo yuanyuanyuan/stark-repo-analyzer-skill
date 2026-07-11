@@ -65,7 +65,7 @@ Downstream commands cannot run until `doctor-report.json` has `allowed: true`. F
 
 Deterministic tools identify candidates; they do not produce architectural conclusions. Every important conclusion must be verified against source anchors, project documentation, or primary external sources. Reports still explain the project overview, core flows, module collaboration, motivation, trade-offs, alternatives, risks, and concrete recommendations instead of degrading into file or symbol inventories. The gate requires at least 80% overall and primary-language source parse rate, at most 20% unparsed core files, and at most 80% core units with partial or missing references.
 
-When subagents are unavailable, the workflow runs serially and records `parallelism: degraded`; evidence, coverage, and quality requirements remain unchanged.
+When subagents are unavailable, the workflow runs serially and records `parallelism: degraded`; evidence completeness, coverage, and other quality requirements stay in force. **Full standard/deep acceptance** still requires real multi-subagent execution records (`parallelism: active`, subagent split, per-subagent artifacts, and main-agent merge). `parallelism: degraded` only proves a serial/CLI mechanical path—not multi-subagent pass. See `docs/specs/v2.0-multi-agent-acceptance.md`.
 
 ## Usage
 

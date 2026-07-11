@@ -379,6 +379,17 @@ test("standard/deep gate 不把 parallelism degraded 视为多子代理执行通
   assert.equal(report.allowed_to_synthesize, false);
 });
 
+test("quick gate 允许 parallelism degraded 且不因缺少 active 而失败", () => {
+  const { fixture, env } = prepareArtifacts();
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 0);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "parallelism-execution");
+  assert.equal(check.status, "pass");
+  assert.equal(report.allowed_to_synthesize, true);
+  assert.match(readFileSync(join(fixture.out, "evidence-plan.md"), "utf8"), /parallelism:\s*degraded/i);
+});
+
 test("standard/deep gate 要求显式记录 active parallelism", () => {
   const { fixture, env } = prepareStandardArtifacts();
   writeFileSync(
