@@ -1,0 +1,14 @@
+# lessons（只追加）
+
+> 写 lessons ≠ writeback agent/SOUL。产品票 Evolution 默认 none-with-reason。
+
+## 初始化
+
+- 2026-07-11：目录 scaffold。尚无历史 lessons。
+
+## 2026-07-11 · ticket 12 · degraded 验收收口
+
+- 现象：Issue #12 AC 与仓库主体（ACCEPTANCE/gate）已大体一致，但 README/spec 仍写「缺并行不影响通过标准」，与 `parallelismExecutionCheck` 冲突；ISSUE 本地 checkbox 未勾。
+- 正确做法：规则 SSOT 落 `docs/specs/v2.0-multi-agent-acceptance.md`；修 README/spec 表述；AC1–3/5 勾选；AC4 保持可选未勾；补 quick 允许 degraded 的单测。
+- 误伤点：勿把历史 `allowed_to_synthesize:true` 或「质量门其它项不降级」写成 standard/deep 多子代理完整通过。
+- 分支约定：本仓库工作分支 `yuanyuanyuan/v2.0-parallelism-degraded` 即 ticket 12 交付分支；用户可覆写「不新建 feat/12」。
