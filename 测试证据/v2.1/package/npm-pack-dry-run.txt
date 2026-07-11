@@ -1,0 +1,33 @@
+npm notice
+npm notice 📦  repo-analyzer@2.0.0
+npm notice Tarball Contents
+npm notice 691B CHANGELOG.md
+npm notice 1.1kB LICENSE
+npm notice 5.3kB README.md
+npm notice 4.9kB README.zh.md
+npm notice 165B bin/repo-analyzer.js
+npm notice 640B package.json
+npm notice 9.9kB skills/repo-analyzer/references/analysis-guide.md
+npm notice 3.9kB skills/repo-analyzer/references/evidence-first-v2.md
+npm notice 5.5kB skills/repo-analyzer/references/module-analysis-guide.md
+npm notice 15.6kB skills/repo-analyzer/SKILL.md
+npm notice 1.4kB src/budgets.js
+npm notice 1.9kB src/cli.js
+npm notice 2.2kB src/common.js
+npm notice 5.9kB src/doctor.js
+npm notice 23.0kB src/gate.js
+npm notice 502B src/languages.js
+npm notice 8.1kB src/scan.js
+npm notice 2.1kB src/summarize.js
+npm notice 10.7kB src/units.js
+npm notice Tarball Details
+npm notice name: repo-analyzer
+npm notice version: 2.0.0
+npm notice filename: repo-analyzer-2.0.0.tgz
+npm notice package size: 35.1 kB
+npm notice unpacked size: 103.4 kB
+npm notice shasum: 9908089a78c9a69fc39094f90f3a9ce6d4cc3e15
+npm notice integrity: sha512-qb+VbhDJWbXo6[...]XzLzrv19qAy1w==
+npm notice total files: 19
+npm notice
+repo-analyzer-2.0.0.tgz
