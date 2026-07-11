@@ -12,3 +12,10 @@
 - 正确做法：规则 SSOT 落 `docs/specs/v2.0-multi-agent-acceptance.md`；修 README/spec 表述；AC1–3/5 勾选；AC4 保持可选未勾；补 quick 允许 degraded 的单测。
 - 误伤点：勿把历史 `allowed_to_synthesize:true` 或「质量门其它项不降级」写成 standard/deep 多子代理完整通过。
 - 分支约定：本仓库工作分支 `yuanyuanyuan/v2.0-parallelism-degraded` 即 ticket 12 交付分支；用户可覆写「不新建 feat/12」。
+
+## 2026-07-11 · Loop · PR #15
+
+- PR: https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/pull/15（正式，非 draft）
+- 差距：无阻塞 residual；AC4 multi-agent 完整重跑仍为可选升级，未纳入本 PR（诚实声明）。
+- Next LOOP：Done（除非用户要做 AC4 或修 PR review 意见）。
+- time_param：手动：贴入 review/CI 结果后继续。

@@ -6,7 +6,7 @@
 
 ## 最近一条
 
-- 2026-07-11 ticket 12：degraded ≠ 多子代理完整通过；README/spec 须与 gate 对齐
+- 2026-07-11 ticket 12 / PR #15：degraded 口径收口已开正式 PR；AC4 仍可选
 
 ## 索引
 
