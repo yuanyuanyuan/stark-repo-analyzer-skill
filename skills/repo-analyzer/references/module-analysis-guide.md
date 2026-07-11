@@ -46,6 +46,8 @@ JSON Matrix 是 `gate` 的契约输入，叙事草稿负责 Why > What 的解释
 
 跨模块推断只有在两端都被验证时才能写成确定性结论。`refs_status` 为 `partial` 或 `missing` 时，相关推断必须进入 `open_questions` 或最终报告的 Unsupported Area。
 
+若跨模块依赖指向的目标文件位于 **core unparsed** 列表，必须触发 **Unparsed File Read Pass**（基线工具 `rg`/`find`/`wc`/读文件），把观察写入 `unparsed_manual_reads` 或 `unparsed-file-reviews*`，并在依赖结论中标明 `manual-read`；**不得**因补读而把目标标为 analyzed unit，也不得静默假装已完成符号级覆盖。
+
 ## 关键单元回填
 
 模块分析只能修改 `coverage-units.json` 的 `status`、`anchor`、`judgment` 和 `skip_reason`：
@@ -123,6 +125,7 @@ JSON Matrix 是 `gate` 的契约输入，叙事草稿负责 Why > What 的解释
 - JSON Matrix 字段完整且源码证据为 `文件:行号`。
 - 叙事中的关键判断能回指 Matrix 和关键单元。
 - 每个核心模块完成风险抽样。
-- 未覆盖单元有原因，未解析 core 路径进入 Unsupported Area。
+- 未覆盖单元有原因，未解析 core 路径进入 Unsupported Area，且 core unparsed 已执行 Unparsed File Read Pass（或写明预算 skip 原因）。
+- 补读观察使用 confidence=`manual-read`，未抬高 parse_rate，未把 unparsed 标为 analyzed。
 - 开放问题没有在叙事中被静默写成已验证结论。
 - `repo-analyzer gate` 通过后才进入最终合成。

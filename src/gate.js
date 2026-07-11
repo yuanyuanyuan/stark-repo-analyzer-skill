@@ -283,6 +283,95 @@ function reportDepthCheck(out) {
   return check("report-depth", missing.length === 0, missing.map((name) => `report.md 缺少${name}，不能作为正常通过的架构报告。`), [path]);
 }
 
+function coreUnparsedFiles(coverage) {
+  const coreNames = new Set(coverage.modules.filter((module) => module.classification === "core").map((module) => module.name));
+  return coverage.unparsed.filter((file) => coreNames.has(moduleForFile(coverage, file)));
+}
+
+function collectUnparsedManualReadRecords(out, matrices) {
+  const evidence = [];
+  const reviewedPaths = new Set();
+
+  const planPath = join(out, "evidence-plan.md");
+  if (existsSync(planPath)) {
+    const plan = readFileSync(planPath, "utf8");
+    if (/Unparsed File Read Pass|unparsed[_\s-]?manual[_\s-]?read|unparsed[_\s-]?file[_\s-]?review/i.test(plan)) {
+      evidence.push(planPath);
+      for (const match of plan.matchAll(/`?([A-Za-z0-9_./-]+\.[A-Za-z0-9]+)`?/g)) {
+        if (match[1].includes("/")) reviewedPaths.add(match[1]);
+      }
+    }
+  }
+
+  const reviewsDir = join(out, "unparsed-file-reviews");
+  if (existsSync(reviewsDir)) {
+    for (const file of readdirSync(reviewsDir)) {
+      if (!file.endsWith(".md") && !file.endsWith(".json")) continue;
+      const path = join(reviewsDir, file);
+      evidence.push(path);
+      const content = readFileSync(path, "utf8");
+      for (const match of content.matchAll(/`?([A-Za-z0-9_./-]+\.[A-Za-z0-9]+)`?/g)) {
+        if (match[1].includes("/")) reviewedPaths.add(match[1]);
+      }
+      const stem = file.replace(/\.(md|json)$/i, "");
+      if (stem.includes(".")) reviewedPaths.add(stem);
+      if (stem.includes("-")) reviewedPaths.add(stem.replaceAll("-", "/"));
+    }
+  }
+
+  const reviewsJson = join(out, "unparsed-file-reviews.json");
+  if (existsSync(reviewsJson)) {
+    evidence.push(reviewsJson);
+    try {
+      const payload = readJson(reviewsJson);
+      const rows = Array.isArray(payload) ? payload : payload?.reviews ?? payload?.files ?? [];
+      for (const row of rows) {
+        if (typeof row === "string" && row.includes("/")) reviewedPaths.add(row);
+        if (row?.path) reviewedPaths.add(row.path);
+      }
+    } catch {
+      // invalid JSON still counts as a review artifact existence signal via evidence path
+    }
+  }
+
+  for (const matrix of matrices) {
+    const rows = matrix.value?.unparsed_manual_reads;
+    if (!Array.isArray(rows) || rows.length === 0) continue;
+    evidence.push(matrix.path);
+    for (const row of rows) {
+      if (row?.path) reviewedPaths.add(row.path);
+    }
+  }
+
+  return { evidence, reviewedPaths, hasAnyRecord: evidence.length > 0 };
+}
+
+function unparsedManualReviewCheck(out, coverage, matrices) {
+  const coreUnparsed = coreUnparsedFiles(coverage);
+  if (coreUnparsed.length === 0) {
+    return check("unparsed-manual-review", true, [], []);
+  }
+
+  const { evidence, reviewedPaths, hasAnyRecord } = collectUnparsedManualReadRecords(out, matrices);
+  if (!hasAnyRecord) {
+    return check(
+      "unparsed-manual-review",
+      false,
+      [
+        "core unparsed 非空时只声明 Unsupported 未执行补读 pass：缺少 Evidence Plan「Unparsed File Read Pass」节、unparsed-file-reviews* 或 module-evidence.unparsed_manual_reads。",
+      ],
+      coreUnparsed,
+    );
+  }
+
+  // Having any auditable record passes this check; residual unread files remain in Unsupported Area.
+  return {
+    ...check("unparsed-manual-review", true, [], evidence),
+    core_unparsed: coreUnparsed,
+    reviewed_paths: [...reviewedPaths],
+  };
+}
+
 function unsupportedCheck(coverage, reportContent) {
   const coreNames = new Set(coverage.modules.filter((module) => module.classification === "core").map((module) => module.name));
   const moduleForFile = (file) => coverage.modules.find((module) =>
@@ -446,6 +535,7 @@ export function gate({ out, mode }) {
     matrixCheck(coverage, matrices),
     moduleCoverage(coverage, budget),
     unsupportedCheck(coverage, reportContent),
+    unparsedManualReviewCheck(out, coverage, matrices),
     referenceCheck(coverage, matrices, reportContent),
     semanticSourceReviewCheck(coverage, matrices, mode),
     reportDepthCheck(out),

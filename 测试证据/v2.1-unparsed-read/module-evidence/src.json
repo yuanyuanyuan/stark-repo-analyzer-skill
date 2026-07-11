@@ -1,0 +1,214 @@
+{
+  "module": "src",
+  "module_role": "核心运行时：拥有会话状态、Worker 切图编排、内容感知算法与 PDF/ZIP 导出旁路，并在 App 层组装页面。",
+  "entry_points": [
+    "src/main.tsx:5",
+    "src/App.tsx:28",
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useImageProcessor.ts:19",
+    "src/hooks/useWorker.ts:23",
+    "src/workers/split.worker.js:75"
+  ],
+  "core_data_structures": [
+    "AppState（worker/blobs/objectUrls/imageSlices/selectedSlices/isProcessing/splitHeight/fileName）",
+    "ImageSlice（blob/url/index/width/height）",
+    "WorkerMessage（progress/chunk/done/error）",
+    "Band / SplitOptions / ChoosePointsOptions（内容感知切点）"
+  ],
+  "main_flow": [
+    "上传 File → FileUploader 校验（manual-read）→ App handleFileSelect → useImageProcessor.processImage (src/hooks/useImageProcessor.ts:92)",
+    "cleanupSession + createWorker + startProcessing (useWorker/useImageProcessor)",
+    "Worker processImage: decode/draw/analyze/slice (src/workers/split.worker.js:75)",
+    "chunk → ADD_BLOB + ADD_IMAGE_SLICE 按 index (src/hooks/useAppState.ts:47)",
+    "切片计数 >0 跳转 /split（App.tsx manual-read）→ 预览多选 → exportToPDF/ZIP"
+  ],
+  "cross_module_dependencies": [
+    "src 运行时消费 shared-components 展示件（如 CopyrightInfo），但不把 imageSlices 下沉到 shared",
+    "src/utils/splitAnalyzer 被 split.worker 以 ESM import 调用（Worker module 类型）",
+    "config/seo 配置经 loader 服务元数据，旁路于切图会话",
+    "tools/scripts 不参与浏览器主数据面"
+  ],
+  "key_design_decisions": [
+    "状态集中 useReducer，计算外置 Web Worker，换 UI 流畅与协议复杂度",
+    "内容感知失败安全回退等分，保证不比固定高度更差",
+    "ADD_IMAGE_SLICE 按 index 写入，对抗 img.onload 乱序",
+    "导出作为纯函数/类旁路，只消费选中切片",
+    "扁平单仓降低发布成本，模块边界靠约定"
+  ],
+  "risk_areas": [
+    {
+      "category": "concurrency-ordering",
+      "evidence": "src/hooks/useAppState.ts:47",
+      "finding": "异步 onload 若用 push 会乱序；当前按 index 写入缓解，但仍可能产生稀疏数组语义边角。",
+      "impact": "错误顺序会破坏预览/导出页序，是正确性关键路径。"
+    },
+    {
+      "category": "resource-lifecycle",
+      "evidence": "src/hooks/useAppState.ts:89",
+      "finding": "CLEANUP_SESSION revoke URL 并 terminate worker；若迟到 chunk 无世代号可能写回已清理会话。",
+      "impact": "影响内存与会话一致性，评价时需计入工程成熟度风险。"
+    },
+    {
+      "category": "error-handling",
+      "evidence": "src/utils/pdfExporter.ts:63",
+      "finding": "空选择在 exporter 抛错；UI canExport/alert 形成双层，但仍依赖调用约定。",
+      "impact": "边界错误若只靠 throw，UX 与可测试性一般。"
+    },
+    {
+      "category": "performance-memory",
+      "evidence": "src/workers/split.worker.js:112",
+      "finding": "全图 getImageData KISS 实现，超长图存在内存峰值；spec 记分块为未来项。",
+      "impact": "限制极限长图可用性，是主要性能风险。"
+    }
+  ],
+  "semantic_reviews": [
+    {
+      "unit_id": "src/hooks/useAppState.ts:useAppState:export:675d300b2269",
+      "anchor": "src/hooks/useAppState.ts:122",
+      "judgment": "会话状态入口：useReducer 管理 worker/blobs/objectUrls/imageSlices/selectedSlices，是主链路单一写入口。",
+      "source_observation": "源码 span 显示 useReducer + actions 封装；ADD_IMAGE_SLICE 按 index 写入，CLEANUP_SESSION 会 revoke URL 并 terminate worker，同时保留 splitHeight/fileName。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/hooks/useImageProcessor.ts:UseImageProcessorProps:datastruct:cf85d7623cae",
+      "anchor": "src/hooks/useImageProcessor.ts:5",
+      "judgment": "切图编排：cleanup→processing→createWorker→startProcessing，把 File 交给 Worker 并回收 chunk。",
+      "source_observation": "源码 span 显示 processImage 先 cleanupSession 与 setProcessing，再 createWorker、短暂等待后 startProcessing(file, splitHeight)；chunk 回调 createObjectURL 并在 onload 后 addImageSlice。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/workers/split.worker.js:processImage:export:30217a770fc2",
+      "anchor": "src/workers/split.worker.js:75",
+      "judgment": "后台切图：createImageBitmap+OffscreenCanvas，内容感知失败则等分，按 index 回传 blob。",
+      "source_observation": "源码 span 显示 processImage 使用 createImageBitmap 与 OffscreenCanvas，analyzeSplitPoints 失败则 splitPoints=[] 回退等分，再 computeSliceBounds 循环 postMessage chunk。",
+      "verdict": "supported"
+    }
+  ],
+  "source_evidence": [
+    "src/hooks/useAppState.ts:47",
+    "src/hooks/useAppState.ts:89",
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useImageProcessor.ts:19",
+    "src/hooks/useImageProcessor.ts:92",
+    "src/hooks/useWorker.ts:42",
+    "src/workers/split.worker.js:75",
+    "src/utils/splitAnalyzer.ts:250",
+    "src/utils/pdfExporter.ts:37",
+    "src/utils/zipExporter.ts:34"
+  ],
+  "open_questions": [
+    "ScreenshotSplitter 与 AppContent 双编排在默认路由中的实际挂载关系",
+    "迟到 Worker chunk 是否在任何路径被静默写入",
+    "shared-components SharedStateManager 是否被主路径实际使用",
+    "大量 SEO 组件对核心切割工具的产品价值权重"
+  ],
+  "narrative": "src 以 useAppState 为会话核、Worker 为计算核、splitAnalyzer 为纯算法、导出为旁路。App（unparsed manual-read）把上传/预览/导出页粘合起来。设计主线是浏览器本地完成重计算且切口尽量不劈裂内容，并用等分回退托底。",
+  "unparsed_manual_reads": [
+    {
+      "path": "src/main.tsx",
+      "tools_used": [
+        "rg",
+        "read",
+        "wc"
+      ],
+      "anchors": [
+        "src/main.tsx:5"
+      ],
+      "observation": "createRoot 挂载 App，入口极薄。",
+      "confidence": "manual-read",
+      "residual_gap": "仍属 unparsed"
+    },
+    {
+      "path": "src/App.tsx",
+      "tools_used": [
+        "rg",
+        "read",
+        "wc"
+      ],
+      "anchors": [
+        "src/App.tsx:28",
+        "src/App.tsx:196",
+        "src/App.tsx:124",
+        "src/App.tsx:226"
+      ],
+      "observation": "AppContent 装配 hooks；切片计数驱动 /split；导出调用 pdf/zip。",
+      "confidence": "manual-read",
+      "residual_gap": "SEO/debug 大段未全覆盖"
+    },
+    {
+      "path": "src/components/FileUploader.tsx",
+      "tools_used": [
+        "rg",
+        "read",
+        "wc"
+      ],
+      "anchors": [
+        "src/components/FileUploader.tsx:22",
+        "src/components/FileUploader.tsx:51"
+      ],
+      "observation": "校验后回调 onFileSelect，不直接管 Worker。",
+      "confidence": "manual-read",
+      "residual_gap": "交互边角"
+    },
+    {
+      "path": "src/components/ExportControls.tsx",
+      "tools_used": [
+        "rg",
+        "read",
+        "wc"
+      ],
+      "anchors": [
+        "src/components/ExportControls.tsx:43",
+        "src/components/ExportControls.tsx:129"
+      ],
+      "observation": "UI 层 canExport；真正导出在父组件/exporter。",
+      "confidence": "manual-read",
+      "residual_gap": "类型局部重复"
+    },
+    {
+      "path": "src/components/ScreenshotSplitter.tsx",
+      "tools_used": [
+        "rg",
+        "read",
+        "wc"
+      ],
+      "anchors": [
+        "src/components/ScreenshotSplitter.tsx:25",
+        "src/components/ScreenshotSplitter.tsx:60"
+      ],
+      "observation": "组件内再次实例化状态与切图 hook，存在双编排风险。",
+      "confidence": "manual-read",
+      "residual_gap": "默认是否挂载"
+    },
+    {
+      "path": "src/components/ImagePreview.tsx",
+      "tools_used": [
+        "rg",
+        "read",
+        "wc"
+      ],
+      "anchors": [
+        "src/components/ImagePreview.tsx:31",
+        "src/components/ImagePreview.tsx:57"
+      ],
+      "observation": "受控多选预览，不拥有 blob 生命周期。",
+      "confidence": "manual-read",
+      "residual_gap": "性能细节"
+    },
+    {
+      "path": "src/components/Navigation.tsx",
+      "tools_used": [
+        "rg",
+        "read",
+        "wc"
+      ],
+      "anchors": [
+        "src/components/Navigation.tsx:184",
+        "src/components/Navigation.tsx:219"
+      ],
+      "observation": "步骤导航 UI，不持有 imageSlices 源真值。",
+      "confidence": "manual-read",
+      "residual_gap": "守卫全分支"
+    }
+  ]
+}

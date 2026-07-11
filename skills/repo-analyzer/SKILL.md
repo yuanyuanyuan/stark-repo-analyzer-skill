@@ -16,7 +16,7 @@ v2 是 breaking workflow：必须运行本仓库提供的确定性 CLI。缺少 
 3. 每个核心模块都解释动机、权衡、替代方案代价和全局协同，保留 Why > What。
 4. 确定性工具只生成候选信号，不能把扫描结果写成最终架构结论。
 5. 每个核心模块同时提交 JSON Evidence Matrix 和叙事分析。
-6. 未解析范围、引用不完整和证据不足必须进入开放问题或 Unsupported Area。
+6. 未解析范围、引用不完整和证据不足必须进入开放问题或 Unsupported Area；**Unsupported ≠ 禁止分析**：core unparsed 必须先走 Unparsed File Read Pass 再声明 residual。
 7. 最终报告合成前必须通过机器质量门；失败时修复证据或明确 unsupported 后重跑，不得绕过。
 
 分析哲学与写作标准继续遵守 [analysis-guide.md](references/analysis-guide.md) 和 [module-analysis-guide.md](references/module-analysis-guide.md)。v2 工件模板见 [evidence-first-v2.md](references/evidence-first-v2.md)。
@@ -126,6 +126,7 @@ repo-analyzer units --repo "$REPO" --out "$WORK_DIR"
 - subagent 分工；quick 模式或运行时无 subagent 时写 `parallelism: degraded` 并串行执行。standard/deep 模式若要作为完整通过，必须写明实际子代理分工、每个子代理产物和主 Agent 融合过程；`parallelism: degraded` 只能判为 CLI/gate 机械链路通过，不能判为多子代理验收通过。
 - 当前模式的总时间、总 token、subagent 上限、单 agent 证据预算和报告长度预算
 - 风险抽样计划与预期 Unsupported Area
+- 若 `coverage-units.json` 中存在 **core 模块 unparsed 文件**，必须规划 **Unparsed File Read Pass** 节（文件列表/选样优先级、工具白名单、预算、产物路径、`unparsed_read_pass.parallelism: active|degraded`）；禁止仅写「预期 Unsupported 路径列表」后结束
 - 报告章节结构与模块叙事线：选择数据流、分层或问题驱动顺序，并说明模块 A 的什么结论引出模块 B
 
 模块按业务能力和数据流识别，不按顶层目录直接定案。报告结构必须适配项目：可以省略无信息价值的章节，但通常应覆盖问题场景、竞品定位、项目全景、核心设计哲学、核心模块、批判性评价和可借鉴经验。
@@ -141,6 +142,27 @@ repo-analyzer units --repo "$REPO" --out "$WORK_DIR"
 三项缺一不计入覆盖率。未分析单元保留在分母中，并填写 `skip_reason`。
 
 并行时按 Evidence Plan 的问题边界分工，不按文件数平均切分。每个模块任务携带当前预算和叙事上下文：前一章节留下什么问题、本模块回答什么、结尾为下一模块铺垫什么。运行时无 subagent 时按同一顺序串行执行，并在 Evidence Plan 明确记录降级；standard/deep 的完整验收需要真实多子代理执行记录，不能只凭 `allowed_to_synthesize:true` 判定通过。
+
+### Phase 6.5：Unparsed File Read Pass（core unparsed 强制补读）
+
+当 Phase 2 之后（或模块分析过程中）发现 **classification=core 的模块存在 unparsed 文件** 时，**必须**调度一次 **Unparsed File Read Pass**，不得仅把路径写入报告 Unsupported Area 后结束。
+
+1. **执行者**：优先子代理；无 subagent 时主 Agent **串行**同一 pass，并在 Evidence Plan 记录 `unparsed_read_pass.parallelism: active|degraded`（与模块分析 parallelism 分字段，勿混用语义）。
+2. **基线只读工具白名单**：`rg`/`grep`、`find`、`wc`、文件读取类工具；可用 `git` 只读。**禁止**：安装依赖、启动服务、用正则发明 units 分母、修改目标仓源码、把 unparsed 静默移出 `unparsed` 列表。
+3. **选样优先级**：入口/编排 → 主用户路径 UI → Matrix 跨模块依赖点名的 unparsed → 风险路径 → 其余 SEO/debug/example 按预算浅读或写 `skip_reason`。
+4. **模式预算**（写死在本 skill）：
+   - quick：全局最多 **5** 个高影响 unparsed 文件
+   - standard：覆盖各 core 主路径相关 unparsed 子集；其余预算外写 skip 原因
+   - deep：提高比例，但仍允许预算内 skip 并记录原因
+5. **可审计产物**（`$WORK_DIR`）至少其一：
+   - `unparsed-file-reviews/*.md` 或 `unparsed-file-reviews.json`
+   - 和/或 `module-evidence/{module}.json` 的 `unparsed_manual_reads[]`（字段：`path`、`tools_used`、`anchors`、`observation`、`confidence`=`manual-read`、`residual_gap`）
+   - Evidence Plan 增加「Unparsed File Read Pass」节（分工/文件列表/产物路径/预算/parallelism）
+6. **语义边界（硬）**：
+   - 仍须声明 core unparsed 为 Unsupported Area
+   - 补读 **不** 清除 unparsed、**不** 提升 `parse_rate`、**不** 豁免 `parse-quality` / `reference-quality`
+   - **不** 把补读文件计为 `status: analyzed` unit；报告可引用 `文件:行号` 但必须标明 **manual-read / 非枚举单元**
+   - 未补读文件保留在 Unsupported，并写预算/优先级 skip 原因
 
 ### Phase 7：风险抽样与交叉验证
 
@@ -172,7 +194,9 @@ repo-analyzer units --repo "$REPO" --out "$WORK_DIR"
 repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 ```
 
-读取 `quality-gate-report.json`。只有 `allowed_to_synthesize: true` 才能进入最终合成。质量门检查 Evidence Plan、模块分级、核心 Evidence Matrix、源码锚点、风险抽样、双硬条件覆盖率、实际解析质量、未解析 core 范围、引用质量和报告叙事深度。
+读取 `quality-gate-report.json`。只有 `allowed_to_synthesize: true` 才能进入最终合成。质量门检查 Evidence Plan、模块分级、核心 Evidence Matrix、源码锚点、风险抽样、双硬条件覆盖率、实际解析质量、未解析 core 范围、**core unparsed 时的补读记录（`unparsed-manual-review`）**、引用质量和报告叙事深度。
+
+`unparsed-manual-review`：core unparsed 非空时，必须存在 Evidence Plan「Unparsed File Read Pass」、`unparsed-file-reviews*` 或 Matrix `unparsed_manual_reads` 之一；**有补读记录仍不豁免** `parse-quality` 失败。补读成功不等于解析成功。
 
 质量门还会检查 `semantic-source-review`：quick 要求全局 2-3 条有效抽查，standard 要求每个 core 模块至少 1 条，deep 要求每个 core 模块最多 3 条且单元不足时全抽。未知或非 analyzed 单元、重复抽查、过期 anchor/judgment、空 `source_observation` 或非 `supported` verdict 都会阻止最终合成，并在质量报告中列出当前模式阈值、有效数量、关联 unit 与失败原因。
 
@@ -208,6 +232,7 @@ repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 | `evidence-plan.md` | agent | 架构问题、证据范围、分工与预算 |
 | `module-evidence/*.json` | agent | 核心模块机器可读 Evidence Matrix；包含按模式预算抽样的 `semantic_reviews` |
 | `report.md` | agent | 质量门前叙事草稿与 unsupported 声明 |
+| `unparsed-file-reviews/*` 或 `unparsed-file-reviews.json` | agent | core unparsed 的 Unparsed File Read Pass 可审计补读观察（confidence=`manual-read`） |
 | `quality-gate-report.json` | gate | 逐项质量结果与合成放行决定 |
 
 ## 禁止事项
@@ -217,4 +242,6 @@ repo-analyzer gate --repo "$REPO" --out "$WORK_DIR" --mode standard
 - 不得执行 `npm ls`、`cargo metadata`、`go list`、安装依赖、迁移或生产服务。
 - 不得把 generated/vendor/test 候选静默当作核心源码，也不得借 excluded 绕过核心覆盖。
 - 不得把没有锚点和设计判断的单元计入已分析。
+- 不得把 unparsed 补读伪装成 enumerator 解析成功、抬高 parse_rate，或把补读文件标为 analyzed unit。
+- 不得在 core unparsed 非空时仅追加 Unsupported 路径列表而不执行 Unparsed File Read Pass。
 - 不得发布维护者本机 hook、绝对路径或默认启用的 graphify hook。

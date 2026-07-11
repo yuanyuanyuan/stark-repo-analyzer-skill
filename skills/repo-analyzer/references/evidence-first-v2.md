@@ -28,6 +28,14 @@
 
 ## 风险抽样
 - 每个核心模块的风险类别、候选路径和停止条件。
+
+## Unparsed File Read Pass
+- 触发：core 模块存在 unparsed 文件时 **强制**；不得仅列 Unsupported 路径后结束。
+- `unparsed_read_pass.parallelism`: `active` | `degraded`（与模块分析 parallelism 分字段）。
+- 工具白名单：`rg`/`grep`、`find`、`wc`、文件读取、`git` 只读。
+- 选样与预算：入口/主路径 UI / Matrix 跨模块 unparsed / 风险路径优先；quick≤5；standard 覆盖 core 主路径相关子集；deep 提高比例并允许预算内 skip_reason。
+- 产物：`unparsed-file-reviews/*` 或 `unparsed-file-reviews.json`，和/或 Matrix `unparsed_manual_reads[]`。
+- 语义：confidence=`manual-read`；**不**清除 unparsed、**不**抬高 parse_rate、**不**计为 analyzed unit。
 ```
 
 ## Module Evidence Matrix
@@ -62,9 +70,21 @@
   ],
   "source_evidence": ["src/x.ts:10"],
   "open_questions": ["尚未验证的问题"],
-  "narrative": "与机器字段一致的 Why > What 模块叙事"
+  "narrative": "与机器字段一致的 Why > What 模块叙事",
+  "unparsed_manual_reads": [
+    {
+      "path": "src/legacy/ui.tsx",
+      "tools_used": ["rg", "read"],
+      "anchors": ["src/legacy/ui.tsx:12"],
+      "observation": "该 unparsed 文件编排上传入口，但仍无枚举单元。",
+      "confidence": "manual-read",
+      "residual_gap": "无稳定 unit 分母；跨模块类型细节未验证"
+    }
+  ]
 }
 ```
+
+`unparsed_manual_reads` 为可选数组：仅当本模块 path 下存在 core unparsed 且本 pass 补读过时填写。字段含义：`path` 为 unparsed 文件路径；`tools_used` 为基线只读工具；`anchors` 为 `文件:行号`；`observation` 为可审计观察；`confidence` 固定 `manual-read`；`residual_gap` 为补读后仍未知。该字段 **不** 把文件变为 analyzed unit。
 
 `cross_module_dependencies` 和 `open_questions` 可以是空数组，其余字段不可为空。`source_evidence` 必须使用 `文件:行号` 锚点。每条有效 `semantic_reviews` 都要求：`unit_id` 引用当前 analyzed unit，`anchor` 与 `judgment` 逐值匹配 coverage 当前字段，`source_observation` 非空，`verdict` 为 `supported`。
 
@@ -93,12 +113,13 @@
 
 ## Unsupported Area
 
-报告必须逐路径声明未解析 core 区域，并明确不对该区域做覆盖充分声明：
+报告必须逐路径声明未解析 core 区域，并明确不对该区域做覆盖充分声明。**Unsupported ≠ 禁止分析**：出现 core unparsed 时必须先执行 **Unparsed File Read Pass**，再声明 residual。
 
 ```markdown
 ## Unsupported Area
 
-- `src/legacy/parser.ts`：符号枚举失败，本报告不对该文件及其跨模块关系声明覆盖充分。
+- `src/legacy/parser.ts`：符号枚举失败；已执行 manual-read 补读（见 `unparsed-file-reviews/parser.md`），观察见 `src/legacy/parser.ts:12`（confidence=`manual-read`，非枚举单元）。本报告仍不对该文件声明覆盖充分 / analyzed unit。
+- `src/debug/seo.ts`：预算内 skip（优先级低于主路径 UI）；未补读，残留盲区。
 ```
 
-只有包含路径和 `Unsupported Area` 标识的明确声明，质量门才允许未解析 core 区域继续合成；它不豁免解析质量阈值。`coverage-units.json` 的 `parse_health` 必须显示全仓和主语言源码解析率至少 80%，核心未解析文件占比不超过 20%。核心单元中 `refs_status: partial/missing` 的占比超过 80% 时同样阻断合成。
+只有包含路径和 `Unsupported Area` 标识的明确声明，质量门才允许未解析 core 区域继续合成；它不豁免解析质量阈值。core unparsed 非空时，质量门 `unparsed-manual-review` 还要求存在补读记录（Evidence Plan「Unparsed File Read Pass」、`unparsed-file-reviews*` 或 Matrix `unparsed_manual_reads`）；**有补读记录仍不豁免** `parse-quality`。`coverage-units.json` 的 `parse_health` 必须显示全仓和主语言源码解析率至少 80%，核心未解析文件占比不超过 20%。核心单元中 `refs_status: partial/missing` 的占比超过 80% 时同样阻断合成。

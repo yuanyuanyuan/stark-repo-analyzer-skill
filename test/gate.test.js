@@ -212,6 +212,17 @@ test("gate 对未解析 core 文件要求报告显式声明 unsupported area", (
 
   assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
   writeFileSync(join(fixture.out, "report.md"), reportDraft("`src/legacy.js` 未解析，不对该区域声明覆盖充分，相关跨模块判断保留为开放问题。"));
+  // core unparsed 非空时还须有补读记录，否则 unparsed-manual-review 仍失败
+  const planPath = join(fixture.out, "evidence-plan.md");
+  writeFileSync(
+    planPath,
+    `${readFileSync(planPath, "utf8")}\n## Unparsed File Read Pass\n- parallelism: degraded\n- files: src/legacy.js\n`,
+  );
+  mkdirSync(join(fixture.out, "unparsed-file-reviews"), { recursive: true });
+  writeFileSync(
+    join(fixture.out, "unparsed-file-reviews", "legacy.md"),
+    "# src/legacy.js\n\n- confidence: manual-read\n- observation: 补读确认其为遗留占位实现。\n",
+  );
   assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 0);
 });
 
@@ -523,4 +534,127 @@ test("standard gate 拒绝过期 anchor、过期 judgment、空 observation 和�
   assert.match(reasons, /judgment 与 coverage 当前值不一致/);
   assert.match(reasons, /source_observation 缺失或为空/);
   assert.match(reasons, /verdict 必须为 supported/);
+});
+
+
+test("gate 在 core unparsed 非空且无补读记录时失败 unparsed-manual-review", () => {
+  const { fixture, env, unitsPath } = prepareArtifacts();
+  const coverage = JSON.parse(readFileSync(unitsPath, "utf8"));
+  coverage.parsed = ["src/index.js", "src/parsed-a.js", "src/parsed-b.js", "src/parsed-c.js"];
+  coverage.unparsed = ["src/legacy.js"];
+  coverage.parse_rate = 0.8;
+  delete coverage.parse_health;
+  writeFileSync(unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const mapPath = join(fixture.out, "repo-map.json");
+  const map = JSON.parse(readFileSync(mapPath, "utf8"));
+  map.files.source = [...coverage.parsed, ...coverage.unparsed];
+  map.languages = [{ language: "JavaScript", files: 5, lines: 100 }];
+  writeFileSync(mapPath, `${JSON.stringify(map, null, 2)}\n`);
+  writeFileSync(join(fixture.out, "report.md"), reportDraft("`src/legacy.js` 未解析，列入 Unsupported Area，本报告不对该区域声明覆盖充分。"));
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const check = report.checks.find((item) => item.id === "unparsed-manual-review");
+  assert.equal(check.status, "fail");
+  assert.match(check.reasons.join("\n"), /只声明 Unsupported 未执行补读/);
+});
+
+test("gate 在存在 unparsed-file-reviews 时通过 unparsed-manual-review", () => {
+  const { fixture, env, unitsPath } = prepareArtifacts();
+  const coverage = JSON.parse(readFileSync(unitsPath, "utf8"));
+  coverage.parsed = ["src/index.js", "src/parsed-a.js", "src/parsed-b.js", "src/parsed-c.js"];
+  coverage.unparsed = ["src/legacy.js"];
+  coverage.parse_rate = 0.8;
+  delete coverage.parse_health;
+  writeFileSync(unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const mapPath = join(fixture.out, "repo-map.json");
+  const map = JSON.parse(readFileSync(mapPath, "utf8"));
+  map.files.source = [...coverage.parsed, ...coverage.unparsed];
+  map.languages = [{ language: "JavaScript", files: 5, lines: 100 }];
+  writeFileSync(mapPath, `${JSON.stringify(map, null, 2)}\n`);
+  writeFileSync(join(fixture.out, "report.md"), reportDraft("`src/legacy.js` 未解析，列入 Unsupported Area，本报告不对该区域声明覆盖充分。"));
+
+  const planPath = join(fixture.out, "evidence-plan.md");
+  writeFileSync(
+    planPath,
+    `${readFileSync(planPath, "utf8")}\n## Unparsed File Read Pass\n- parallelism: degraded\n- files: src/legacy.js\n- artifacts: unparsed-file-reviews/legacy.md\n`,
+  );
+  mkdirSync(join(fixture.out, "unparsed-file-reviews"), { recursive: true });
+  writeFileSync(
+    join(fixture.out, "unparsed-file-reviews", "legacy.md"),
+    "# src/legacy.js\n\n- tools_used: rg, read\n- anchors: src/legacy.js:1\n- observation: 遗留入口仅导出占位符号。\n- confidence: manual-read\n",
+  );
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 0);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  assert.equal(report.checks.find((item) => item.id === "unparsed-manual-review").status, "pass");
+});
+
+test("gate 在存在 module-evidence.unparsed_manual_reads 时通过 unparsed-manual-review", () => {
+  const { fixture, env, unitsPath } = prepareArtifacts();
+  const coverage = JSON.parse(readFileSync(unitsPath, "utf8"));
+  coverage.parsed = ["src/index.js", "src/parsed-a.js", "src/parsed-b.js", "src/parsed-c.js"];
+  coverage.unparsed = ["src/legacy.js"];
+  coverage.parse_rate = 0.8;
+  delete coverage.parse_health;
+  writeFileSync(unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const mapPath = join(fixture.out, "repo-map.json");
+  const map = JSON.parse(readFileSync(mapPath, "utf8"));
+  map.files.source = [...coverage.parsed, ...coverage.unparsed];
+  map.languages = [{ language: "JavaScript", files: 5, lines: 100 }];
+  writeFileSync(mapPath, `${JSON.stringify(map, null, 2)}\n`);
+  writeFileSync(join(fixture.out, "report.md"), reportDraft("`src/legacy.js` 未解析，列入 Unsupported Area，本报告不对该区域声明覆盖充分。"));
+
+  const matrixPath = join(fixture.out, "module-evidence", "src.json");
+  const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
+  matrix.unparsed_manual_reads = [
+    {
+      path: "src/legacy.js",
+      tools_used: ["rg", "read"],
+      anchors: ["src/legacy.js:1"],
+      observation: "遗留入口仅导出占位符号。",
+      confidence: "manual-read",
+      residual_gap: "无符号级单元分母",
+    },
+  ];
+  writeFileSync(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`);
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 0);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  assert.equal(report.checks.find((item) => item.id === "unparsed-manual-review").status, "pass");
+});
+
+test("gate 有补读记录仍不豁免 parse-quality", () => {
+  const { fixture, env, unitsPath } = prepareArtifacts();
+  const coverage = JSON.parse(readFileSync(unitsPath, "utf8"));
+  coverage.parsed = ["src/index.js"];
+  coverage.unparsed = ["src/service.js"];
+  coverage.parse_rate = 0.5;
+  delete coverage.parse_health;
+  writeFileSync(unitsPath, `${JSON.stringify(coverage, null, 2)}\n`);
+  const mapPath = join(fixture.out, "repo-map.json");
+  const map = JSON.parse(readFileSync(mapPath, "utf8"));
+  map.files.source = [...coverage.parsed, ...coverage.unparsed];
+  map.languages = [{ language: "JavaScript", files: 2, lines: 100 }];
+  writeFileSync(mapPath, `${JSON.stringify(map, null, 2)}\n`);
+  writeFileSync(join(fixture.out, "report.md"), reportDraft("`src/service.js` 未解析，列入 Unsupported Area。"));
+
+  const planPath = join(fixture.out, "evidence-plan.md");
+  writeFileSync(
+    planPath,
+    `${readFileSync(planPath, "utf8")}\n## Unparsed File Read Pass\n- parallelism: degraded\n- files: src/service.js\n`,
+  );
+  mkdirSync(join(fixture.out, "unparsed-file-reviews"), { recursive: true });
+  writeFileSync(
+    join(fixture.out, "unparsed-file-reviews", "service.md"),
+    "# src/service.js\n\n- confidence: manual-read\n- observation: 手工补读不改变 parse_rate。\n",
+  );
+
+  assert.equal(cli("gate", { ...fixture, env, options: { mode: "quick" } }).status, 3);
+  const report = JSON.parse(readFileSync(join(fixture.out, "quality-gate-report.json"), "utf8"));
+  const manual = report.checks.find((item) => item.id === "unparsed-manual-review");
+  const parseQuality = report.checks.find((item) => item.id === "parse-quality");
+  assert.equal(manual.status, "pass");
+  assert.equal(parseQuality.status, "fail");
+  assert.match(parseQuality.reasons.join("\n"), /parse_rate/);
 });
