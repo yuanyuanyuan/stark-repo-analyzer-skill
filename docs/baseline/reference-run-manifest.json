@@ -1,0 +1,21 @@
+{
+  "run_name": "repo-analyzer-reference-standard-2026-07-12",
+  "analysis_mode": "standard",
+  "source_manifest": "./source-corpus-manifest.json",
+  "run_profile": {
+    "source_policy": "fixed local shallow clones",
+    "git_history_used": false,
+    "external_research": "attempted and recorded per project",
+    "orchestration": "six isolated parallel agents, followed by parent cross-validation",
+    "verification_recorded_at_utc": "2026-07-12T07:09:34Z"
+  },
+  "projects": [
+    {"name":"click","commit":"b67832c2167e5b0ff6764a8c04a0a9087e697b5a","status":"completed-partial-runtime","core":"100%","secondary":"77.7%","report":"./reference-runs/click/ANALYSIS_REPORT.md"},
+    {"name":"httpx","commit":"b5addb64f0161ff6bfe94c124ef76f6a1fba5254","status":"completed-partial-runtime","core":"100%","secondary":"100%","report":"./reference-runs/httpx/ANALYSIS_REPORT.md"},
+    {"name":"ruff","commit":"c588a3f7f57461692652d339936222b4496c5953","status":"completed-bounded","core":"mixed; parser 22.3%","secondary":"semantic/LSP/ty below target","report":"./reference-runs/ruff/ANALYSIS_REPORT.md"},
+    {"name":"codex-plugin-cc","commit":"db52e28f4d9ded852ab3942cea316258ae4ef346","status":"completed-partial-runtime","core":"100%","secondary":"100%","report":"./reference-runs/codex-plugin-cc/ANALYSIS_REPORT.md"},
+    {"name":"claude-code","commit":"a371abbe75ffa0d0a3c92290e2bbf56a7ef54367","status":"completed-bounded","core":"85.5% weighted; task-agent 59.1%","secondary":"partial; entry/UI below target; remote unassessed","report":"./reference-runs/claude-code/ANALYSIS_REPORT.md"},
+    {"name":"codex","commit":"9e552e9d15ba52bed7077d5357f3e18e330f8f38","status":"completed-bounded","core":"31.3%","secondary":"24.3%","report":"./reference-runs/codex/ANALYSIS_REPORT.md"}
+  ],
+  "known_execution_gap": "The parent process did launch six parallel agents. Some per-project logs state that no Agent/subagent tool was available; that statement is retained as the agent-local limitation but conflicts with the parent orchestration fact."
+}

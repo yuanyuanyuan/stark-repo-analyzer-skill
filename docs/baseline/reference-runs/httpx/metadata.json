@@ -1,0 +1,27 @@
+{
+  "project": "httpx",
+  "source_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/httpx",
+  "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+  "commit_short": "b5addb6",
+  "branch_observed": "master",
+  "working_tree": "clean",
+  "shallow_clone": true,
+  "analysis_mode": "standard",
+  "language": "Python",
+  "version_observed": "0.28.1",
+  "started_at": "2026-07-12T06:57:47Z",
+  "ended_at": "2026-07-12T07:03:50Z",
+  "model": "Codex GPT-5",
+  "tools": [
+    "rg",
+    "sed",
+    "nl",
+    "wc",
+    "git",
+    "gh api",
+    "agent-reach doctor",
+    "Jina Reader"
+  ],
+  "evidence_policy": "Fixed HEAD working tree plus public documentation explicitly marked as unpinned; no Git history inference.",
+  "output_scope": "This directory only"
+}

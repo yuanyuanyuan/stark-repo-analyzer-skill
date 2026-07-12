@@ -1,0 +1,49 @@
+{
+  "project": "codex-plugin-cc",
+  "source_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/codex-plugin-cc",
+  "commit": "db52e28f4d9ded852ab3942cea316258ae4ef346",
+  "analysis_mode": "standard",
+  "started_at": "2026-07-12T06:58:59Z",
+  "ended_at": "2026-07-12T07:06:35Z",
+  "language": "zh-CN",
+  "model": "GPT-5 (Codex execution context)",
+  "tools": [
+    "shell: find, rg, nl, sed, wc, git",
+    "agent-reach: gh CLI and Jina Reader for public project metadata",
+    "Node.js 24.18.0",
+    "npm 11.16.0",
+    "npm test / node --test"
+  ],
+  "scope": {
+    "source_of_truth": "fixed commit working tree plus project documentation and explicitly recorded public sources",
+    "git_history_used": false,
+    "other_projects_modified": false,
+    "shared_documents_modified": false,
+    "subagent_tool_available": false
+  },
+  "code_size": {
+    "production_script_lines_including_protocol_types": 5424,
+    "release_script_lines": 227,
+    "tests_excluded": true,
+    "lockfiles_excluded": true,
+    "generated_code_excluded": true
+  },
+  "external_sources": [
+    {
+      "url": "https://github.com/openai/codex-plugin-cc",
+      "purpose": "public repository metadata and rendered README",
+      "accessed_at": "2026-07-12"
+    },
+    {
+      "url": "https://github.com/openai/codex-plugin-cc/blob/main/README.md",
+      "purpose": "official positioning and usage claims",
+      "accessed_at": "2026-07-12"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app-server",
+      "purpose": "linked integration documentation; not used to infer this commit's implementation",
+      "accessed_at": "2026-07-12",
+      "status": "not independently fetched in this run"
+    }
+  ]
+}

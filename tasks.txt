@@ -1,0 +1,172 @@
+# stark-repo-analyzer-skill: Faithful Port + Graphify Tasks
+
+状态：`[ ]` 待执行，`[~]` 执行中，`[x]` 完成，`[!]` 失败/需人工介入。
+
+## Phase -1: Decomposition (Current Gate)
+
+- [x] D01 明确最终目标和不做事项
+  - 输出：`docs/plan/reimplementation-decomposition.md` 第 1/2 节
+  - 验证：目标能用一句话描述，且不把标准化/自动化误当成当前阶段。
+- [x] D02 列出需要处理的对象
+  - 输出：`docs/plan/reimplementation-decomposition.md` 第 3 节
+  - 验证：每个对象都有上下文、问题、证据和预期产物。
+- [x] D03 建立阶段依赖关系
+  - 输出：`docs/plan/reimplementation-decomposition.md` 第 4/5 节
+  - 验证：阶段无循环依赖，每阶段有通过条件。
+- [x] D04 确认第一条最小纵向链路
+  - 依赖：D01-D03
+  - 范围：本地 `click` 输入 -> Graphify 深度建图成功且图谱非空 -> 规模扫描 -> 一个核心模块源码验证 -> 最小报告 -> 图谱与结构验证。
+  - 失败边界：doctor preflight/post-graph 非零时中止本次分析，不得降级。
+  - 验证：用户已确认范围；决策记录于 `docs/adr/0003-graphify-is-a-required-structure-evidence-gate.md`。
+  - 模式：V1 仅实现 repo-analyzer `standard`；Graphify `--mode deep` 是强制提取参数，不表示产品级 `deep` 分析。
+- [ ] D05 用一个任务验证拆分粒度
+  - 依赖：D04
+  - 首个负向样本：当前仓库的 `graphify-out/` 报告为 0 nodes / 0 edges / 0 communities，验证器必须稳定拒绝。
+  - LLM 闸门：doctor 必须调用 Graphify 的自动探测逻辑，确认实际 backend/model；不允许技能写死 DeepSeek 或自行确定探测优先级。
+  - Bootstrap：Graphify 不可用时，Agent 可执行官方非敏感安装/升级和复检；API key、企业代理、私有 provider 地址必须由用户提供。
+  - 执行器：使用 `graphify extract <target> --mode deep --out <WORK_DIR>`，不传 `--backend`；记录 Graphify 版本、退出码、实际 backend/model 和产物路径。
+  - 输出边界：只接受 `$WORK_DIR/graphify-out/` 中的产物，目标仓库不得出现本次运行写入的 `graphify-out/`。
+  - 自愈：仅网络超时、429、5xx 可退避重试，最多两次；无可用 LLM、SDK/权限/执行器错误、空图和无效产物立即失败。
+  - 健康：doctor post-graph 检查 `graph.json`、`GRAPH_REPORT.md`、节点、边和来源引用；`click` 还必须有一条带来源定位的 `EXTRACTED` 边。
+  - 证据：Graphify map 作为侧车上下文；源码裁决图谱冲突，`EXTRACTED` 验证核心路径，`INFERRED` 标待验证，`AMBIGUOUS` 只作为风险/疑问，并将冲突写入交叉验证草稿。
+  - 验证：同一有效图谱任务连续两次可独立完成并通过验证，且空图或无可用 LLM 的任务稳定失败；否则继续拆细。
+
+- [ ] D06 定义 doctor 预检契约
+  - 输入：`preflight|post-graph --target <repo> --work-dir <dir> [--json]`
+  - 输出：Graphify、LLM、路径、隔离边界或图谱健康的诊断摘要/JSON。
+  - 退出码：`0=ready`、`10=bootstrap_required`、`20=user_configuration_required`、`30=blocked`。
+  - 验证：doctor 不执行正式建图、不写目标仓库、不输出密钥；所有程序化检测集中在 doctor；决策记录于 ADR-0014/0015。
+
+## Phase 0: Baseline (Completed)
+
+- [x] B01 固定参考仓库源码 commit
+  - 输入：`docs/baseline/source-corpus-manifest.json`
+  - 验证：6 个本地仓库 HEAD 与 manifest 一致。
+- [x] B02 执行 6 个参考项目的 `standard` 分析
+  - 输入：`/Users/chuzu/projests/stark-repo-analyzer-reference-sources/`
+  - 验证：每个项目有最终报告、metadata、日志、覆盖率和 checks。
+- [x] B03 生成跨项目比较和重实现验收清单
+  - 输出：`docs/baseline/cross-project-validation.md`、`docs/baseline/reimplementation-acceptance-checklist.md`
+  - 验证：JSON、文件完整性、文件大小、commit 和 diff 检查通过。
+
+## Phase 0.5: Physical Baseline Gate (Blocking)
+
+- [ ] P01 建立物理基线分级定义
+  - 输出：`docs/baseline/physical-baseline.md`
+  - 验证：明确 P0 源码、P1 产物、P2 真实调用、P3 自动判定、P4 重复运行、P5 动态行为。
+- [ ] P02 实现源码和产物完整性验证器
+  - 输出：`acceptance/physical-baseline-check.sh`
+  - 验证：`./acceptance/physical-baseline-check.sh`，但只能在 D04/D05 通过后正式启用。
+- [ ] P03 固定参考 skill 的真实调用入口和运行配置
+  - 依赖：P01、P02
+  - 验证：固定输入能返回退出码、stdout/stderr、metadata 和产物目录。
+  - 阻断：没有真实调用入口时，不得声称 P2 通过。
+- [ ] P04 对 `click` 和 `codex-plugin-cc` 重复运行两次
+  - 依赖：P03
+  - 验证：两次运行的结构化结果、来源、覆盖率和失败记录可比较。
+  - 阻断：没有输入快照或差异阈值时，不得进入大规模重实现。
+- [ ] P05 扩展物理验证到其余 4 个项目
+  - 依赖：P04
+  - 验证：`httpx`、`ruff`、`claude-code`、`codex` 均有运行快照和差异报告。
+
+## Phase 1: Specification (Sequential)
+
+- [ ] S01 提取参考 skill 的输入/输出契约
+  - 依赖：B03、D04、D05、P03、P04
+  - 上下文：参考 `SKILL.md`、README、baseline reports
+  - 输出：`docs/spec/input-output-contract.md`
+  - 验证：逐项映射触发词、输入形式、输出目录和错误边界。
+  - 失败处理：缺失项标记 `待确认`，不自行补全。
+- [ ] S02 确认保真移植与 Graphify 增强范围
+  - 依赖：S01
+  - 输出：`docs/adr/0012-copy-the-reference-files-with-a-minimal-graphify-diff.md`
+  - 验证：明确复制范围、唯一允许的 Graphify 增强、禁止变更和产品级 `deep` 不进入 V1。
+  - 失败处理：冲突交给人工决定。
+- [ ] S03 设计统一任务输入模板和运行 metadata
+  - 依赖：S01
+  - 输出：`docs/templates/analysis-run-input.md`、metadata schema
+  - 验证：能够表达 6 个基线项目的输入和运行信息。
+- [ ] S04 设计第一版验证器
+  - 依赖：S01、S03
+  - 输出：`acceptance/doctor.sh` 与结构/链接/Mermaid/覆盖率检查
+  - 验证：对现有 6 个 baseline runs 运行，结果可解释。
+
+## Phase 2: Implementation (Small Batches)
+
+第一批只实现 1-2 个任务，先验证任务粒度和验证器有效性，再扩大并行度。
+
+- [ ] I01 创建目标技能目录和插件元数据
+  - 依赖：S01、S02
+  - 所有权：技能目录与插件 metadata
+  - 验证：安装/结构检查、JSON 校验、触发契约检查。
+- [ ] I02 实现本地路径和 GitHub 仓库输入归一化
+  - 依赖：S01、S03
+  - 所有权：输入解析模块
+  - 验证：6 个本地基线项目 + URL/owner-repo fixtures。
+- [ ] I03 实现规模统计与分析模式选择
+  - 依赖：I02
+  - 所有权：规模/模式模块
+  - 验证：固定 fixture 的文件、行数、排除规则和门槛结果。
+- [ ] I04 实现项目文档/外部研究上下文收集
+  - 依赖：I02、S03
+  - 所有权：research/context 模块
+  - 验证：来源记录、工具失败记录、无网络时的可解释降级。
+- [ ] I05 实现动态问题和报告计划生成
+  - 依赖：I03、I04
+  - 所有权：question/plan 模块
+  - 验证：不同项目类型产生不同问题，非固定模板复读。
+- [ ] I06 实现模块分析任务编排
+  - 依赖：I05、S04
+  - 所有权：module orchestration
+  - 验证：任务隔离、并行写入边界、失败重试和状态记录。
+- [ ] I07 实现交叉验证和覆盖率门控
+  - 依赖：I06、S04
+  - 所有权：validation/coverage 模块
+  - 验证：人为制造缺覆盖和错误引用时能失败。
+- [ ] I08 实现最终报告融合与产物 manifest
+  - 依赖：I06、I07
+  - 所有权：report/output 模块
+  - 验证：单一最终 Markdown、metadata、日志、checks 和链接完整。
+
+## Phase 3: Calibration and Regression
+
+- [ ] R01 用 `click` 和 `codex-plugin-cc` 做首批粒度实验
+  - 依赖：I01、I02、I03、I08
+  - 验证：两个项目分别完成一轮报告，检查项可自动判断通过/失败。
+  - 失败处理：优先拆细任务或修正验证器，不直接扩大并行规模。
+- [ ] R02 修正任务粒度、输入模板和验证器
+  - 依赖：R01
+  - 验证：R01 的失败项能被稳定重现并修复。
+- [ ] R03 回归 `httpx` 和 `ruff`
+  - 依赖：R02、I04、I05、I06、I07
+  - 验证：报告主线、证据引用、覆盖率和限制记录符合验收清单。
+- [ ] R04 回归 `claude-code` 和 `codex`
+  - 依赖：R03
+  - 验证：bounded scope、未读范围和大型项目失败边界不被隐藏。
+- [ ] R05 汇总参考结果与重实现结果差异
+  - 依赖：R01-R04
+  - 输出：`docs/baseline/implementation-comparison.md`
+  - 验证：每个差异有来源、影响、是否接受和修正任务。
+
+## Phase 4: Release Gate
+
+- [ ] G01 运行完整自动验证器
+  - 依赖：R05
+  - 验证：结构、JSON、链接、Mermaid、覆盖率、metadata 和回归均通过。
+- [ ] G02 人工复核高风险项
+  - 依赖：G01
+  - 验证：无未决的契约冲突、伪造证据或越界写入。
+- [ ] G03 生成最终交付报告和变更说明
+  - 依赖：G02
+  - 验证：用户能从报告追溯到任务、代码、验证输出和残余风险。
+
+## Dependency Summary
+
+```text
+B01-B03 -> S01 -> S02 -> I01
+S01 -> S03 -> S04
+S01/S03 -> I02 -> I03 -> I05
+I02/S03 -> I04 -> I05
+I05/S04 -> I06 -> I07 -> I08
+I01/I02/I03/I08 -> R01 -> R02 -> R03 -> R04 -> R05 -> G01 -> G02 -> G03
+```

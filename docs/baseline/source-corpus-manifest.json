@@ -1,0 +1,67 @@
+{
+  "captured_at_utc": "2026-07-12T06:50:24Z",
+  "storage_root": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources",
+  "clone_strategy": "shallow clone depth 1 from the default branch",
+  "repositories": [
+    {
+      "name": "click",
+      "repository": "pallets/click",
+      "url": "https://github.com/pallets/click.git",
+      "branch": "main",
+      "commit": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+      "local_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/click",
+      "tracked_files": 163,
+      "working_tree_dirty": false
+    },
+    {
+      "name": "httpx",
+      "repository": "encode/httpx",
+      "url": "https://github.com/encode/httpx.git",
+      "branch": "master",
+      "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+      "local_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/httpx",
+      "tracked_files": 125,
+      "working_tree_dirty": false
+    },
+    {
+      "name": "ruff",
+      "repository": "astral-sh/ruff",
+      "url": "https://github.com/astral-sh/ruff.git",
+      "branch": "main",
+      "commit": "c588a3f7f57461692652d339936222b4496c5953",
+      "local_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/ruff",
+      "tracked_files": 10849,
+      "working_tree_dirty": false
+    },
+    {
+      "name": "codex-plugin-cc",
+      "repository": "openai/codex-plugin-cc",
+      "url": "https://github.com/openai/codex-plugin-cc.git",
+      "branch": "main",
+      "commit": "db52e28f4d9ded852ab3942cea316258ae4ef346",
+      "local_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/codex-plugin-cc",
+      "tracked_files": 63,
+      "working_tree_dirty": false
+    },
+    {
+      "name": "claude-code",
+      "repository": "yasasbanukaofficial/claude-code",
+      "url": "https://github.com/yasasbanukaofficial/claude-code.git",
+      "branch": "main",
+      "commit": "a371abbe75ffa0d0a3c92290e2bbf56a7ef54367",
+      "local_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/claude-code",
+      "tracked_files": 1906,
+      "working_tree_dirty": false
+    },
+    {
+      "name": "codex",
+      "repository": "openai/codex",
+      "url": "https://github.com/openai/codex.git",
+      "branch": "main",
+      "commit": "9e552e9d15ba52bed7077d5357f3e18e330f8f38",
+      "local_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/codex",
+      "tracked_files": 5395,
+      "working_tree_dirty": false
+    }
+  ]
+}

@@ -62,3 +62,5 @@ tmp/
 temp/
 *.tmp
 *.temp
+# Local reference source corpus is reproducible from the baseline manifest.
+/参考仓库源代码/参考基线仓库/

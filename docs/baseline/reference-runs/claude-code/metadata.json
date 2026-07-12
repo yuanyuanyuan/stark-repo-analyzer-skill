@@ -1,0 +1,31 @@
+{
+  "project": "claude-code",
+  "source_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/claude-code",
+  "commit": "a371abbe75ffa0d0a3c92290e2bbf56a7ef54367",
+  "analysis_mode": "standard",
+  "started_at": "2026-07-12T06:58:50Z",
+  "ended_at": "2026-07-12T07:05:39Z",
+  "language": "zh-CN",
+  "model": "Codex (GPT-5 runtime)",
+  "tools": ["rg", "find", "wc", "sed", "nl", "git", "gh", "agent-reach web reader"],
+  "evidence_policy": "当前 commit 的源码、当前仓库 README、公开 GitHub 元数据和 Anthropic 官方 Claude Code 文档；不使用 Git 历史推断实现",
+  "repository_inventory": {
+    "tracked_files": 1906,
+    "typescript_files": 1884,
+    "typescript_lines": 512664,
+    "build_config_found": false,
+    "test_config_found": false
+  },
+  "scope": {
+    "core_modules": ["query-loop", "tool-runtime", "task-agent", "command-skill", "context-memory"],
+    "secondary_modules": ["mcp-plugin", "permission-security", "entry-ui", "remote-ide", "platform-services"],
+    "coverage_method": "按参考 skill：实际读取行范围并集 / 纳入该模块覆盖计算的文件总行数；未读大型文件不虚报",
+    "standard_targets": {"core": 60, "secondary": 30}
+  },
+  "limitations": [
+    "当前仓库只有 README、assets 和 src，没有 package.json、tsconfig、lockfile、CI 或开发者文档",
+    "源码镜像 README 声明这是研究/归档镜像，不是 Anthropic 官方产品；官方文档只能作为产品背景，不能证明本 commit 的具体实现",
+    "当前工具环境没有可用的 Agent/subagent 调度工具，因此模块分析由主 agent 顺序完成",
+    "仓库规模远超一次 standard 全量逐行读取能力，未纳入覆盖计算的大型外围目录只做了结构盘点"
+  ]
+}
