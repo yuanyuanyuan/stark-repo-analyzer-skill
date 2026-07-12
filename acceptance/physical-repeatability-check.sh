@@ -33,11 +33,15 @@ failures = []
 
 def scrub(value):
     if isinstance(value, dict):
-        return {
-            key: scrub(item)
-            for key, item in value.items()
-            if key not in {"run_id", "started_at", "ended_at", "work_dir"}
-        }
+        result = {}
+        for key, item in value.items():
+            if key in {"run_id", "started_at", "ended_at", "work_dir"}:
+                continue
+            if key == "artifact_paths" and isinstance(item, list):
+                result[key] = ["/".join(Path(path).parts[-2:]) for path in item]
+            else:
+                result[key] = scrub(item)
+        return result
     if isinstance(value, list):
         return [scrub(item) for item in value]
     return value
