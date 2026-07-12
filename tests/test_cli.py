@@ -1,18 +1,25 @@
 import tempfile
 import unittest
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from stark_repo_analyzer.cli import feature_questions, normalize_input, size_report
 
 
 class CliContractTests(unittest.TestCase):
     def test_local_input_records_commit_shape_without_cloning(self):
+        target = Path(__file__).resolve().parents[1]
+        resolved, metadata = normalize_input(str(target), target.parent / "work")
+        self.assertEqual(resolved, target.resolve())
+        self.assertEqual(metadata["kind"], "local-path")
+        self.assertIsNotNone(metadata["source_commit"])
+
+    def test_non_git_local_input_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
-            target = Path(directory)
-            resolved, metadata = normalize_input(str(target), target / "work")
-            self.assertEqual(resolved, target.resolve())
-            self.assertEqual(metadata["kind"], "local-path")
-            self.assertIsNone(metadata["clone_source"])
+            with self.assertRaises(ValueError):
+                normalize_input(directory, Path(directory).parent / "work")
 
     def test_size_report_excludes_tests_and_generated_dependency_directories(self):
         with tempfile.TemporaryDirectory() as directory:

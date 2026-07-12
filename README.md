@@ -1,4 +1,4 @@
-# Stark Repo Analyzer
+# Repo Analyzer
 
 An AI coding agent skill for deep architectural analysis of open-source projects. Generates professional-grade architecture reports with design insights, trade-off analysis, Mermaid diagrams, and a mandatory Graphify structure-evidence gate.
 
@@ -24,7 +24,7 @@ npx skills add yzddmr6/repo-analyzer
 **Plugin Marketplace**
 
 ```
-/plugin marketplace add <marketplace-source>
+/plugin marketplace add yzddmr6/repo-analyzer
 /plugin install repo-analyzer@repo-analyzer
 ```
 

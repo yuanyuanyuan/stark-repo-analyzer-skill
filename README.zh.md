@@ -1,4 +1,4 @@
-# Stark Repo Analyzer
+# Repo Analyzer
 
 一个 AI 编程 Agent 技能，用于对开源项目进行深度架构分析，生成专业级架构报告——包含设计洞察、权衡分析、Mermaid 架构图和强制的 Graphify 结构证据闸门。
 
@@ -24,7 +24,7 @@ npx skills add yzddmr6/repo-analyzer
 **Plugin Marketplace**
 
 ```
-/plugin marketplace add <marketplace-source>
+/plugin marketplace add yzddmr6/repo-analyzer
 /plugin install repo-analyzer@repo-analyzer
 ```
 

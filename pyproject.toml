@@ -13,3 +13,6 @@ stark-repo-analyzer = "stark_repo_analyzer.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+stark_repo_analyzer = ["doctor.sh"]

@@ -17,6 +17,7 @@ This document separates source fidelity from evidence that the reference workflo
 - P3 checks are deterministic. They may report an incomplete physical baseline without turning an incomplete baseline into a pass.
 - A run snapshot must identify the source commit, input, analysis mode, tool versions, model/backend when applicable, start/end time, outputs and failure classification.
 - Repeatability compares normalized JSON structure, source references, coverage tables and failure records. Timestamps, run IDs and temporary paths are excluded from the normalized comparison.
+- The repeatability comparator is `acceptance/physical-repeatability-check.sh <run-a> <run-b> [--json]`; it is a read-only classifier and cannot create a P4 pass without two complete run directories.
 - The Graphify sidecar has its own gate: `doctor.sh preflight` must return `0` before extraction and `doctor.sh post-graph` must return `0` before the reference workflow consumes `drafts/01-graphify-map.md`.
 - Doctor status codes are stable: `0=ready`, `10=bootstrap_required`, `20=user_configuration_required`, `30=blocked`.
 

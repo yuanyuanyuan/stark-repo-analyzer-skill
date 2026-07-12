@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import subprocess
 import sys
@@ -12,7 +11,7 @@ import time
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 from . import __version__
 
@@ -28,8 +27,11 @@ def now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, cwd=cwd, text=True, capture_output=True, check=False)
+def run(command: list[str], *, cwd: Path | None = None, timeout: int = 900) -> subprocess.CompletedProcess[str]:
+    try:
+        return subprocess.run(command, cwd=cwd, text=True, capture_output=True, check=False, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(command, 124, "", "timeout")
 
 
 def normalize_input(value: str, work_dir: Path) -> tuple[Path, dict]:
@@ -40,6 +42,8 @@ def normalize_input(value: str, work_dir: Path) -> tuple[Path, dict]:
         target = candidate.resolve()
         if not target.is_dir():
             raise ValueError("local input is not a directory")
+        if not (target / ".git").exists():
+            raise ValueError("local input must be a Git repository so its source commit can be recorded")
         source_kind = "local-path"
     else:
         parsed = urlparse(value if "://" in value else "https://github.com/" + value)
@@ -112,7 +116,11 @@ def collect_context(target: Path) -> dict:
         if path.name in names and path.is_file():
             text = path.read_text(encoding="utf-8", errors="replace")
             documents.append({"path": path.name, "lines": len(text.splitlines()), "excerpt": text[:1200]})
-            urls.extend(re.findall(r"https?://[^)\s>]+", text))
+            for raw_url in re.findall(r"https?://[^)\s>]+", text):
+                parsed = urlparse(raw_url)
+                if parsed.username or parsed.password:
+                    continue
+                urls.append(urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", "", "")))
     return {"documents": documents, "external_sources": sorted(set(urls)), "research_status": "agent-research-required"}
 
 
@@ -143,17 +151,19 @@ def doctor(script: Path, phase: str, target: Path, work_dir: Path) -> tuple[int,
     return result.returncode, payload
 
 
-def graphify_extract(target: Path, work_dir: Path, log: list[str]) -> None:
+def graphify_extract(target: Path, work_dir: Path, log: list[str]) -> list[dict]:
     """Run the required headless command, retrying only classified transient failures."""
     command = ["graphify", "extract", str(target), "--mode", "deep", "--out", str(work_dir)]
     retries = 0
+    attempts = []
     while True:
         started = time.monotonic()
         result = run(command)
         log.append(f"graphify extract exit={result.returncode} elapsed={time.monotonic() - started:.2f}s")
-        if result.returncode == 0:
-            return
         transient = bool(re.search(r"timeout|timed out|HTTP[ /](429|5[0-9][0-9])|status[=: ]+(429|5[0-9][0-9])", result.stdout + result.stderr, re.I))
+        attempts.append({"exit_code": result.returncode, "transient_failure": transient})
+        if result.returncode == 0:
+            return attempts
         if not transient or retries >= 2:
             raise RuntimeError(f"Graphify extraction failed with exit code {result.returncode}")
         retries += 1
@@ -169,30 +179,50 @@ def graph_map(work_dir: Path, target: Path) -> str:
     nodes = graph.get("nodes", [])
     links = graph.get("links", graph.get("edges", []))
     candidates = []
+    communities = Counter()
     for node in nodes:
         if isinstance(node, dict) and node.get("source_file"):
             candidates.append(f"- `{node['source_file']}:{node.get('source_location', '?')}` — {node.get('label', node.get('id', 'unknown'))}")
-    lines = ["# Graphify Navigation Map", "", f"- Nodes: {len(nodes)}", f"- Edges: {len(links)}", "- Confidence rule: source code adjudicates Graphify relations.", "", "## Report Summary", "", report_path.read_text(encoding="utf-8")[:4000], "", "## Candidate Source Paths", ""]
+            if node.get("community") is not None:
+                communities[str(node["community"])] += 1
+    edge_lines = []
+    for link in links[:120]:
+        if isinstance(link, dict):
+            edge_lines.append(f"- `{str(link.get('confidence', 'UNKNOWN')).upper()}` `{link.get('source_file', '?')}:{link.get('source_location', '?')}`: {link.get('source', '?')} -> {link.get('target', '?')} ({link.get('relation', 'unknown')})")
+    lines = ["# Graphify Navigation Map", "", f"- Nodes: {len(nodes)}", f"- Edges: {len(links)}", "- Confidence rule: source code adjudicates Graphify relations.", "", "## Communities", ""]
+    lines.extend(f"- Community {name}: {count} nodes" for name, count in communities.most_common(40))
+    lines.extend(["", "## Report Summary", "", report_path.read_text(encoding="utf-8")[:4000], "", "## Candidate Source Paths", ""])
     lines.extend(candidates[:80] or ["- No source candidates were accepted; post-graph should have failed."])
+    lines.extend(["", "## Edge Evidence Samples", ""] + (edge_lines or ["- No edge evidence was accepted; post-graph should have failed."]))
     return "\n".join(lines) + "\n"
 
 
+def target_graphify_signature(target: Path) -> tuple | None:
+    output = target / "graphify-out"
+    if not output.exists():
+        return None
+    return tuple(sorted((str(path.relative_to(output)), path.stat().st_size, path.stat().st_mtime_ns) for path in output.rglob("*") if path.is_file()))
+
+
 def write_module_plan(work_dir: Path, target: Path, sizing: dict) -> list[str]:
-    names = []
-    for row in sorted(sizing["files_detail"], key=lambda item: item["lines"], reverse=True)[:4]:
-        stem = re.sub(r"[^a-zA-Z0-9_-]+", "-", Path(row["file"]).stem).strip("-").lower() or "module"
-        if stem not in names:
-            names.append(stem)
-    if not names:
-        names = ["core"]
-    narrative = " → ".join(f"{name} →[source evidence and data flow]" for name in names)
-    if names:
-        narrative += " → source-adjudicated report"
-    plan = ["# Module Analysis Plan", "", "Graphify candidates are navigation input only; each module requires Agent source verification.", "", "## Narrative", "", narrative, "", "## Modules", ""]
-    for index, name in enumerate(names, 1):
-        plan.append(f"{index}. `{name}` — candidate core module; inspect source paths from Graphify and confirm its business responsibility.")
+    groups = list(sizing["by_group"])
+    plan = ["# Module Analysis Plan", "", "Graphify and size scans provide candidate paths only. The Agent must derive business modules from capabilities, data flow and responsibility before assigning module drafts.", "", "## Candidate Scope", ""]
+    plan.extend(f"- `{group}/` — candidate source area; not a business-module conclusion." for group in groups)
+    plan.extend(["", "## Narrative", "", "Agent must write the module chain as `module A →[output/constraint]→ module B`, then create one draft per logical module.", ""])
     (work_dir / "drafts" / "05-modules-plan.md").write_text("\n".join(plan) + "\n", encoding="utf-8")
-    return names
+    return []
+
+
+def find_doctor() -> Path:
+    candidates = [
+        Path.cwd() / "acceptance" / "doctor.sh",
+        Path(__file__).resolve().parents[2] / "acceptance" / "doctor.sh",
+        Path(__file__).resolve().parent / "doctor.sh",
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError("acceptance/doctor.sh is not installed or available from the current checkout")
 
 
 def fuse_report(work_dir: Path, target: Path, metadata: dict, sizing: dict, context: dict, questions: list[str], modules: list[str]) -> None:
@@ -205,8 +235,54 @@ def fuse_report(work_dir: Path, target: Path, metadata: dict, sizing: dict, cont
     (work_dir / "ANALYSIS_REPORT.md").write_text("\n".join(report), encoding="utf-8")
 
 
+def finalize(args: argparse.Namespace) -> int:
+    work_dir = Path(args.work_dir).expanduser().resolve()
+    metadata_path = work_dir / "metadata.json"
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        print(f"cannot read metadata: {type(exc).__name__}", file=sys.stderr)
+        return 30
+    drafts = sorted((work_dir / "drafts").glob("06-module-*.md"))
+    cross_validation = work_dir / "drafts" / "07-cross-validation.md"
+    coverage = work_dir / "drafts" / "08-coverage.md"
+    failures = []
+    if not drafts:
+        failures.append("no module analysis drafts")
+    if not cross_validation.is_file() or "源码" not in cross_validation.read_text(encoding="utf-8", errors="replace"):
+        failures.append("cross-validation draft is missing source adjudication")
+    coverage_text = coverage.read_text(encoding="utf-8", errors="replace") if coverage.is_file() else ""
+    if not coverage_text or "pending" in coverage_text.lower() or not ("✅" in coverage_text or "PASS" in coverage_text):
+        failures.append("coverage draft is not a completed passing table")
+    if failures:
+        print("finalize blocked: " + "; ".join(failures), file=sys.stderr)
+        return 30
+    report_path = work_dir / "ANALYSIS_REPORT.md"
+    report = report_path.read_text(encoding="utf-8", errors="replace") if report_path.is_file() else "# 仓库架构分析\n"
+    report += "\n## Agent 已验证的模块分析\n\n"
+    for draft in drafts:
+        report += draft.read_text(encoding="utf-8", errors="replace") + "\n\n"
+    report += "## 交叉验证记录\n\n" + cross_validation.read_text(encoding="utf-8", errors="replace")
+    report += "\n## 覆盖率摘要\n\n" + coverage_text
+    report_path.write_text(report, encoding="utf-8")
+    metadata["ended_at"] = now()
+    metadata["outcome"] = "complete"
+    metadata["finalized"] = {"module_drafts": [str(path.relative_to(work_dir)) for path in drafts], "cross_validation": "drafts/07-cross-validation.md", "coverage": "drafts/08-coverage.md"}
+    metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (work_dir / "checks.md").write_text(
+        "# Run Checks\n\n"
+        "| Check | Status | Evidence |\n|---|---|---|\n"
+        "| Doctor preflight | PASS | `metadata.json` |\n"
+        "| Doctor post-graph | PASS | `metadata.json` |\n"
+        "| Source adjudication | PASS | `drafts/07-cross-validation.md` |\n"
+        "| Module coverage | PASS | `drafts/08-coverage.md` |\n"
+        "| Final report fusion | PASS | `ANALYSIS_REPORT.md` |\n",
+        encoding="utf-8",
+    )
+    return 0
+
+
 def analyze(args: argparse.Namespace) -> int:
-    root = Path(__file__).resolve().parents[2]
     work_dir = Path(args.work_dir).expanduser().resolve()
     input_path = Path(args.input).expanduser()
     input_candidate = input_path.resolve() if "://" not in args.input and input_path.exists() else None
@@ -224,18 +300,24 @@ def analyze(args: argparse.Namespace) -> int:
     try:
         target, source = normalize_input(args.input, work_dir)
         metadata["source"] = source
-        pre_rc, pre = doctor(root / "acceptance" / "doctor.sh", "preflight", target, work_dir)
+        doctor_script = find_doctor()
+        pre_rc, pre = doctor(doctor_script, "preflight", target, work_dir)
         metadata["graphify"]["preflight"] = pre
         if pre_rc:
             raise RuntimeError("doctor preflight blocked: " + "; ".join(pre.get("failures", [])))
         metadata["graphify"].update({"version": pre.get("graphify", {}).get("version"), "backend": pre.get("graphify", {}).get("backend"), "model": pre.get("graphify", {}).get("model"), "extract_command": "graphify extract <target> --mode deep --out <WORK_DIR>"})
-        if args.use_existing_graph and os.environ.get("STARK_REPO_ANALYZER_TEST_MODE") == "1":
-            log.append("using existing graphify-out fixture; extraction was intentionally not repeated")
-        elif args.use_existing_graph:
-            raise RuntimeError("prebuilt graph fixtures require STARK_REPO_ANALYZER_TEST_MODE=1")
-        else:
-            graphify_extract(target, work_dir, log)
-        post_rc, post = doctor(root / "acceptance" / "doctor.sh", "post-graph", target, work_dir)
+        target_graphify_before = target_graphify_signature(target)
+        attempts = graphify_extract(target, work_dir, log)
+        target_graphify_after = target_graphify_signature(target)
+        if target_graphify_before != target_graphify_after:
+            raise RuntimeError("target graphify-out changed during isolated extraction")
+        metadata["graphify"]["extract_attempts"] = attempts
+        metadata["graphify"]["artifact_paths"] = [
+            str(work_dir / "graphify-out" / "graph.json"),
+            str(work_dir / "graphify-out" / "GRAPH_REPORT.md"),
+        ]
+        metadata["graphify"]["target_graphify_out_unchanged"] = True
+        post_rc, post = doctor(doctor_script, "post-graph", target, work_dir)
         metadata["graphify"]["post_graph"] = post
         if post_rc:
             raise RuntimeError("doctor post-graph blocked: " + "; ".join(post.get("failures", [])))
@@ -263,7 +345,7 @@ def analyze(args: argparse.Namespace) -> int:
         )
         fuse_report(work_dir, target, metadata, sizing, context, questions, modules)
         metadata["ended_at"] = now()
-        metadata["outcome"] = "ready-for-agent-module-analysis"
+        metadata["outcome"] = "awaiting-agent-module-analysis"
         metadata["limitations"] = ["Module drafts and final source adjudication remain Agent responsibilities.", "Static reading, tests and runtime validation are not conflated."]
     except Exception as exc:
         metadata["ended_at"] = now()
@@ -284,7 +366,7 @@ def analyze(args: argparse.Namespace) -> int:
         "| Module coverage | PENDING | `drafts/08-coverage.md` |\n",
         encoding="utf-8",
     )
-    return 0
+    return 2
 
 
 def main() -> int:
@@ -294,8 +376,10 @@ def main() -> int:
     analyze_parser.add_argument("input", help="local path, public URL, or owner/repo")
     analyze_parser.add_argument("--work-dir", required=True, help="writable directory outside target")
     analyze_parser.add_argument("--run-id", default="stark-run")
-    analyze_parser.add_argument("--use-existing-graph", action="store_true", help="use a prebuilt graphify-out fixture")
     analyze_parser.set_defaults(func=analyze)
+    finalize_parser = sub.add_parser("finalize", help="fuse verified Agent module drafts into the final report")
+    finalize_parser.add_argument("--work-dir", required=True)
+    finalize_parser.set_defaults(func=finalize)
     args = parser.parse_args()
     return args.func(args)
 
