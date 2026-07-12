@@ -1,55 +1,25 @@
-# 物理基线状态
+# Physical Baseline Gate
 
-## 结论
+This document separates source fidelity from evidence that the reference workflow actually ran. A report or a complete directory is not evidence of a real invocation.
 
-当前项目已经达到“真实源码和真实分析产物存在”的级别，但还没有达到“参考 skill 可重复执行、可自动判定、可比较”的完整物理基线级别。
-
-因此，**物理基线尚未通过，正式重实现必须等待物理基线闸门通过**。
-
-## 分级判定
-
-| 层级 | 要回答的问题 | 当前状态 | 证据 |
+| Level | Meaning | Required evidence | Current state |
 |---|---|---|---|
-| P0 源码固定 | 每次分析是不是同一份源码？ | 通过 | 6 个本地仓库 HEAD 与 `source-corpus-manifest.json` 一致 |
-| P1 产物存在 | 是否真实生成了报告、日志、metadata、coverage 和 checks？ | 通过 | `reference-runs/` 下 6 个独立运行目录 |
-| P2 真实调用 | 是否通过固定入口真正调用了参考 skill？ | 未通过 | 参考 skill 是文档型技能，本轮没有独立可执行入口；现有报告由 Agent 按 skill 流程生成 |
-| P3 自动判定 | 能否自动判断一次运行是否合格？ | 部分通过 | `acceptance/physical-baseline-check.sh` 可检查源码、commit、产物、JSON、时序字段、Mermaid 和文件大小；不能判断分析洞察语义是否正确 |
-| P4 可重复运行 | 相同源码和输入能否重跑并比较差异？ | 未通过 | 尚未形成固定运行入口、输入快照和差异阈值 |
-| P5 动态行为 | 真实测试、外部工具失败和运行时边界是否可复现？ | 部分通过 | 个别项目有 smoke/test；6 项目没有统一动态验证矩阵 |
+| P0 | Reference source is fixed and readable | `source-corpus-manifest.json`, clean HEAD checks | PASS |
+| P1 | Expected artifacts exist and are structurally parseable | six reference run directories, metadata, reports, checks and coverage | PASS |
+| P2 | The reference skill was invoked through its real Agent/runtime entrypoint | fixed input, exit code, stdout/stderr, runtime events, metadata and output directory from that invocation | NOT READY |
+| P3 | A machine verifier can classify the artifacts | `acceptance/physical-baseline-check.sh` plus `acceptance/doctor.sh` outputs | PASS for integrity; Graphify gate is implemented |
+| P4 | The same fixed input can run twice independently | two complete snapshots, normalized structural diff, source/coverage/failure comparison and threshold | NOT READY |
+| P5 | Dynamic behavior was exercised | runtime interaction trace or test execution evidence tied to the analyzed source commit | NOT READY |
 
-## 当前自动验证
+## Gate Rules
 
-运行：
+- P2 and P4 are blocking gates for large-scale reimplementation. Existing baseline documents and partial physical run directories cannot promote either gate.
+- P3 checks are deterministic. They may report an incomplete physical baseline without turning an incomplete baseline into a pass.
+- A run snapshot must identify the source commit, input, analysis mode, tool versions, model/backend when applicable, start/end time, outputs and failure classification.
+- Repeatability compares normalized JSON structure, source references, coverage tables and failure records. Timestamps, run IDs and temporary paths are excluded from the normalized comparison.
+- The Graphify sidecar has its own gate: `doctor.sh preflight` must return `0` before extraction and `doctor.sh post-graph` must return `0` before the reference workflow consumes `drafts/01-graphify-map.md`.
+- Doctor status codes are stable: `0=ready`, `10=bootstrap_required`, `20=user_configuration_required`, `30=blocked`.
 
-```bash
-./acceptance/physical-baseline-check.sh
-```
+## Current Evidence Boundary
 
-它验证：
-
-- 6 个源码目录存在且 HEAD 与 manifest 一致；
-- 源码工作树干净；
-- 每个项目的关键基线产物存在；
-- metadata 的项目、commit、`standard` 模式和时间字段完整；
-- 最终报告包含 Mermaid 标记；
-- 单个产物文件不超过 15KB。
-
-它不能证明：
-
-- 报告内容的架构判断一定正确；
-- skill 真的被某个固定 Agent runtime 调用；
-- 外部调研结果稳定；
-- 两次运行的差异在可接受范围内。
-
-## 通过完整物理基线的前置条件
-
-1. 固定参考 skill 的真实调用入口、模型、工具和权限配置。
-2. 固定一份运行输入快照，至少覆盖 `click` 和 `codex-plugin-cc` 两个校准项目。
-3. 真实执行一次并保存完整 stdout/stderr、退出码、运行 metadata 和产物 hash。
-4. 同一输入至少重复运行两次，生成结构化差异报告。
-5. 为报告结构、源码引用、覆盖率、外部来源和失败记录建立自动验证器。
-6. 语义质量仍由人工抽查，不把自动检查器当成架构正确性的替代品。
-
-## 重实现阻断规则
-
-在 P2/P4 未通过前，不进入大规模重实现；最多只允许实现物理基线所需的运行入口、输入快照和验证器。这样可以先证明“生产线本身能稳定生产和验收结果”，再用它验证新实现。
+The repository contains P0/P1 evidence and a stopped `click` physical-run directory. That directory explicitly says it was interrupted before decomposition completed, so it is not P2 evidence. Until the real reference runtime entrypoint and two independent runs are captured, the implementation must preserve this limitation in metadata and release notes.
