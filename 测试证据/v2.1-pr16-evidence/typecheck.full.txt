@@ -1,5 +1,0 @@
-
-> repo-analyzer@2.0.0 typecheck
-> node --check bin/repo-analyzer.js && node --check src/*.js
-
-EXIT:0

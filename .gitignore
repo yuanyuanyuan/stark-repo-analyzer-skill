@@ -41,12 +41,6 @@ pnpm-debug.log*
 .vite/
 .eslintcache
 
-# Generated analysis output
-graphify-out/
-
-# Local agent and tool state
-.meta-kim/
-.workbuddy/
 
 # Editor and IDE files
 .idea/

@@ -1,9 +1,0 @@
-{
-  "tool_name": "ripgrep",
-  "capability": "baseline-text-search",
-  "mode_usage": { "standard": "preferred", "deep": "preferred" },
-  "class": "baseline",
-  "official_source_url": "https://github.com/BurntSushi/ripgrep",
-  "verified_date": "2026-07-11",
-  "fallback_or_rejection": "缺失时回退 grep；二者皆无 → doctor fail"
-}

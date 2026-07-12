@@ -1,0 +1,11 @@
+{
+  "name": "repo-analyzer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI coding agent skill for deep architectural analysis of open-source projects",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yzddmr6/repo-analyzer"
+  }
+}

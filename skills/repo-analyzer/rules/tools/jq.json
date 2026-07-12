@@ -1,9 +1,0 @@
-{
-  "tool_name": "jq",
-  "capability": "structured-json-convenience",
-  "mode_usage": { "standard": "optional", "deep": "optional" },
-  "class": "baseline",
-  "official_source_url": "https://jqlang.github.io/jq/",
-  "verified_date": "2026-07-11",
-  "fallback_or_rejection": "缺失不阻塞；非必需"
-}

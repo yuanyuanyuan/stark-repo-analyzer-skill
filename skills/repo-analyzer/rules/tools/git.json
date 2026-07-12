@@ -1,9 +1,0 @@
-{
-  "tool_name": "git",
-  "capability": "baseline-git",
-  "mode_usage": { "standard": "required", "deep": "required" },
-  "class": "baseline",
-  "official_source_url": "https://git-scm.com/doc",
-  "verified_date": "2026-07-11",
-  "fallback_or_rejection": "missing → doctor fail; 无分析放行"
-}

@@ -1,9 +1,0 @@
-{
-  "tool_name": "grep",
-  "capability": "baseline-text-search",
-  "mode_usage": { "standard": "fallback", "deep": "fallback" },
-  "class": "baseline",
-  "official_source_url": "https://www.gnu.org/software/grep/manual/",
-  "verified_date": "2026-07-11",
-  "fallback_or_rejection": "rg 可用时忽略；与 rg 皆无 → doctor fail"
-}
