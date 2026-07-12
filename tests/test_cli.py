@@ -112,7 +112,39 @@ class CliContractTests(unittest.TestCase):
             self.assertEqual(len(normalized["nodes"]), 2)
             self.assertEqual(len(normalized["links"]), 1)
             self.assertTrue((graph_dir / "raw-deep-graph.json").is_file())
+            self.assertTrue((graph_dir / "raw-GRAPH_REPORT.md").is_file())
             self.assertIn("2 nodes · 1 edges", (graph_dir / "GRAPH_REPORT.md").read_text(encoding="utf-8"))
+
+    def test_resume_normalizes_from_existing_raw_artifacts(self):
+        target = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            work_dir = Path(directory) / "run"
+            graph_dir = work_dir / "graphify-out"
+            graph_dir.mkdir(parents=True)
+            raw_graph = {
+                "nodes": [{"id": "valid", "source_file": "src/stark_repo_analyzer/cli.py", "source_location": "L1"}],
+                "links": [{"source": "valid", "target": "valid", "source_file": "src/stark_repo_analyzer/cli.py", "source_location": "L1"}],
+            }
+            (graph_dir / "raw-deep-graph.json").write_text(json.dumps(raw_graph), encoding="utf-8")
+            (graph_dir / "raw-GRAPH_REPORT.md").write_text("1 nodes · 1 edges\n", encoding="utf-8")
+            normalized_graph = {"nodes": [], "links": [], "normalization": {}}
+            (graph_dir / "graph.json").write_text(json.dumps(normalized_graph), encoding="utf-8")
+            (graph_dir / "GRAPH_REPORT.md").write_text("old normalized report\n", encoding="utf-8")
+            (work_dir / "execution-log.md").write_text("# Execution Log\n", encoding="utf-8")
+            (work_dir / "metadata.json").write_text(json.dumps({
+                "analysis_mode": "standard",
+                "source": {"resolved_path": str(target), "source_status_before": {"head": "unused", "porcelain": ""}},
+                "graphify": {},
+            }), encoding="utf-8")
+            def fake_doctor(script, phase, target_path, output_dir):
+                return 30, {"phase": phase, "status": {"code": 30}}
+            with patch("stark_repo_analyzer.cli.source_status", return_value={"head": "unused", "porcelain": ""}), \
+                patch("stark_repo_analyzer.cli.find_doctor", return_value=Path("doctor.sh")), \
+                patch("stark_repo_analyzer.cli.doctor", side_effect=fake_doctor):
+                self.assertEqual(resume(Namespace(work_dir=str(work_dir))), 30)
+            self.assertEqual(json.loads((graph_dir / "raw-deep-graph.json").read_text())["nodes"], raw_graph["nodes"])
+            normalized = json.loads((graph_dir / "graph.json").read_text())
+            self.assertEqual(normalized["normalization"]["raw_nodes"], 1)
 
     def test_process_timeout_is_not_retried_as_network_failure(self):
         target = Path(__file__).resolve().parents[1]
@@ -221,6 +253,8 @@ class CliContractTests(unittest.TestCase):
             }), encoding="utf-8")
             (work_dir / "graphify-out/graph.json").write_text('{"nodes":[1],"links":[1]}', encoding="utf-8")
             (work_dir / "graphify-out/GRAPH_REPORT.md").write_text("1 nodes · 1 edges", encoding="utf-8")
+            (work_dir / "graphify-out/raw-deep-graph.json").write_text('{"nodes":[1],"links":[1]}', encoding="utf-8")
+            (work_dir / "graphify-out/raw-GRAPH_REPORT.md").write_text("1 nodes · 1 edges", encoding="utf-8")
             for name in ("01-graphify-map.md", "03-research.md", "03-plan.md", "05-modules-plan.md", "07-cross-validation.md", "08-insights.md", "08-coverage.md"):
                 (work_dir / "drafts" / name).write_text("pending\n", encoding="utf-8")
             with self.assertRaises(ContractError):
@@ -239,6 +273,8 @@ class CliContractTests(unittest.TestCase):
             }), encoding="utf-8")
             (work_dir / "graphify-out/graph.json").write_text('{"nodes":[1],"links":[1]}', encoding="utf-8")
             (work_dir / "graphify-out/GRAPH_REPORT.md").write_text("1 nodes · 1 edges", encoding="utf-8")
+            (work_dir / "graphify-out/raw-deep-graph.json").write_text('{"nodes":[1],"links":[1]}', encoding="utf-8")
+            (work_dir / "graphify-out/raw-GRAPH_REPORT.md").write_text("1 nodes · 1 edges", encoding="utf-8")
             for name in ("01-graphify-map.md", "03-research.md", "03-plan.md", "05-modules-plan.md", "07-cross-validation.md", "08-insights.md", "08-coverage.md"):
                 (work_dir / "drafts" / name).write_text("source coverage PASS\n", encoding="utf-8")
             (work_dir / "drafts/06-module-tasks.json").write_text(json.dumps([
@@ -308,6 +344,7 @@ class CliContractTests(unittest.TestCase):
             report = (work_dir / "ANALYSIS_REPORT.md").read_text(encoding="utf-8")
             self.assertIn("Core Module", report)
             self.assertNotIn("## 8. Coverage", report)
+            self.assertNotIn("## 4. Report Structure and Module Tasks", report)
             self.assertTrue((work_dir / "manifest.json").is_file())
             manifest = json.loads((work_dir / "manifest.json").read_text(encoding="utf-8"))
             self.assertTrue(manifest["files"])

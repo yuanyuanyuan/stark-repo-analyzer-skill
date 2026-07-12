@@ -17,8 +17,14 @@ pass() {
 }
 
 mkdir -p "$TMP/run-a/graphify-out" "$TMP/run-b/graphify-out"
-cp "$ROOT/graphify-out/graph.json" "$ROOT/graphify-out/GRAPH_REPORT.md" "$TMP/run-a/graphify-out/"
-cp "$ROOT/graphify-out/graph.json" "$ROOT/graphify-out/GRAPH_REPORT.md" "$TMP/run-b/graphify-out/"
+cp "$ROOT/graphify-out/graph.json" "$ROOT/graphify-out/GRAPH_REPORT.md" \
+  "$TMP/run-a/graphify-out/"
+cp "$ROOT/graphify-out/graph.json" "$ROOT/graphify-out/GRAPH_REPORT.md" \
+  "$TMP/run-b/graphify-out/"
+cp "$TMP/run-a/graphify-out/graph.json" "$TMP/run-a/graphify-out/raw-deep-graph.json"
+cp "$TMP/run-a/graphify-out/GRAPH_REPORT.md" "$TMP/run-a/graphify-out/raw-GRAPH_REPORT.md"
+cp "$TMP/run-b/graphify-out/graph.json" "$TMP/run-b/graphify-out/raw-deep-graph.json"
+cp "$TMP/run-b/graphify-out/GRAPH_REPORT.md" "$TMP/run-b/graphify-out/raw-GRAPH_REPORT.md"
 
 set +e
 "$DOCTOR" post-graph --target "$TARGET" --work-dir "$TMP/run-a" --json >"$TMP/a.json"

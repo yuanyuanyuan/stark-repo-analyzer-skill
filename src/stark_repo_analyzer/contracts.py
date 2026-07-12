@@ -133,6 +133,11 @@ def validate_run_contract(work_dir: Path, *, complete: bool = False) -> dict[str
     )
     graph_files = (work_dir / "graphify-out" / "graph.json", work_dir / "graphify-out" / "GRAPH_REPORT.md")
     missing.extend(str(path.relative_to(work_dir)) for path in graph_files if not path.is_file())
+    raw_graph_files = (
+        work_dir / "graphify-out" / "raw-deep-graph.json",
+        work_dir / "graphify-out" / "raw-GRAPH_REPORT.md",
+    )
+    missing.extend(str(path.relative_to(work_dir)) for path in raw_graph_files if not path.is_file())
     missing.extend(name for name in ("doctor-preflight.json", "doctor-post-graph.json") if not (work_dir / name).is_file())
     if missing:
         raise ContractError("missing run artifacts: " + ", ".join(missing))

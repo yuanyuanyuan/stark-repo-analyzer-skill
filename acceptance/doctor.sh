@@ -159,6 +159,8 @@ if [ "$phase" = "post-graph" ]; then
   graph_dir="$work_dir/graphify-out"
   graph_json="$graph_dir/graph.json"
   graph_report="$graph_dir/GRAPH_REPORT.md"
+  raw_graph_json="$graph_dir/raw-deep-graph.json"
+  raw_graph_report="$graph_dir/raw-GRAPH_REPORT.md"
   graph_nodes=""
   graph_links=""
   node_sources=""
@@ -169,6 +171,10 @@ if [ "$phase" = "post-graph" ]; then
   [ -r "$graph_json" ] || record_failure "$EXIT_BLOCKED" "graphify-out/graph.json is unreadable"
   [ -f "$graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/GRAPH_REPORT.md is missing"
   [ -r "$graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/GRAPH_REPORT.md is unreadable"
+  [ -f "$raw_graph_json" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-deep-graph.json is missing"
+  [ -r "$raw_graph_json" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-deep-graph.json is unreadable"
+  [ -f "$raw_graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-GRAPH_REPORT.md is missing"
+  [ -r "$raw_graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-GRAPH_REPORT.md is unreadable"
 
   if [ -f "$graph_json" ] && [ -f "$graph_report" ]; then
     if [ -n "$PYTHON_BIN" ]; then
@@ -181,6 +187,7 @@ from pathlib import Path
 graph_path, report_path, target_path = map(Path, sys.argv[1:])
 target = target_path.resolve()
 errors = []
+line_count_cache = {}
 
 try:
     graph = json.loads(graph_path.read_text(encoding="utf-8"))
@@ -233,7 +240,10 @@ def valid_source(item):
             return False
     if not resolved.is_file():
         return False
-    line_count = len(resolved.read_text(encoding="utf-8", errors="replace").splitlines())
+    line_count = line_count_cache.get(resolved)
+    if line_count is None:
+        line_count = len(resolved.read_text(encoding="utf-8", errors="replace").splitlines())
+        line_count_cache[resolved] = line_count
     first_line = int(location_match.group(1))
     last_line = int(location_match.group(2) or location_match.group(1))
     if first_line < 1 or first_line > line_count or last_line < first_line or last_line > line_count:

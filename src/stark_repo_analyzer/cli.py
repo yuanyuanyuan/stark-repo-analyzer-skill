@@ -346,7 +346,11 @@ def graphify_extract_command(target: Path, work_dir: Path) -> list[str]:
     ]
 
 
-def _locatable_graph_source(item: object, target: Path) -> bool:
+def _locatable_graph_source(
+    item: object,
+    target: Path,
+    line_count_cache: dict[Path, int] | None = None,
+) -> bool:
     if not isinstance(item, dict):
         return False
     source_file = item.get("source_file")
@@ -362,10 +366,16 @@ def _locatable_graph_source(item: object, target: Path) -> bool:
         return False
     if not resolved.is_file():
         return False
-    lines = len(resolved.read_text(encoding="utf-8", errors="replace").splitlines())
+    if line_count_cache is None:
+        line_count = len(resolved.read_text(encoding="utf-8", errors="replace").splitlines())
+    else:
+        line_count = line_count_cache.get(resolved)
+        if line_count is None:
+            line_count = len(resolved.read_text(encoding="utf-8", errors="replace").splitlines())
+            line_count_cache[resolved] = line_count
     first = int(match.group(1))
     last = int(match.group(2) or match.group(1))
-    return 1 <= first <= last <= lines
+    return 1 <= first <= last <= line_count
 
 
 def classify_stream(value: str) -> str:
@@ -386,8 +396,6 @@ def graphify_postprocess(target: Path, work_dir: Path, log: list[str]) -> dict[s
     """Generate the report, retain raw deep output, and normalize source evidence."""
 
     graph_dir = work_dir / "graphify-out"
-    graph_path = graph_dir / "graph.json"
-    report_path = graph_dir / "GRAPH_REPORT.md"
     cluster_command = ["graphify", "cluster-only", str(work_dir), "--no-label", "--no-viz"]
     cluster_env = os.environ.copy()
     cluster_env["GRAPHIFY_OUT"] = str(graph_dir.resolve())
@@ -409,30 +417,66 @@ def graphify_postprocess(target: Path, work_dir: Path, log: list[str]) -> dict[s
             failure_class="graphify-report-generation",
             details={"cluster_only": cluster_summary},
         )
+    normalized = normalize_graphify_artifacts(target, work_dir, log, cluster_summary=cluster_summary)
+    return normalized
+
+
+def normalize_graphify_artifacts(
+    target: Path,
+    work_dir: Path,
+    log: list[str],
+    *,
+    cluster_summary: dict[str, object] | None = None,
+) -> dict[str, object]:
+    """Retain raw Graphify files and make the source-locatable sidecar authoritative."""
+
+    graph_dir = work_dir / "graphify-out"
+    graph_path = graph_dir / "graph.json"
+    report_path = graph_dir / "GRAPH_REPORT.md"
+    raw_graph_path = graph_dir / "raw-deep-graph.json"
+    raw_report_path = graph_dir / "raw-GRAPH_REPORT.md"
     try:
-        raw_graph = json.loads(graph_path.read_text(encoding="utf-8"))
-        raw_report = report_path.read_text(encoding="utf-8")
+        raw_pair_exists = raw_graph_path.is_file() and raw_report_path.is_file()
+        partial_raw_pair = raw_graph_path.exists() or raw_report_path.exists()
+        if partial_raw_pair and not raw_pair_exists:
+            raise RunFailure(
+                "Graphify raw artifact pair is incomplete",
+                failure_class="graphify-artifact",
+            )
+        source_graph_path = raw_graph_path if raw_pair_exists else graph_path
+        source_report_path = raw_report_path if raw_pair_exists else report_path
+        raw_graph = json.loads(source_graph_path.read_text(encoding="utf-8"))
+        raw_report = source_report_path.read_text(encoding="utf-8")
     except (OSError, json.JSONDecodeError) as exc:
         raise RunFailure(
             f"Graphify report artifacts are invalid: {type(exc).__name__}",
             failure_class="graphify-artifact",
-            details={"cluster_only": cluster_summary},
+            details={"cluster_only": cluster_summary} if cluster_summary else {},
         ) from exc
-    shutil.copy2(graph_path, graph_dir / "raw-deep-graph.json")
-    shutil.copy2(report_path, graph_dir / "raw-GRAPH_REPORT.md")
+    if not raw_graph_path.is_file():
+        shutil.copy2(graph_path, raw_graph_path)
+    if not raw_report_path.is_file():
+        shutil.copy2(report_path, raw_report_path)
     nodes = raw_graph.get("nodes", [])
     links = raw_graph.get("links", raw_graph.get("edges", []))
-    valid_nodes = [node for node in nodes if _locatable_graph_source(node, target)]
+    line_count_cache: dict[Path, int] = {}
+    valid_nodes = [node for node in nodes if _locatable_graph_source(node, target, line_count_cache)]
     valid_node_ids = {node.get("id") for node in valid_nodes if isinstance(node, dict)}
     valid_links = [
         link for link in links
-        if _locatable_graph_source(link, target)
+        if _locatable_graph_source(link, target, line_count_cache)
         and (not isinstance(link, dict) or link.get("source") in valid_node_ids or link.get("target") in valid_node_ids)
     ]
+    valid_link_endpoints = {
+        endpoint
+        for link in valid_links
+        if isinstance(link, dict)
+        for endpoint in (link.get("source"), link.get("target"))
+    }
     symbol_nodes = [
         node for node in nodes
         if isinstance(node, dict) and not node.get("source_file")
-        and node.get("id") in {endpoint for link in valid_links for endpoint in (link.get("source"), link.get("target"))}
+        and node.get("id") in valid_link_endpoints
     ]
     normalized = {
         "nodes": valid_nodes + symbol_nodes,
@@ -451,7 +495,7 @@ def graphify_postprocess(target: Path, work_dir: Path, log: list[str]) -> dict[s
         raise RunFailure(
             "Graphify normalization produced an empty graph",
             failure_class="graphify-artifact",
-            details={"cluster_only": cluster_summary},
+            details={"cluster_only": cluster_summary} if cluster_summary else {},
         )
     graph_path.write_text(json.dumps(normalized, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     report_path.write_text(
@@ -466,13 +510,15 @@ def graphify_postprocess(target: Path, work_dir: Path, log: list[str]) -> dict[s
     log.append(
         f"graphify normalized raw={len(nodes)}:{len(links)} normalized={len(normalized['nodes'])}:{len(normalized['links'])}"
     )
-    return {
-        "cluster_only": cluster_summary,
+    result = {
         "raw_artifacts": ["graphify-out/raw-deep-graph.json", "graphify-out/raw-GRAPH_REPORT.md"],
         "normalized_artifacts": ["graphify-out/graph.json", "graphify-out/GRAPH_REPORT.md"],
         "raw_graph": {"nodes": len(nodes), "edges": len(links)},
         "normalized_graph": {"nodes": len(normalized["nodes"]), "edges": len(normalized["links"])},
     }
+    if cluster_summary is not None:
+        result["cluster_only"] = cluster_summary
+    return result
 
 
 def graph_map(work_dir: Path, target: Path) -> str:
@@ -789,12 +835,31 @@ def finalize(args: argparse.Namespace) -> int:
     assert validation is not None
 
     base = (work_dir / "ANALYSIS_REPORT.md").read_text(encoding="utf-8", errors="replace")
+    temporary_plan_marker = "\n## 4. Report Structure and Module Tasks"
+    if temporary_plan_marker in base:
+        base = base.split(temporary_plan_marker, 1)[0].rstrip()
     modules = sorted((work_dir / "drafts").glob("06-module-*.md"))
     research = (work_dir / "drafts" / "03-research.md").read_text(encoding="utf-8", errors="replace")
     plan = (work_dir / "drafts" / "03-plan.md").read_text(encoding="utf-8", errors="replace")
+    modules_plan = (work_dir / "drafts" / "05-modules-plan.md").read_text(encoding="utf-8", errors="replace")
     cross = (work_dir / "drafts" / "07-cross-validation.md").read_text(encoding="utf-8", errors="replace")
     insights = (work_dir / "drafts" / "08-insights.md").read_text(encoding="utf-8", errors="replace")
-    sections = [base.rstrip(), "", "## 6. 调研与执行计划", "", research.rstrip(), "", plan.rstrip(), "", "## 7. 深度模块分析", ""]
+    sections = [
+        base.rstrip(),
+        "",
+        "## 4. 最终业务模块与叙事",
+        "",
+        modules_plan.rstrip(),
+        "",
+        "## 5. 调研与执行计划",
+        "",
+        research.rstrip(),
+        "",
+        plan.rstrip(),
+        "",
+        "## 6. 深度模块分析",
+        "",
+    ]
     sections.extend(_draft_heading(path, path.read_text(encoding="utf-8", errors="replace")) for path in modules)
     sections.extend(["## 8. 交叉验证与评价", "", cross.rstrip(), "", insights.rstrip(), ""])
     report = "\n".join(sections)
@@ -948,10 +1013,13 @@ def resume(args: argparse.Namespace) -> int:
     try:
         graphify = metadata.setdefault("graphify", {})
         graph_dir = work_dir / "graphify-out"
-        if not (graph_dir / "graph.json").is_file() or not (graph_dir / "GRAPH_REPORT.md").is_file():
-            graphify.update(graphify_postprocess(target, work_dir, log))
         graphify.setdefault("normalized_artifacts", ["graphify-out/graph.json", "graphify-out/GRAPH_REPORT.md"])
         raw_artifacts = ["graphify-out/raw-deep-graph.json", "graphify-out/raw-GRAPH_REPORT.md"]
+        graphify["artifact_paths"] = graphify["normalized_artifacts"]
+        if not (graph_dir / "graph.json").is_file() or not (graph_dir / "GRAPH_REPORT.md").is_file():
+            graphify.update(graphify_postprocess(target, work_dir, log))
+        else:
+            graphify.update(normalize_graphify_artifacts(target, work_dir, log))
         if all((work_dir / path).is_file() for path in raw_artifacts):
             graphify.setdefault("raw_artifacts", raw_artifacts)
         doctor_script = find_doctor()
@@ -966,6 +1034,7 @@ def resume(args: argparse.Namespace) -> int:
         )
         metadata["recovered_from"] = metadata.get("failure")
         metadata.pop("failure", None)
+        (work_dir / "drafts").mkdir(parents=True, exist_ok=True)
         prepare_agent_handoff(work_dir, target, metadata, log)
     except Exception as exc:
         metadata["ended_at"] = now()

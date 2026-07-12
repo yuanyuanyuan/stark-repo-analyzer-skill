@@ -2,7 +2,7 @@
 
 ## Status
 
-Complete with explicit blocked regressions. The implementation, regression evidence, release validation and residual-risk report are recorded. R03/R04 remain `[!]` because Ruff/Codex are blocked at the required Graphify evidence gate; no incomplete graph or report was promoted.
+Implementation and regression evidence are complete for the accepted runs, with an explicit blocked release chain. R03 remains `[!]` because Ruff is blocked at the required Graphify evidence gate; Codex v3 has a complete bounded real Agent-gated run, but dependent R04-R05/G01-G03 remain blocked until the required order is satisfied. No incomplete graph or report was promoted.
 
 ## Objective
 
