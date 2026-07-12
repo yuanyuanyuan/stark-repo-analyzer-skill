@@ -248,18 +248,11 @@ if link_sources == 0:
     errors.append("graph has no locatable edge source references")
 if link_sources != len(links):
     errors.append("graph contains edges with invalid or missing source references")
-node_ids = {item.get("id") for item in nodes if isinstance(item, dict)}
-valid_link_endpoints = {
-    endpoint
-    for item in links
-    if isinstance(item, dict) and valid_source(item)
-    for endpoint in (item.get("source"), item.get("target"))
-}
 unlocated_symbol_nodes = sum(
     bool(isinstance(item, dict)
     and not valid_source(item)
     and not item.get("source_file")
-    and item.get("id") in valid_link_endpoints)
+    )
     for item in nodes
 )
 if node_sources + unlocated_symbol_nodes != len(nodes):
