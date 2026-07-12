@@ -24,6 +24,17 @@ All six physical invocations used fixed local source snapshots and left those so
 | `claude-code` | `a371abbe...` | physical `run-1` graph | complete; 16,205 nodes / 61,615 edges; bounded | `/tmp/stark-repo-analyzer-impl-claude-code-fixture` |
 | `codex` | `9e552e9...` | no accepted graph artifact | blocked at Graphify contract | physical `run-1/graphify-failure.md` |
 
+## Real Agent-Gated Runs
+
+The following are independent real runs with accepted Graphify output and Agent-owned module drafts. They are evidence for the implementation control plane and source adjudication, not claims of semantic equivalence with the reference reports.
+
+| Project | Fixed HEAD | Graphify result | Agent/coverage result | Final gate |
+|---|---|---|---|---|
+| `click` | `b67832c...` | raw `2,053/4,127`; normalized `1,900/4,010`; `graphify 0.9.8`, auto-selected `deepseek/deepseek-v4-flash`; target clean | 2 module drafts; `6,325/6,325` and `11,613/12,288`; source adjudication PASS | `/tmp/stark-repo-analyzer-real-click-v3`: `validate --complete`, `finalize`, manifest `complete` |
+| `codex-plugin-cc` | `db52e28...` | normalized `442/1,074`; `graphify 0.9.8`, auto-selected `deepseek/deepseek-v4-flash`; target clean | 1 module draft; `4,394/4,394`; source adjudication PASS | `/tmp/stark-repo-analyzer-real-codex-plugin-v1`: `validate --complete`, `finalize`, manifest `complete` |
+
+Ruff was retried through the control plane on 2026-07-12 in `/tmp/stark-repo-analyzer-real-ruff-v1`. After approximately 13 minutes it remained in partial semantic extraction with no accepted `graph.json`/`GRAPH_REPORT.md` pair; the isolated run was stopped, and the fixed Ruff source tree remained clean. It remains blocked rather than being represented by a fixture or partial graph. Codex remains blocked on the previously recorded incomplete semantic extraction in `physical-runs/codex/run-1/graphify-failure.md`.
+
 ## Accepted Differences
 
 - The implementation report is a deterministic fusion skeleton plus Agent-owned drafts; the fixture module drafts prove mechanical contracts only and are not semantic replacements for the reference reports. Semantic parity remains an Agent reading task.

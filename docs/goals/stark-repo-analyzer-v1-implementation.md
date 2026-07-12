@@ -22,8 +22,8 @@ Do not advance past a dependency without the task's required evidence.
 ## Graphify And Doctor Boundaries
 
 - All programmatic checks belong in `acceptance/doctor.sh preflight|post-graph`.
-- Graphify produces only `$WORK_DIR/drafts/01-graphify-map.md` as navigation context for the reference workflow.
-- Graph output is isolated in `$WORK_DIR/graphify-out/`; the target repository is read-only.
+- Graphify raw and normalized output is isolated in `$WORK_DIR/graphify-out/`; the target repository is read-only. The normalized graph/report is a validated sidecar input, and only `$WORK_DIR/drafts/01-graphify-map.md` is passed into the reference workflow as navigation context.
+- The control plane may materialize `GRAPH_REPORT.md` with the official `cluster-only <WORK_DIR> --no-label --no-viz` command and retain both raw and normalized artifacts; `acceptance/doctor.sh post-graph` remains the acceptance gate.
 - The original skill's flow and decision responsibilities do not change.
 - Graphify does not replace source reading: `EXTRACTED` verifies core paths, `INFERRED` remains pending verification, and `AMBIGUOUS` is only a risk or question.
 

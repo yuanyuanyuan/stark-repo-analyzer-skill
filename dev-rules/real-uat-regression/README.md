@@ -10,7 +10,9 @@
 
 ## 必备证据
 
-每次真实 UAT 都必须保存固定输入、源码 commit、Graphify 版本/backend/model、退出码、运行时间、stdout/stderr 分类、产物目录和 `metadata.json`。目标仓库不得写入 Graphify 产物。
+每次真实 UAT 都必须保存固定输入、源码 commit、Graphify 版本/backend/model、`extract` 与 `cluster-only` 退出码、运行时间、stdout/stderr 分类、产物目录和 `metadata.json`。V1 使用 `graphify extract <target> --mode deep --out <WORK_DIR>`，随后可使用官方 `graphify cluster-only <WORK_DIR> --no-label --no-viz` 物化报告；raw graph/report 与 source-locatable normalized graph/report 都必须留在 `$WORK_DIR/graphify-out/`，目标仓库不得写入 Graphify 产物。
+
+实现控制面可通过 `resume --work-dir <WORK_DIR>` 继续一次已保存的 post-graph 修复，但不得跳过 `doctor post-graph`。真实 Agent 完成的模块草稿、源码 adjudication、coverage gate 和最终 manifest 必须与 fixture/control-plane-only 结果分开记录。
 
 P2 必须有真实 Agent/runtime 入口；P4 必须有同一固定输入的两次独立快照，并运行 `acceptance/physical-repeatability-check.sh`。规范化比较排除运行 ID、时间戳和临时 work-dir，但不排除源码 commit、图谱来源、覆盖率或失败分类。
 

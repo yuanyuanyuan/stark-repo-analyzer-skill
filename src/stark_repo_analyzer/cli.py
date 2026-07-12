@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -40,16 +41,29 @@ TRANSIENT_FAILURE = re.compile(
 class RunFailure(RuntimeError):
     """An analysis run stopped at a declared failure boundary."""
 
-    def __init__(self, message: str, *, failure_class: str = "configuration-or-execution") -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        failure_class: str = "configuration-or-execution",
+        details: dict[str, object] | None = None,
+    ) -> None:
         super().__init__(message)
         self.failure_class = failure_class
+        self.details = details or {}
 
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def run(command: list[str], *, cwd: Path | None = None, timeout: int = 900) -> subprocess.CompletedProcess[str]:
+def run(
+    command: list[str],
+    *,
+    cwd: Path | None = None,
+    timeout: int = 900,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     """Run a command without invoking a shell or exposing environment secrets."""
 
     try:
@@ -60,6 +74,7 @@ def run(command: list[str], *, cwd: Path | None = None, timeout: int = 900) -> s
             capture_output=True,
             check=False,
             timeout=timeout,
+            env=env,
         )
     except subprocess.TimeoutExpired:
         return subprocess.CompletedProcess(command, 124, "", "timeout")
@@ -280,7 +295,10 @@ def graphify_extract(target: Path, work_dir: Path, log: list[str]) -> list[dict[
     attempts: list[dict[str, object]] = []
     while True:
         started = time.monotonic()
-        result = run(command)
+        # Graphify has a supported absolute output override used by all of its cache paths.
+        child_env = os.environ.copy()
+        child_env["GRAPHIFY_OUT"] = str((work_dir / "graphify-out").resolve())
+        result = run(command, cwd=work_dir, env=child_env)
         elapsed = round(time.monotonic() - started, 2)
         combined = result.stdout + "\n" + result.stderr
         transient = bool(result.returncode != 0 and TRANSIENT_FAILURE.search(combined))
@@ -295,6 +313,119 @@ def graphify_extract(target: Path, work_dir: Path, log: list[str]) -> list[dict[
         delay = 2**retries
         log.append(f"transient Graphify failure; retry {retries}/2 after {delay}s")
         time.sleep(delay)
+
+
+def _locatable_graph_source(item: object, target: Path) -> bool:
+    if not isinstance(item, dict):
+        return False
+    source_file = item.get("source_file")
+    location = item.get("source_location")
+    match = re.search(r"L(\d+)(?:-L?(\d+))?", location or "") if isinstance(location, str) else None
+    if not isinstance(source_file, str) or not source_file.strip() or not match:
+        return False
+    candidate = Path(source_file)
+    resolved = candidate.resolve() if candidate.is_absolute() else (target / candidate).resolve()
+    try:
+        resolved.relative_to(target.resolve())
+    except ValueError:
+        return False
+    if not resolved.is_file():
+        return False
+    lines = len(resolved.read_text(encoding="utf-8", errors="replace").splitlines())
+    first = int(match.group(1))
+    last = int(match.group(2) or match.group(1))
+    return 1 <= first <= last <= lines
+
+
+def graphify_postprocess(target: Path, work_dir: Path, log: list[str]) -> dict[str, object]:
+    """Generate the report, retain raw deep output, and normalize source evidence."""
+
+    graph_dir = work_dir / "graphify-out"
+    graph_path = graph_dir / "graph.json"
+    report_path = graph_dir / "GRAPH_REPORT.md"
+    cluster_command = ["graphify", "cluster-only", str(work_dir), "--no-label", "--no-viz"]
+    cluster_env = os.environ.copy()
+    cluster_env["GRAPHIFY_OUT"] = str(graph_dir.resolve())
+    started = time.monotonic()
+    result = run(cluster_command, cwd=work_dir, env=cluster_env)
+    cluster_summary: dict[str, object] = {
+        "command": "graphify cluster-only <WORK_DIR> --no-label --no-viz",
+        "exit_code": result.returncode,
+        "elapsed_seconds": round(time.monotonic() - started, 2),
+        "no_label": True,
+        "no_viz": True,
+    }
+    log.append(f"graphify cluster-only exit={result.returncode} no-label=true no-viz=true")
+    if result.returncode != 0:
+        raise RunFailure(
+            "Graphify report generation failed",
+            failure_class="graphify-report-generation",
+            details={"cluster_only": cluster_summary},
+        )
+    try:
+        raw_graph = json.loads(graph_path.read_text(encoding="utf-8"))
+        raw_report = report_path.read_text(encoding="utf-8")
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RunFailure(
+            f"Graphify report artifacts are invalid: {type(exc).__name__}",
+            failure_class="graphify-artifact",
+            details={"cluster_only": cluster_summary},
+        ) from exc
+    shutil.copy2(graph_path, graph_dir / "raw-deep-graph.json")
+    shutil.copy2(report_path, graph_dir / "raw-GRAPH_REPORT.md")
+    nodes = raw_graph.get("nodes", [])
+    links = raw_graph.get("links", raw_graph.get("edges", []))
+    valid_nodes = [node for node in nodes if _locatable_graph_source(node, target)]
+    valid_node_ids = {node.get("id") for node in valid_nodes if isinstance(node, dict)}
+    valid_links = [
+        link for link in links
+        if _locatable_graph_source(link, target)
+        and (not isinstance(link, dict) or link.get("source") in valid_node_ids or link.get("target") in valid_node_ids)
+    ]
+    symbol_nodes = [
+        node for node in nodes
+        if isinstance(node, dict) and not node.get("source_file")
+        and node.get("id") in {endpoint for link in valid_links for endpoint in (link.get("source"), link.get("target"))}
+    ]
+    normalized = {
+        "nodes": valid_nodes + symbol_nodes,
+        "links": valid_links,
+        "normalization": {
+            "raw_nodes": len(nodes),
+            "raw_edges": len(links),
+            "source_locatable_nodes": len(valid_nodes),
+            "source_locatable_edges": len(valid_links),
+            "dropped_nodes": len(nodes) - len(valid_nodes) - len(symbol_nodes),
+            "dropped_edges": len(links) - len(valid_links),
+            "raw_report": "raw-GRAPH_REPORT.md",
+        },
+    }
+    if not normalized["nodes"] or not normalized["links"]:
+        raise RunFailure(
+            "Graphify normalization produced an empty graph",
+            failure_class="graphify-artifact",
+            details={"cluster_only": cluster_summary},
+        )
+    graph_path.write_text(json.dumps(normalized, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    report_path.write_text(
+        "# Graph Report - normalized source evidence\n\n"
+        f"- Summary: {len(normalized['nodes'])} nodes · {len(normalized['links'])} edges.\n"
+        f"- Raw Graphify graph: {len(nodes)} nodes · {len(links)} edges.\n"
+        f"- Source-locatable evidence retained; dropped {normalized['normalization']['dropped_nodes']} nodes and {normalized['normalization']['dropped_edges']} edges.\n"
+        "- Raw report is retained in `raw-GRAPH_REPORT.md`; raw graph is retained in `raw-deep-graph.json`.\n\n"
+        + raw_report[:4000],
+        encoding="utf-8",
+    )
+    log.append(
+        f"graphify normalized raw={len(nodes)}:{len(links)} normalized={len(normalized['nodes'])}:{len(normalized['links'])}"
+    )
+    return {
+        "cluster_only": cluster_summary,
+        "raw_artifacts": ["graphify-out/raw-deep-graph.json", "graphify-out/raw-GRAPH_REPORT.md"],
+        "normalized_artifacts": ["graphify-out/graph.json", "graphify-out/GRAPH_REPORT.md"],
+        "raw_graph": {"nodes": len(nodes), "edges": len(links)},
+        "normalized_graph": {"nodes": len(normalized["nodes"]), "edges": len(normalized["links"])},
+    }
 
 
 def graph_map(work_dir: Path, target: Path) -> str:
@@ -525,6 +656,59 @@ def _draft_heading(path: Path, text: str) -> str:
     return f"### {title}\n\n" + "\n".join(lines).strip() + "\n"
 
 
+def prepare_agent_handoff(work_dir: Path, target: Path, metadata: dict[str, object], log: list[str]) -> None:
+    """Write the deterministic boundary artifacts before Agent-owned reading."""
+
+    (work_dir / "drafts" / "01-graphify-map.md").write_text(graph_map(work_dir, target), encoding="utf-8")
+    sizing = size_report(target)
+    context = collect_context(target)
+    questions = _adaptive_questions(target, sizing, context)
+    write_plan(work_dir, sizing, context, questions)
+    modules = write_module_plan(work_dir, sizing, questions)
+    (work_dir / "drafts" / "07-cross-validation.md").write_text(
+        "# Cross-Validation\n\n"
+        "Graphify relations remain navigation candidates until source paths and line ranges are checked by the Agent. "
+        "Source code adjudicates conflicts; unresolved `INFERRED` and `AMBIGUOUS` relations are not conclusions.\n",
+        encoding="utf-8",
+    )
+    (work_dir / "drafts" / "08-insights.md").write_text(
+        "# Architecture Insights\n\n"
+        "The Agent must write system-level design philosophy, trade-offs, redesign suggestions and residual risks here after module validation.\n",
+        encoding="utf-8",
+    )
+    (work_dir / "drafts" / "08-coverage.md").write_text(
+        "# Coverage Summary\n\n"
+        "| Measure | Status | Evidence |\n|---|---|---|\n"
+        "| Static source reading | pending Agent module drafts | `drafts/06-module-*.md` line tables |\n"
+        "| Test coverage | not measured by this workflow | separate test evidence required |\n"
+        "| Runtime verification | not measured by this workflow | dynamic trace required |\n",
+        encoding="utf-8",
+    )
+    fuse_initial_report(work_dir, target, metadata, sizing, context, questions, modules)
+    metadata["source"]["source_status_after"] = ensure_source_unchanged(
+        target,
+        metadata["source"]["source_status_before"],
+        phase="analysis",
+    )
+    metadata["ended_at"] = now()
+    metadata["outcome"] = "awaiting-agent-module-analysis"
+    metadata["limitations"] = [
+        "Agent module drafts and final source adjudication remain required.",
+        "External research, tests and runtime behavior are not inferred from static reading.",
+    ]
+    log.append("control plane completed; awaiting Agent-owned module drafts")
+    write_checks(
+        work_dir,
+        [
+            ("Doctor preflight", "PASS", "metadata.json"),
+            ("Graphify extraction", "PASS", "metadata.json"),
+            ("Doctor post-graph", "PASS", "metadata.json"),
+            ("Source adjudication", "PENDING", "drafts/07-cross-validation.md"),
+            ("Module coverage", "PENDING", "drafts/08-coverage.md"),
+        ],
+    )
+
+
 def finalize(args: argparse.Namespace) -> int:
     work_dir = Path(args.work_dir).expanduser().resolve()
     metadata_path = work_dir / "metadata.json"
@@ -660,64 +844,21 @@ def analyze(args: argparse.Namespace) -> int:
         )
         graphify["extract_attempts"] = attempts
         graphify["target_graphify_out_unchanged"] = True
-        graphify["artifact_paths"] = ["graphify-out/graph.json", "graphify-out/GRAPH_REPORT.md"]
+        graphify.update(graphify_postprocess(target, work_dir, log))
+        cleanup_created_target_graphify(target, before, target_graphify_signature(target), log)
+        graphify["artifact_paths"] = graphify["normalized_artifacts"] + graphify["raw_artifacts"]
         post_rc, post = doctor(doctor_script, "post-graph", target, work_dir)
         (work_dir / "doctor-post-graph.json").write_text(json.dumps(post, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         graphify["post_graph"] = post
         if post_rc != 0:
             raise RunFailure("doctor post-graph blocked", failure_class="doctor-post-graph")
-        (work_dir / "drafts" / "01-graphify-map.md").write_text(graph_map(work_dir, target), encoding="utf-8")
-        sizing = size_report(target)
-        context = collect_context(target)
-        questions = _adaptive_questions(target, sizing, context)
-        write_plan(work_dir, sizing, context, questions)
-        modules = write_module_plan(work_dir, sizing, questions)
-        (work_dir / "drafts" / "07-cross-validation.md").write_text(
-            "# Cross-Validation\n\n"
-            "Graphify relations remain navigation candidates until source paths and line ranges are checked by the Agent. "
-            "Source code adjudicates conflicts; unresolved `INFERRED` and `AMBIGUOUS` relations are not conclusions.\n",
-            encoding="utf-8",
-        )
-        (work_dir / "drafts" / "08-insights.md").write_text(
-            "# Architecture Insights\n\n"
-            "The Agent must write system-level design philosophy, trade-offs, redesign suggestions and residual risks here after module validation.\n",
-            encoding="utf-8",
-        )
-        (work_dir / "drafts" / "08-coverage.md").write_text(
-            "# Coverage Summary\n\n"
-            "| Measure | Status | Evidence |\n|---|---|---|\n"
-            "| Static source reading | pending Agent module drafts | `drafts/06-module-*.md` line tables |\n"
-            "| Test coverage | not measured by this workflow | separate test evidence required |\n"
-            "| Runtime verification | not measured by this workflow | dynamic trace required |\n",
-            encoding="utf-8",
-        )
-        fuse_initial_report(work_dir, target, metadata, sizing, context, questions, modules)
-        metadata["source"]["source_status_after"] = ensure_source_unchanged(
-            target,
-            metadata["source"]["source_status_before"],
-            phase="analysis",
-        )
-        metadata["ended_at"] = now()
-        metadata["outcome"] = "awaiting-agent-module-analysis"
-        metadata["limitations"] = [
-            "Agent module drafts and final source adjudication remain required.",
-            "External research, tests and runtime behavior are not inferred from static reading.",
-        ]
-        log.append("control plane completed; awaiting Agent-owned module drafts")
-        write_checks(
-            work_dir,
-            [
-                ("Doctor preflight", "PASS", "metadata.json"),
-                ("Graphify extraction", "PASS", "metadata.json"),
-                ("Doctor post-graph", "PASS", "metadata.json"),
-                ("Source adjudication", "PENDING", "drafts/07-cross-validation.md"),
-                ("Module coverage", "PENDING", "drafts/08-coverage.md"),
-            ],
-        )
+        prepare_agent_handoff(work_dir, target, metadata, log)
     except Exception as exc:
         metadata["ended_at"] = now()
         metadata["outcome"] = "failed"
         failure_class = exc.failure_class if isinstance(exc, RunFailure) else "configuration-or-execution"
+        if isinstance(exc, RunFailure) and exc.details:
+            metadata.setdefault("graphify", {}).update(exc.details)
         metadata["failure"] = {"class": failure_class, "message": str(exc)}
         log.append(f"FAIL class={failure_class}: {exc}")
         write_checks(work_dir, [("Run", "FAIL", f"{failure_class}: {exc}")])
@@ -732,6 +873,73 @@ def analyze(args: argparse.Namespace) -> int:
     except ContractError as exc:
         log.append(f"manifest validation pending: {exc}")
         (work_dir / "execution-log.md").write_text("# Execution Log\n\n" + "\n\n".join(log) + "\n", encoding="utf-8")
+    return 2
+
+
+def resume(args: argparse.Namespace) -> int:
+    """Continue a run after an external Graphify report/normalization repair."""
+
+    work_dir = Path(args.work_dir).expanduser().resolve()
+    metadata_path = work_dir / "metadata.json"
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"cannot read metadata: {type(exc).__name__}", file=sys.stderr)
+        return 30
+    source = metadata.get("source", {})
+    target_value = source.get("resolved_path")
+    if not target_value or not source.get("source_status_before"):
+        print("resume requires source metadata", file=sys.stderr)
+        return 30
+    target = Path(target_value).resolve()
+    if not target.is_dir() or source_status(target) != source["source_status_before"]:
+        print("source repository changed before resume", file=sys.stderr)
+        return 30
+    log_path = work_dir / "execution-log.md"
+    log = [line for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines() if line and not line.startswith("#")]
+    log.append(f"resume started: {now()}")
+    try:
+        graphify = metadata.setdefault("graphify", {})
+        graph_dir = work_dir / "graphify-out"
+        if not (graph_dir / "graph.json").is_file() or not (graph_dir / "GRAPH_REPORT.md").is_file():
+            graphify.update(graphify_postprocess(target, work_dir, log))
+        graphify.setdefault("normalized_artifacts", ["graphify-out/graph.json", "graphify-out/GRAPH_REPORT.md"])
+        raw_artifacts = ["graphify-out/raw-deep-graph.json", "graphify-out/raw-GRAPH_REPORT.md"]
+        if all((work_dir / path).is_file() for path in raw_artifacts):
+            graphify.setdefault("raw_artifacts", raw_artifacts)
+        doctor_script = find_doctor()
+        post_rc, post = doctor(doctor_script, "post-graph", target, work_dir)
+        (work_dir / "doctor-post-graph.json").write_text(json.dumps(post, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        graphify["post_graph"] = post
+        graphify["artifact_paths"] = graphify["normalized_artifacts"] + graphify.get("raw_artifacts", [])
+        if post_rc != 0:
+            raise RunFailure("doctor post-graph blocked during resume", failure_class="doctor-post-graph")
+        source["source_status_after_graphify"] = ensure_source_unchanged(
+            target, source["source_status_before"], phase="resume"
+        )
+        metadata["recovered_from"] = metadata.get("failure")
+        metadata.pop("failure", None)
+        prepare_agent_handoff(work_dir, target, metadata, log)
+    except Exception as exc:
+        metadata["ended_at"] = now()
+        metadata["outcome"] = "failed"
+        failure_class = exc.failure_class if isinstance(exc, RunFailure) else "configuration-or-execution"
+        if isinstance(exc, RunFailure) and exc.details:
+            metadata.setdefault("graphify", {}).update(exc.details)
+        metadata["failure"] = {"class": failure_class, "message": str(exc)}
+        log.append(f"FAIL class={failure_class}: {exc}")
+        write_checks(work_dir, [("Resume", "FAIL", f"{failure_class}: {exc}")])
+        metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        log_path.write_text("# Execution Log\n\n" + "\n\n".join(log) + "\n", encoding="utf-8")
+        return 30
+    metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    log_path.write_text("# Execution Log\n\n" + "\n\n".join(log) + "\n", encoding="utf-8")
+    try:
+        validation = validate_run_contract(work_dir, complete=False)
+        write_output_manifest(work_dir, status="awaiting-agent-module-analysis", validation=validation)
+    except ContractError as exc:
+        log.append(f"manifest validation pending: {exc}")
+        log_path.write_text("# Execution Log\n\n" + "\n\n".join(log) + "\n", encoding="utf-8")
     return 2
 
 
@@ -774,6 +982,9 @@ def main() -> int:
     validate_parser.add_argument("--work-dir", required=True)
     validate_parser.add_argument("--complete", action="store_true")
     validate_parser.set_defaults(func=validate_command)
+    resume_parser = sub.add_parser("resume", help="resume a post-graph repair in an existing run workspace")
+    resume_parser.add_argument("--work-dir", required=True)
+    resume_parser.set_defaults(func=resume)
     args = parser.parse_args()
     return args.func(args)
 

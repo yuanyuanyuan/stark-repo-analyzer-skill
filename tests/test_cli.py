@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from stark_repo_analyzer.cli import analyze, feature_questions, finalize, normalize_input, size_report
+from stark_repo_analyzer.cli import analyze, feature_questions, finalize, graphify_postprocess, normalize_input, resume, size_report
 from stark_repo_analyzer.contracts import ContractError, validate_run_contract
 
 
@@ -58,6 +58,53 @@ class CliContractTests(unittest.TestCase):
             result = analyze(Namespace(input=str(target), work_dir=str(work_dir), run_id="stale", mode="standard"))
             self.assertEqual(result, 30)
             self.assertTrue((work_dir / "stale.txt").is_file())
+
+    def test_graphify_extract_runs_from_the_workspace(self):
+        target = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            work_dir = Path(directory) / "run"
+            calls = []
+
+            def fake_run(command, **kwargs):
+                calls.append((command, kwargs.get("cwd"), kwargs.get("env", {}).get("GRAPHIFY_OUT")))
+                return type("Result", (), {"returncode": 0, "stdout": "", "stderr": ""})()
+
+            from stark_repo_analyzer.cli import graphify_extract
+            with patch("stark_repo_analyzer.cli.run", side_effect=fake_run):
+                self.assertEqual(graphify_extract(target, work_dir, []), [{"exit_code": 0, "elapsed_seconds": 0.0, "transient_failure": False}])
+            self.assertEqual(calls[0][1], work_dir)
+            self.assertEqual(calls[0][2], str((work_dir / "graphify-out").resolve()))
+
+    def test_graphify_postprocess_retains_raw_and_normalizes_source_evidence(self):
+        target = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            work_dir = Path(directory) / "run"
+            graph_dir = work_dir / "graphify-out"
+            graph_dir.mkdir(parents=True)
+            graph = {
+                "nodes": [
+                    {"id": "valid", "source_file": "src/stark_repo_analyzer/cli.py", "source_location": "L1"},
+                    {"id": "symbol", "source_file": "", "source_location": ""},
+                    {"id": "outside", "source_file": "../outside.py", "source_location": "L1"},
+                ],
+                "links": [
+                    {"source": "valid", "target": "symbol", "source_file": "src/stark_repo_analyzer/cli.py", "source_location": "L1"},
+                    {"source": "outside", "target": "valid", "source_file": "../outside.py", "source_location": "L1"},
+                ],
+            }
+            (graph_dir / "graph.json").write_text(json.dumps(graph), encoding="utf-8")
+            (graph_dir / "GRAPH_REPORT.md").write_text("2 nodes · 2 edges\n", encoding="utf-8")
+            def fake_run(command, **kwargs):
+                return type("Result", (), {"returncode": 0, "stdout": "", "stderr": ""})()
+            with patch("stark_repo_analyzer.cli.run", side_effect=fake_run):
+                summary = graphify_postprocess(target, work_dir, [])
+            normalized = json.loads((graph_dir / "graph.json").read_text(encoding="utf-8"))
+            self.assertEqual(summary["cluster_only"]["exit_code"], 0)
+            self.assertEqual(summary["raw_graph"], {"nodes": 3, "edges": 2})
+            self.assertEqual(len(normalized["nodes"]), 2)
+            self.assertEqual(len(normalized["links"]), 1)
+            self.assertTrue((graph_dir / "raw-deep-graph.json").is_file())
+            self.assertIn("2 nodes · 1 edges", (graph_dir / "GRAPH_REPORT.md").read_text(encoding="utf-8"))
 
     def test_size_report_excludes_tests_and_generated_dependency_directories(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -245,6 +292,30 @@ class CliContractTests(unittest.TestCase):
             manifest = json.loads((work_dir / "manifest.json").read_text(encoding="utf-8"))
             self.assertTrue(manifest["files"])
             self.assertTrue(all(len(item["sha256"]) == 64 for item in manifest["files"]))
+
+    def test_resume_accepts_preexisting_graph_artifacts_without_new_metadata_keys(self):
+        target = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            work_dir = Path(directory) / "run"
+            graph_dir = work_dir / "graphify-out"
+            graph_dir.mkdir(parents=True)
+            (work_dir / "execution-log.md").write_text("# Execution Log\n", encoding="utf-8")
+            (work_dir / "metadata.json").write_text(json.dumps({
+                "analysis_mode": "standard",
+                "source": {
+                    "resolved_path": str(target),
+                    "source_status_before": {"head": "unused", "porcelain": ""},
+                },
+                "graphify": {},
+            }), encoding="utf-8")
+            (graph_dir / "graph.json").write_text(json.dumps({"nodes": [], "links": []}), encoding="utf-8")
+            (graph_dir / "GRAPH_REPORT.md").write_text("existing report\n", encoding="utf-8")
+            with patch("stark_repo_analyzer.cli.source_status", return_value={"head": "unused", "porcelain": ""}), \
+                patch("stark_repo_analyzer.cli.find_doctor", return_value=Path("doctor.sh")), \
+                patch("stark_repo_analyzer.cli.doctor", return_value=(30, {"phase": "post-graph", "status": {"code": 30}})):
+                self.assertEqual(resume(Namespace(work_dir=str(work_dir))), 30)
+            metadata = json.loads((work_dir / "metadata.json").read_text(encoding="utf-8"))
+            self.assertEqual(metadata["graphify"]["artifact_paths"], ["graphify-out/graph.json", "graphify-out/GRAPH_REPORT.md"])
 
     def test_doctor_rejects_unlocatable_graph_evidence(self):
         root = Path(__file__).resolve().parents[1]

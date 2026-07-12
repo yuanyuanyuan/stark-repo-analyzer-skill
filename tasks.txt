@@ -19,18 +19,18 @@
   - 失败边界：doctor preflight/post-graph 非零时中止本次分析，不得降级。
   - 验证：用户已确认范围；决策记录于 `docs/adr/0003-graphify-is-a-required-structure-evidence-gate.md`。
   - 模式：V1 仅实现 repo-analyzer `standard`；Graphify `--mode deep` 是强制提取参数，不表示产品级 `deep` 分析。
-- [~] D05 用一个任务验证拆分粒度
+- [x] D05 用一个任务验证拆分粒度
   - 依赖：D04
   - 首个负向样本：当前仓库的 `graphify-out/` 报告为 0 nodes / 0 edges / 0 communities，验证器必须稳定拒绝。
   - LLM 闸门：doctor 必须调用 Graphify 的自动探测逻辑，确认实际 backend/model；不允许技能写死 DeepSeek 或自行确定探测优先级。
   - Bootstrap：Graphify 不可用时，Agent 可执行官方非敏感安装/升级和复检；API key、企业代理、私有 provider 地址必须由用户提供。
-  - 执行器：使用 `graphify extract <target> --mode deep --out <WORK_DIR>`，不传 `--backend`；记录 Graphify 版本、退出码、实际 backend/model 和产物路径。
+  - 执行器：使用 `graphify extract <target> --mode deep --out <WORK_DIR>`，不传 `--backend`；随后使用官方 `graphify cluster-only <WORK_DIR> --no-label --no-viz` 生成报告，记录 Graphify 版本、退出码、实际 backend/model 和 raw/normalized 产物路径。
   - 输出边界：只接受 `$WORK_DIR/graphify-out/` 中的产物，目标仓库不得出现本次运行写入的 `graphify-out/`。
   - 自愈：仅网络超时、429、5xx 可退避重试，最多两次；无可用 LLM、SDK/权限/执行器错误、空图和无效产物立即失败。
   - 健康：doctor post-graph 检查 `graph.json`、`GRAPH_REPORT.md`、节点、边和来源引用；`click` 还必须有一条带来源定位的 `EXTRACTED` 边。
   - 证据：Graphify map 作为侧车上下文；源码裁决图谱冲突，`EXTRACTED` 验证核心路径，`INFERRED` 标待验证，`AMBIGUOUS` 只作为风险/疑问，并将冲突写入交叉验证草稿。
   - 验证：同一有效图谱任务连续两次可独立完成并通过验证，且空图或无可用 LLM 的任务稳定失败；否则继续拆细。
-  - 当前证据：`acceptance/doctor-self-test.sh` 已证明两次独立健康图分类、空图稳定返回 30、工作区越界拒绝和无凭据输出；click 的真实 reference-skill 运行与 Graphify 归档证据位于 `docs/baseline/physical-runs/click/run-2` 和 `run-3`。
+  - 当前证据：`acceptance/doctor-self-test.sh` 已证明两次独立健康图分类、空图稳定返回 30、工作区越界拒绝和无凭据输出；click 的两次独立 Graphify 归档运行位于 `docs/baseline/physical-runs/click/run-2` 和 `run-3`，`physical-repeatability-check.sh` 通过；真实 click/codex-plugin 控制面运行进一步通过 normalized graph 的 post-graph 健康门。
 
 - [x] D06 定义 doctor 预检契约
   - 输入：`preflight|post-graph --target <repo> --work-dir <dir> [--json]`
@@ -124,33 +124,33 @@
   - 所有权：question/plan 模块
   - 验证：不同项目类型产生不同问题，非固定模板复读。
   - 证据：`src/stark_repo_analyzer/cli.py:_adaptive_questions`、`tests/test_cli.py::test_questions_change_with_project_features`；Python/pyproject fixture 输出配置问题和离线研究问题，固定 fallback 与特征问题可区分。
-- [!] I06 实现模块分析任务编排
+- [x] I06 实现模块分析任务编排
   - 依赖：I05、S04
   - 所有权：module orchestration
   - 验证：任务隔离、并行写入边界、失败重试和状态记录。
-  - 证据：`acceptance/implementation-fixture-check.sh` 对 `click`、`codex-plugin-cc`、`httpx`、`claude-code` 的独立 work-dir 运行；每个输出含 `drafts/06-module-tasks.json`、独立模块草稿、执行日志和固定失败分类。阻断：CLI 只生成 Agent handoff/lifecycle manifest；并行 Agent 启动、接管和运行时重试仍由 skill Agent 按 `SKILL.md` 阶段 6 执行，未在 Python 中伪装实现。
-- [!] I07 实现交叉验证和覆盖率门控
+  - 证据：`acceptance/implementation-fixture-check.sh` 对 `click`、`codex-plugin-cc`、`httpx`、`claude-code` 的独立 work-dir 运行；每个输出含 `drafts/06-module-tasks.json`、独立模块草稿、执行日志和固定失败分类。真实 Agent/UAT 证据：`/tmp/stark-repo-analyzer-real-click-v3`（2 个任务完成）与 `/tmp/stark-repo-analyzer-real-codex-plugin-v1`（1 个任务完成）；并行 Agent 启动、接管和运行时重试仍由 skill Agent 按 `SKILL.md` 阶段 6 执行，未在 Python 中伪装实现。
+- [x] I07 实现交叉验证和覆盖率门控
   - 依赖：I06、S04
   - 所有权：validation/coverage 模块
   - 验证：人为制造缺覆盖和错误引用时能失败。
-  - 证据：`tests/test_cli.py::test_complete_validation_requires_every_manifested_module_draft`、`test_doctor_rejects_unlocatable_graph_evidence`；缺模块、缺覆盖和越界来源分别返回 `ContractError`/doctor 30。阻断：I06 的真实 Agent 交叉验证尚未完成，机械门控不能替代源码 adjudication。
-- [!] I08 实现最终报告融合与产物 manifest
+  - 证据：`tests/test_cli.py::test_complete_validation_requires_every_manifested_module_draft`、`test_doctor_rejects_unlocatable_graph_evidence`；缺模块、缺覆盖和越界来源分别返回 `ContractError`/doctor 30。真实 adjudication：`/tmp/stark-repo-analyzer-real-click-v3/drafts/07-cross-validation.md` 与 `/tmp/stark-repo-analyzer-real-codex-plugin-v1/drafts/07-cross-validation.md`，机械门控仍不替代源码 adjudication。
+- [x] I08 实现最终报告融合与产物 manifest
   - 依赖：I06、I07
   - 所有权：report/output 模块
   - 验证：单一最终 Markdown、metadata、日志、checks 和链接完整。
-  - 证据：`acceptance/implementation-fixture-check.sh` 及 `acceptance/run-contract-check.sh`；四个 fixture run 的 `ANALYSIS_REPORT.md`、`metadata.json`、`execution-log.md`、`checks.md` 和 `manifest.json` 完成，manifest 每个文件含 64 位 SHA-256 且按 `output-manifest-schema.json` 校验。阻断：依赖 I06/I07 的真实 Agent 融合尚未完成。
+  - 证据：`acceptance/implementation-fixture-check.sh` 及 `acceptance/run-contract-check.sh`；fixture run 的 `ANALYSIS_REPORT.md`、`metadata.json`、`execution-log.md`、`checks.md` 和 `manifest.json` 完成，manifest 每个文件含 64 位 SHA-256 且按 `output-manifest-schema.json` 校验。真实最终融合：`/tmp/stark-repo-analyzer-real-click-v3` 与 `/tmp/stark-repo-analyzer-real-codex-plugin-v1` 均通过 `validate --complete`、`finalize`，manifest 状态为 `complete`。
 
 ## Phase 3: Calibration and Regression
 
-- [!] R01 用 `click` 和 `codex-plugin-cc` 做首批粒度实验
+- [x] R01 用 `click` 和 `codex-plugin-cc` 做首批粒度实验
   - 依赖：I01、I02、I03、I08
   - 验证：两个项目分别完成一轮报告，检查项可自动判断通过/失败。
   - 失败处理：优先拆细任务或修正验证器，不直接扩大并行规模。
-  - 证据：`/tmp/stark-repo-analyzer-impl-click-fixture` 和 `/tmp/stark-repo-analyzer-impl-codex-plugin-fixture` 验证了机械控制面，但 `dev-rules/real-uat-regression/README.md` 明确禁止 fixture/手写草稿作为真实 UAT；固定 HEAD 分别为 `b67832c...`、`db52e28...`，真实 click Graphify 越界写入被 `source-boundary-violation` 拒绝。等待真实 Agent module pass。
-- [!] R02 修正任务粒度、输入模板和验证器
+  - 证据：`/tmp/stark-repo-analyzer-real-click-v3` 与 `/tmp/stark-repo-analyzer-real-codex-plugin-v1` 使用固定 HEAD `b67832c...`、`db52e28...` 完成真实 Graphify、Agent 模块阅读、源码 adjudication、coverage gate 和最终融合；两个目标源树的 before/after status 均 clean。fixture 结果仍只作为机械控制面回归，不作为真实 UAT。
+- [x] R02 修正任务粒度、输入模板和验证器
   - 依赖：R01
   - 验证：R01 的失败项能被稳定重现并修复。
-  - 证据：`tests/test_cli.py::test_complete_validation_requires_every_manifested_module_draft` 重现缺任务失败；`src/stark_repo_analyzer/contracts.py` 增加 manifest-to-draft 完整性和 schema 门控后 `pytest -q` 为 12 passed。阻断：R01 真实 Agent/UAT 回归尚未完成。
+  - 证据：`tests/test_cli.py::test_complete_validation_requires_every_manifested_module_draft` 重现缺任务失败；`src/stark_repo_analyzer/contracts.py` 增加 manifest-to-draft 完整性和 schema 门控；真实 Click/Codex-plugin runs 的 `validate --complete` 与 `finalize` 均通过，当前测试套件为 15 passed。
 - [!] R03 回归 `httpx` 和 `ruff`
   - 依赖：R02、I04、I05、I06、I07
   - 验证：报告主线、证据引用、覆盖率和限制记录符合验收清单。
@@ -163,7 +163,7 @@
   - 依赖：R01-R04
   - 输出：`docs/baseline/implementation-comparison.md`
   - 验证：每个差异有来源、影响、是否接受和修正任务。
-  - 证据：`docs/baseline/implementation-comparison.md` 记录四个 fixture 结果、两个 Graphify 阻断、真实 click 越界写入和“不宣称语义等价”的影响/后续任务；阻断：R01/R03/R04 尚未满足真实 Agent/UAT 回归。
+  - 证据：`docs/baseline/implementation-comparison.md` 记录六个 fixture 结果、两个 Graphify 阻断、两次真实 Agent-gated 完成运行和“不宣称语义等价”的影响/后续任务；R03 的 Ruff/HTTPX 与 R04 的 Codex 仍保留 Graphify 阻断，未伪造完成。
 
 ## Phase 4: Release Gate
 

@@ -44,8 +44,8 @@ The target repository must not receive Graphify output, caches, drafts, metadata
 
 1. Normalize the input and capture source commit.
 2. Run `acceptance/doctor.sh preflight --target <repo> --work-dir <dir> --json`; non-zero stops the run.
-3. Run `graphify extract <target> --mode deep --out <WORK_DIR>` without `--backend`.
-4. Run doctor post-graph. Only a healthy, non-empty graph with locatable sources may be consumed.
+3. Run `graphify extract <target> --mode deep --out <WORK_DIR>` without `--backend`, then run Graphify's `cluster-only <WORK_DIR> --no-label --no-viz` to materialize the report. Preserve raw Graphify output and derive a source-locatable normalized graph/report under `$WORK_DIR/graphify-out/`.
+4. Run doctor post-graph. Only a healthy, non-empty normalized graph with locatable sources may be consumed. A failed post-graph run may be continued with the control-plane `resume` command after the artifact boundary is repaired.
 5. Read the graph map as navigation context, then retain the reference workflow: sizing, research, adaptive questions, module analysis, cross-validation, coverage gate and report fusion.
 6. Write one final Markdown report plus metadata, log and checks.
 
