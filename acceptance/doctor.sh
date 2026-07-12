@@ -211,7 +211,10 @@ def valid_source(item):
     source_location = item.get("source_location")
     if not isinstance(source_file, str) or not source_file.strip():
         return False
-    if not isinstance(source_location, str) or not re.search(r"L[0-9]+", source_location):
+    if not isinstance(source_location, str):
+        return False
+    location_match = re.search(r"L([0-9]+)(?:-L?([0-9]+))?", source_location)
+    if not location_match:
         return False
     candidate = Path(source_file)
     if candidate.is_absolute():
@@ -229,6 +232,11 @@ def valid_source(item):
         except ValueError:
             return False
     if not resolved.is_file():
+        return False
+    line_count = len(resolved.read_text(encoding="utf-8", errors="replace").splitlines())
+    first_line = int(location_match.group(1))
+    last_line = int(location_match.group(2) or location_match.group(1))
+    if first_line < 1 or first_line > line_count or last_line < first_line or last_line > line_count:
         return False
     return True
 

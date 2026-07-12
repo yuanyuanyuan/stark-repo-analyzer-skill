@@ -6,4 +6,5 @@
 
 - 原 skill 不新增安装检查、环境诊断、JSON 解析或图谱健康分支；它只在 doctor 成功后的既有工作流中读取 Graphify map。
 - preflight 或 post-graph 非零退出码阻断分析，但阻断语义由 doctor 统一定义。
+- `contracts.py` 只消费已持久化的 doctor JSON 和 Agent 草稿的机械输出契约；它不重新探测 Graphify、LLM、路径或图谱语义。这样 `doctor.sh` 仍是 Graphify 环境/健康检查的唯一权威。
 - Graphify 增强可被整体移除或升级，而不需要改变原 skill 的核心流程。

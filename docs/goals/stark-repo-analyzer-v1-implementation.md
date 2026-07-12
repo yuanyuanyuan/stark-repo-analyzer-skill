@@ -2,7 +2,7 @@
 
 ## Status
 
-Paused. Do not begin implementation until the user explicitly asks to start.
+In progress. The user explicitly started implementation; remaining tasks stay active until their evidence is complete.
 
 ## Objective
 

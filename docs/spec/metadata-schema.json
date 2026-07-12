@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stark-repo-analyzer-v1-metadata",
+  "title": "Stark Repo Analyzer V1 run metadata",
+  "type": "object",
+  "required": ["schema_version", "run_id", "started_at", "analysis_mode", "source", "graphify", "outcome"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "started_at": {"type": "string", "minLength": 1},
+    "ended_at": {"type": ["string", "null"]},
+    "analysis_mode": {"const": "standard"},
+    "outcome": {"enum": ["in_progress", "awaiting-agent-module-analysis", "complete", "failed"]},
+    "source": {
+      "type": "object",
+      "required": ["kind", "resolved_path", "source_commit", "source_status_before"],
+      "properties": {
+        "kind": {"enum": ["local-path", "public-url", "owner-repo"]},
+        "resolved_path": {"type": "string", "minLength": 1},
+        "source_commit": {"type": "string", "minLength": 7},
+        "source_status_before": {"type": "object"}
+      }
+    },
+    "graphify": {"type": "object"},
+    "tools": {"type": "object"},
+    "failure": {"type": ["object", "null"]},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  }
+}

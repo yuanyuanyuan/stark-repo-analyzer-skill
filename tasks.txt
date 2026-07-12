@@ -75,22 +75,22 @@
 
 ## Phase 1: Specification (Sequential)
 
-- [ ] S01 提取参考 skill 的输入/输出契约
+- [x] S01 提取参考 skill 的输入/输出契约
   - 依赖：B03、D04、D05、P03、P04
   - 上下文：参考 `SKILL.md`、README、baseline reports
   - 输出：`docs/spec/input-output-contract.md`
   - 验证：逐项映射触发词、输入形式、输出目录和错误边界。
   - 失败处理：缺失项标记 `待确认`，不自行补全。
-- [ ] S02 确认保真移植与 Graphify 增强范围
+- [x] S02 确认保真移植与 Graphify 增强范围
   - 依赖：S01
   - 输出：`docs/adr/0012-copy-the-reference-files-with-a-minimal-graphify-diff.md`
   - 验证：明确复制范围、唯一允许的 Graphify 增强、禁止变更和产品级 `deep` 不进入 V1。
   - 失败处理：冲突交给人工决定。
-- [ ] S03 设计统一任务输入模板和运行 metadata
+- [x] S03 设计统一任务输入模板和运行 metadata
   - 依赖：S01
   - 输出：`docs/templates/analysis-run-input.md`、metadata schema
   - 验证：能够表达 6 个基线项目的输入和运行信息。
-- [ ] S04 设计第一版验证器
+- [x] S04 设计第一版验证器
   - 依赖：S01、S03
   - 输出：`acceptance/doctor.sh` 与结构/链接/Mermaid/覆盖率检查
   - 验证：对现有 6 个 baseline runs 运行，结果可解释。
@@ -99,58 +99,71 @@
 
 第一批只实现 1-2 个任务，先验证任务粒度和验证器有效性，再扩大并行度。
 
-- [ ] I01 创建目标技能目录和插件元数据
+- [x] I01 创建目标技能目录和插件元数据
   - 依赖：S01、S02
   - 所有权：技能目录与插件 metadata
   - 验证：安装/结构检查、JSON 校验、触发契约检查。
-- [ ] I02 实现本地路径和 GitHub 仓库输入归一化
+  - 证据：`acceptance/skill-structure-check.sh`；固定输入为仓库 skill/plugin tree，输出为结构检查摘要，退出码 0；失败边界为缺文件、非法 JSON 或缺触发词。
+- [x] I02 实现本地路径和 GitHub 仓库输入归一化
   - 依赖：S01、S03
   - 所有权：输入解析模块
   - 验证：6 个本地基线项目 + URL/owner-repo fixtures。
-- [ ] I03 实现规模统计与分析模式选择
+  - 证据：`tests/test_cli.py::test_local_input_records_commit_shape_without_cloning`、`test_public_owner_repo_input_is_normalized_without_credentials`、`test_public_input_rejects_credentials`；固定输入为本地基线和 public URL fixtures，退出码 0；非法本地仓库和含凭据 URL 返回 `ValueError`。
+- [x] I03 实现规模统计与分析模式选择
   - 依赖：I02
   - 所有权：规模/模式模块
   - 验证：固定 fixture 的文件、行数、排除规则和门槛结果。
-- [ ] I04 实现项目文档/外部研究上下文收集
+  - 证据：`tests/test_cli.py::test_size_report_excludes_tests_and_generated_dependency_directories`、`test_questions_change_with_project_features`；固定 fixture 输出 1 个源码文件/2 行并排除 tests/node_modules，非 `standard` 模式返回退出码 30。
+- [x] I04 实现项目文档/外部研究上下文收集
   - 依赖：I02、S03
   - 所有权：research/context 模块
   - 验证：来源记录、工具失败记录、无网络时的可解释降级。
-- [ ] I05 实现动态问题和报告计划生成
+  - 证据：`src/stark_repo_analyzer/cli.py:collect_context` 和 `tests/test_cli.py::test_questions_change_with_project_features`；固定输入为 Python/pyproject fixture，输出记录本地文档、URL 候选和 `agent-research-required`，无外部来源时生成离线问题，不伪造研究完成。
+- [x] I05 实现动态问题和报告计划生成
   - 依赖：I03、I04
   - 所有权：question/plan 模块
   - 验证：不同项目类型产生不同问题，非固定模板复读。
-- [ ] I06 实现模块分析任务编排
+  - 证据：`src/stark_repo_analyzer/cli.py:_adaptive_questions`、`tests/test_cli.py::test_questions_change_with_project_features`；Python/pyproject fixture 输出配置问题和离线研究问题，固定 fallback 与特征问题可区分。
+- [!] I06 实现模块分析任务编排
   - 依赖：I05、S04
   - 所有权：module orchestration
   - 验证：任务隔离、并行写入边界、失败重试和状态记录。
-- [ ] I07 实现交叉验证和覆盖率门控
+  - 证据：`acceptance/implementation-fixture-check.sh` 对 `click`、`codex-plugin-cc`、`httpx`、`claude-code` 的独立 work-dir 运行；每个输出含 `drafts/06-module-tasks.json`、独立模块草稿、执行日志和固定失败分类。阻断：CLI 只生成 Agent handoff/lifecycle manifest；并行 Agent 启动、接管和运行时重试仍由 skill Agent 按 `SKILL.md` 阶段 6 执行，未在 Python 中伪装实现。
+- [!] I07 实现交叉验证和覆盖率门控
   - 依赖：I06、S04
   - 所有权：validation/coverage 模块
   - 验证：人为制造缺覆盖和错误引用时能失败。
-- [ ] I08 实现最终报告融合与产物 manifest
+  - 证据：`tests/test_cli.py::test_complete_validation_requires_every_manifested_module_draft`、`test_doctor_rejects_unlocatable_graph_evidence`；缺模块、缺覆盖和越界来源分别返回 `ContractError`/doctor 30。阻断：I06 的真实 Agent 交叉验证尚未完成，机械门控不能替代源码 adjudication。
+- [!] I08 实现最终报告融合与产物 manifest
   - 依赖：I06、I07
   - 所有权：report/output 模块
   - 验证：单一最终 Markdown、metadata、日志、checks 和链接完整。
+  - 证据：`acceptance/implementation-fixture-check.sh` 及 `acceptance/run-contract-check.sh`；四个 fixture run 的 `ANALYSIS_REPORT.md`、`metadata.json`、`execution-log.md`、`checks.md` 和 `manifest.json` 完成，manifest 每个文件含 64 位 SHA-256 且按 `output-manifest-schema.json` 校验。阻断：依赖 I06/I07 的真实 Agent 融合尚未完成。
 
 ## Phase 3: Calibration and Regression
 
-- [ ] R01 用 `click` 和 `codex-plugin-cc` 做首批粒度实验
+- [!] R01 用 `click` 和 `codex-plugin-cc` 做首批粒度实验
   - 依赖：I01、I02、I03、I08
   - 验证：两个项目分别完成一轮报告，检查项可自动判断通过/失败。
   - 失败处理：优先拆细任务或修正验证器，不直接扩大并行规模。
-- [ ] R02 修正任务粒度、输入模板和验证器
+  - 证据：`/tmp/stark-repo-analyzer-impl-click-fixture` 和 `/tmp/stark-repo-analyzer-impl-codex-plugin-fixture` 验证了机械控制面，但 `dev-rules/real-uat-regression/README.md` 明确禁止 fixture/手写草稿作为真实 UAT；固定 HEAD 分别为 `b67832c...`、`db52e28...`，真实 click Graphify 越界写入被 `source-boundary-violation` 拒绝。等待真实 Agent module pass。
+- [!] R02 修正任务粒度、输入模板和验证器
   - 依赖：R01
   - 验证：R01 的失败项能被稳定重现并修复。
-- [ ] R03 回归 `httpx` 和 `ruff`
+  - 证据：`tests/test_cli.py::test_complete_validation_requires_every_manifested_module_draft` 重现缺任务失败；`src/stark_repo_analyzer/contracts.py` 增加 manifest-to-draft 完整性和 schema 门控后 `pytest -q` 为 12 passed。阻断：R01 真实 Agent/UAT 回归尚未完成。
+- [!] R03 回归 `httpx` 和 `ruff`
   - 依赖：R02、I04、I05、I06、I07
   - 验证：报告主线、证据引用、覆盖率和限制记录符合验收清单。
-- [ ] R04 回归 `claude-code` 和 `codex`
+  - 证据：`/tmp/stark-repo-analyzer-impl-httpx-fixture` 完成并通过（HEAD `b5addb...`）；`ruff` 固定基线没有可接受的 `graphify-out/graph.json`/`GRAPH_REPORT.md`，控制平面按声明边界返回失败，未绕过 Graphify 生成报告。
+- [!] R04 回归 `claude-code` 和 `codex`
   - 依赖：R03
   - 验证：bounded scope、未读范围和大型项目失败边界不被隐藏。
-- [ ] R05 汇总参考结果与重实现结果差异
+  - 证据：`/tmp/stark-repo-analyzer-impl-claude-code-fixture` 完成并通过（16,205 nodes/61,615 edges，bounded）；`codex` 基线无可接受 Graphify 图对，控制平面返回失败并保留限制，不伪造 bounded 报告。
+- [!] R05 汇总参考结果与重实现结果差异
   - 依赖：R01-R04
   - 输出：`docs/baseline/implementation-comparison.md`
   - 验证：每个差异有来源、影响、是否接受和修正任务。
+  - 证据：`docs/baseline/implementation-comparison.md` 记录四个 fixture 结果、两个 Graphify 阻断、真实 click 越界写入和“不宣称语义等价”的影响/后续任务；阻断：R01/R03/R04 尚未满足真实 Agent/UAT 回归。
 
 ## Phase 4: Release Gate
 
