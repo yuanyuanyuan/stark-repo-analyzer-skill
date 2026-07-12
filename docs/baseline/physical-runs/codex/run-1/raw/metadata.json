@@ -1,0 +1,48 @@
+{
+  "analyzer": "reference repo-analyzer",
+  "mode": "standard",
+  "analysis_started_at": "2026-07-12T11:05:23Z",
+  "analysis_completed_at": "2026-07-12T11:13:43Z",
+  "source": {
+    "path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/codex",
+    "head": "9e552e9d15ba52bed7077d5357f3e18e330f8f38",
+    "access": "read-only static analysis"
+  },
+  "output_root": "/tmp/stark-repo-analyzer-codex-run-1",
+  "scope": {
+    "included_core_modules": [
+      "Rust core session and turn orchestration",
+      "App Server JSON-RPC boundary and v2 protocol"
+    ],
+    "included_secondary_modules": [
+      "CLI packaging and JavaScript workspace metadata"
+    ],
+    "excluded": "Other Rust crates, TUI, sandbox implementations, MCP, SDKs, cloud integrations, tests, generated/vendor material, and git history."
+  },
+  "requirements_not_performed": [
+    "Git history inspection",
+    "Source-tree modification",
+    "External WebSearch/WebFetch research",
+    "Build or runtime test execution"
+  ],
+  "deliverables": [
+    "ANALYSIS_REPORT.md",
+    "EXECUTION_LOG.md",
+    "CHECKS.md",
+    "drafts/03-research.md",
+    "drafts/03-plan.md",
+    "drafts/05-modules-plan.md",
+    "drafts/06-module-core-session.md",
+    "drafts/06-module-app-server-protocol.md",
+    "drafts/06-module-secondary.md",
+    "drafts/07-cross-validation.md",
+    "drafts/08-insights.md",
+    "drafts/08-coverage.md"
+  ],
+  "coverage": {
+    "bounded_declared_lines": 15369,
+    "read_lines": 12692,
+    "percentage": 82.6,
+    "whole_repository_coverage_claimed": false
+  }
+}

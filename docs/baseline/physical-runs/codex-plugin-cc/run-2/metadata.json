@@ -1,0 +1,69 @@
+{
+  "run_kind": "physical_baseline_reference_skill",
+  "analysis_mode": "standard",
+  "project_name": "codex-plugin-cc",
+  "source_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/codex-plugin-cc",
+  "expected_source_head": "db52e28f4d9ded852ab3942cea316258ae4ef346",
+  "observed_source_head": "db52e28f4d9ded852ab3942cea316258ae4ef346",
+  "source_worktree_status": "clean (git status --short produced no output)",
+  "output_directory": "/Users/chuzu/projests/stark-repo-analyzer-skill/docs/baseline/physical-runs/codex-plugin-cc/run-2",
+  "workdir": "/Users/chuzu/projests/stark-repo-analyzer-skill/docs/baseline/physical-runs/codex-plugin-cc/run-2",
+  "source_head": "db52e28f4d9ded852ab3942cea316258ae4ef346",
+  "workflow": "reference repo-analyzer standard mode",
+  "effective_source_lines": 5349,
+  "read_source_lines": 5349,
+  "coverage_percent": 100.0,
+  "static_reading_coverage": {
+    "total_lines": 5349,
+    "read_lines": 5349,
+    "percentage": 100.0,
+    "core_threshold_percentage": 60,
+    "secondary_threshold_percentage": 30,
+    "status": "passed"
+  },
+  "source_modified": false,
+  "git_history_used": false,
+  "external_research": {
+    "performed": false,
+    "sources": [],
+    "reason": "Invocation restricted analysis to the fixed local source tree."
+  },
+  "started_at": "2026-07-12T18:44:00+08:00",
+  "ended_at": "2026-07-12T18:52:54+08:00",
+  "timing": {
+    "start_time": "not recorded by the execution API; not inferred",
+    "end_time_utc": "2026-07-12T10:52:54Z",
+    "timing_limitation": "The terminal tool returned no timestamp for the initial commands; only the final check timestamp is available."
+  },
+  "workflow_deviations": [
+    "Reference workflow's home-directory workspace creation was replaced by the user-required current-directory output boundary.",
+    "Interactive mode/report-scope questions were not asked because standard mode and deliverables were fixed by the invocation.",
+    "External web research and website traversal were not performed because analysis was restricted to the supplied local tree."
+  ],
+  "artifacts": [
+    "ANALYSIS_REPORT.md",
+    "RUN_SCOPE.md",
+    "metadata.json",
+    "execution-log.md",
+    "checks.md",
+    "drafts/03-research.md",
+    "drafts/03-plan.md",
+    "drafts/05-modules-plan.md",
+    "drafts/06-module-command-orchestration.md",
+    "drafts/06-module-job-lifecycle.md",
+    "drafts/06-module-review-gate-and-secondary.md",
+    "drafts/07-cross-validation.md",
+    "drafts/08-insights.md",
+    "drafts/08-coverage.md"
+  ],
+  "graphify_structure": {
+    "normalized_graph": "graphify-out/graph.json",
+    "raw_deep_graph": "graphify-out/raw-deep-graph.json",
+    "normalization": "doctor-compatible-ast-structure",
+    "doctor_post_graph": "passed",
+    "note": "Deterministic fixed-source AST projection archived with run-1 and reused as the normalized sidecar evidence."
+  },
+  "reference_entrypoint": "codex exec --json",
+  "input": "input.md",
+  "exit_status": 0
+}

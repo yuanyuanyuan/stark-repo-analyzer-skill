@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "project": "ruff",
+  "source_head": "c588a3f7f57461692652d339936222b4496c5953",
+  "source_tree": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/ruff",
+  "analysis_mode": "standard",
+  "workflow": "physical reference-skill invocation",
+  "reference_entrypoint": "codex exec --json",
+  "input": "input.md",
+  "exit_status": 0,
+  "output_dir": ".",
+  "started_at": "2026-07-12T11:04:00Z",
+  "ended_at": "2026-07-12T11:14:00Z",
+  "timing_source": "runner session observation; exact start was not emitted by the reference runner",
+  "source_modified": false,
+  "git_history_used": false,
+  "static_reading_coverage": {
+    "total_lines": 21703,
+    "read_lines": 15258,
+    "percentage": 70.3,
+    "status": "passed"
+  },
+  "failure": {"class": null},
+  "graphify": {
+    "status": "blocked",
+    "version": "graphify 0.9.8",
+    "backend": "deepseek",
+    "model": "deepseek-v4-flash",
+    "extract_command": "graphify extract <target> --mode deep --out <WORK_DIR>",
+    "failure_class": "interrupted-after-long-running-semantic-extraction",
+    "doctor_preflight": "doctor-preflight.json",
+    "doctor_post_graph": null
+  },
+  "raw_output": "raw/",
+  "limitations": ["cargo/rustc unavailable; build, test and Clippy not performed"]
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "input": "./click/input.md",
+  "source_commit": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+  "analysis_mode": "standard",
+  "projects": {
+    "click": {
+      "source_commit": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+      "reference_entrypoint": "codex exec --json",
+      "runs": ["./click/run-2", "./click/run-3"],
+      "p2": "pass",
+      "p4": "pass",
+      "repeatability": "acceptance/physical-repeatability-check.sh",
+      "failed_attempts": "./click/failed-attempts.md"
+    },
+    "codex-plugin-cc": {
+      "source_commit": "db52e28f4d9ded852ab3942cea316258ae4ef346",
+      "reference_entrypoint": "codex exec --json",
+      "runs": ["./codex-plugin-cc/run-1", "./codex-plugin-cc/run-2"],
+      "p2": "pass",
+      "p4": "pass",
+      "repeatability": "acceptance/physical-repeatability-check.sh",
+      "failed_attempts": "./codex-plugin-cc/failed-attempts.md"
+    },
+    "httpx": {
+      "source_commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+      "reference_entrypoint": "codex exec --json",
+      "runs": ["./httpx/run-1"],
+      "p2": "pass",
+      "p4": "not applicable: one physical invocation was requested",
+      "graphify": "blocked: Graphify wrote a transient target graphify-out; normalized sidecar retained and source cleaned",
+      "comparison": "./httpx/run-1/comparison.md"
+    },
+    "ruff": {
+      "source_commit": "c588a3f7f57461692652d339936222b4496c5953",
+      "reference_entrypoint": "codex exec --json",
+      "runs": ["./ruff/run-1"],
+      "p2": "pass",
+      "p4": "not applicable: one physical invocation was requested",
+      "graphify": "blocked: interrupted semantic extraction; failure record preserved",
+      "comparison": "./ruff/run-1/comparison.md"
+    },
+    "claude-code": {
+      "source_commit": "a371abbe75ffa0d0a3c92290e2bbf56a7ef54367",
+      "reference_entrypoint": "codex exec --json",
+      "runs": ["./claude-code/run-1"],
+      "p2": "pass",
+      "p4": "not applicable: one physical invocation was requested",
+      "graphify": "blocked: Graphify wrote a transient target graphify-out; normalized sidecar retained and source cleaned",
+      "comparison": "./claude-code/run-1/comparison.md"
+    },
+    "codex": {
+      "source_commit": "9e552e9d15ba52bed7077d5357f3e18e330f8f38",
+      "reference_entrypoint": "codex exec --json",
+      "runs": ["./codex/run-1"],
+      "p2": "pass",
+      "p4": "not applicable: one physical invocation was requested",
+      "graphify": "blocked: interrupted semantic extraction; failure record preserved",
+      "comparison": "./codex/run-1/comparison.md"
+    }
+  },
+  "pending": ["P3 Graphify isolation/sidecar gate for httpx, ruff, claude-code and codex", "P5 dynamic behavior"]
+}

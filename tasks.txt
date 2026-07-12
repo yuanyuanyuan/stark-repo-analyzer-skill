@@ -30,7 +30,7 @@
   - 健康：doctor post-graph 检查 `graph.json`、`GRAPH_REPORT.md`、节点、边和来源引用；`click` 还必须有一条带来源定位的 `EXTRACTED` 边。
   - 证据：Graphify map 作为侧车上下文；源码裁决图谱冲突，`EXTRACTED` 验证核心路径，`INFERRED` 标待验证，`AMBIGUOUS` 只作为风险/疑问，并将冲突写入交叉验证草稿。
   - 验证：同一有效图谱任务连续两次可独立完成并通过验证，且空图或无可用 LLM 的任务稳定失败；否则继续拆细。
-  - 当前证据：`acceptance/doctor-self-test.sh` 已证明两次独立健康图分类、空图稳定返回 30、工作区越界拒绝和无凭据输出；Graphify headless extract 的 P2 物理运行证据仍待补齐。
+  - 当前证据：`acceptance/doctor-self-test.sh` 已证明两次独立健康图分类、空图稳定返回 30、工作区越界拒绝和无凭据输出；click 的真实 reference-skill 运行与 Graphify 归档证据位于 `docs/baseline/physical-runs/click/run-2` 和 `run-3`。
 
 - [x] D06 定义 doctor 预检契约
   - 输入：`preflight|post-graph --target <repo> --work-dir <dir> [--json]`
@@ -59,17 +59,19 @@
 - [x] P02 实现源码和产物完整性验证器
   - 输出：`acceptance/physical-baseline-check.sh`
   - 验证：`./acceptance/physical-baseline-check.sh`，但只能在 D04/D05 通过后正式启用。
-- [ ] P03 固定参考 skill 的真实调用入口和运行配置
+- [x] P03 固定参考 skill 的真实调用入口和运行配置
   - 依赖：P01、P02
   - 验证：固定输入能返回退出码、stdout/stderr、metadata 和产物目录。
-  - 阻断：没有真实调用入口时，不得声称 P2 通过。
-- [ ] P04 对 `click` 和 `codex-plugin-cc` 重复运行两次
+  - 证据：`codex exec --json`、固定 `input.md`、run-2/run-3 metadata、execution-log 和失败尝试记录。
+  - 证据：`codex exec --json`、固定 `input.md`、click 与 codex-plugin-cc 的两组 metadata、execution-log 和失败尝试记录。
+- [x] P04 对 `click` 和 `codex-plugin-cc` 重复运行两次
   - 依赖：P03
   - 验证：两次运行的结构化结果、来源、覆盖率和失败记录可比较。
+  - 当前证据：click 与 codex-plugin-cc 两次运行均通过 `acceptance/physical-repeatability-check.sh`。
   - 阻断：没有输入快照或差异阈值时，不得进入大规模重实现。
-- [ ] P05 扩展物理验证到其余 4 个项目
+- [x] P05 扩展物理验证到其余 4 个项目
   - 依赖：P04
-  - 验证：`httpx`、`ruff`、`claude-code`、`codex` 均有运行快照和差异报告。
+  - 验证：`httpx`、`ruff`、`claude-code`、`codex` 均有运行快照和差异报告；四个固定 HEAD 的源树在运行前后保持 clean。
 
 ## Phase 1: Specification (Sequential)
 

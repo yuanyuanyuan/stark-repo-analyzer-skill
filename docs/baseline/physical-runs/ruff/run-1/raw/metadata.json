@@ -1,0 +1,42 @@
+{
+  "run_kind": "physical baseline",
+  "skill": "reference repo-analyzer",
+  "mode": "standard",
+  "generated_at": "2026-07-12",
+  "output_root": "/tmp/stark-repo-analyzer-ruff-run-1",
+  "source": {
+    "path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/ruff",
+    "head": "c588a3f7f57461692652d339936222b4496c5953",
+    "head_commit_time": "2026-07-10T21:28:47-04:00",
+    "git_history_used": false,
+    "source_tree_modified": false,
+    "source_status_at_start": "clean"
+  },
+  "scope": {
+    "bounded": true,
+    "reason": "665641 physical Rust lines in crates/ non-test/non-benchmark scan; reference guide marks >50000 lines as an extra-large project",
+    "primary_product": "Ruff linter and formatter",
+    "excluded": [
+      "ty type checker and server",
+      "most individual lint rule implementations",
+      "parser, AST, semantic model, cache, notebook, WASM, LSP server",
+      "CI, release, fuzzing, benchmarks, and Python helper scripts"
+    ]
+  },
+  "tools": {
+    "shell": "zsh",
+    "rg": "used",
+    "git": "used for rev-parse/status/show only; no history traversal",
+    "cargo": "unavailable (exit 127)",
+    "rustc": "unavailable (exit 127)",
+    "cargo_nextest": "unavailable because cargo is unavailable",
+    "web_search": "not performed",
+    "web_fetch": "not performed"
+  },
+  "requirements_not_performed": [
+    "interactive mode-selection/report-detail questions: user preselected standard mode and this is a physical baseline",
+    "external web research and official-site crawl: not performed",
+    "Git history analysis: prohibited by user",
+    "test, compilation, and Clippy: cargo/rustc unavailable; documented snapshot-updating test command would also violate source read-only constraint"
+  ]
+}

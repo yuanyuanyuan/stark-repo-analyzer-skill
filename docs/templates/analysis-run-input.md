@@ -22,4 +22,4 @@ Before the run starts, resolve `input` to a read-only repository and record:
 - external research URLs or the explicit offline reason;
 - selected modules, coverage targets and bounded-scope limitations.
 
-The input file is the fixed context for a repeatability comparison. Temporary paths, timestamps and run IDs are normalized out of the comparison; source commit, mode, source references, coverage and failure classification are not.
+The input file is the fixed context for a repeatability comparison. Temporary paths, timestamps, run IDs, report prose, module names and run-specific limitation wording are excluded; source commit, standard mode, source references, overall coverage, threshold status and failure classification remain comparable.

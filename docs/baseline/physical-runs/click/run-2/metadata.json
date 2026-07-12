@@ -1,0 +1,93 @@
+{
+  "run_id": "click-physical-baseline-20260712-run-2",
+  "workflow": "reference repo-analyzer standard mode",
+  "language": "zh-CN",
+  "source_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/click",
+  "source_head": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+  "working_directory": "/Users/chuzu/projests/stark-repo-analyzer-skill/docs/baseline/physical-runs/click/run-2",
+  "started_at": "2026-07-12T17:20:37+08:00",
+  "ended_at": "2026-07-12T17:42:42+08:00",
+  "source_modified": false,
+  "git_history_used": false,
+  "graphify_out_used": false,
+  "tools": [
+    "zsh",
+    "sed",
+    "rg",
+    "find",
+    "wc",
+    "git rev-parse/status",
+    "Python 3",
+    "pytest",
+    "reference repo-analyzer instructions",
+    "five parallel general-purpose analysis agents"
+  ],
+  "external_sources": [],
+  "external_research_status": "not performed: WebSearch/WebFetch were unavailable in the runtime; repository-local documentation was read instead",
+  "effective_source_lines": 12288,
+  "test_lines_excluded_from_effective_source": 14050,
+  "documentation_lines_excluded_from_effective_source": 6484,
+  "example_lines_excluded_from_effective_source": 1095,
+  "static_reading_coverage": {
+    "read_lines": 12288,
+    "total_lines": 12288,
+    "percentage": 100.0,
+    "core_threshold_percentage": 60,
+    "secondary_threshold_percentage": 30,
+    "status": "passed"
+  },
+  "test_coverage": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest -p no:cacheprovider -q tests",
+    "exit_status": 0,
+    "result": "1901 passed, 25 skipped, 31000 deselected, 1 xfailed in 3.23s",
+    "coverage_py_percentage_report": "not performed"
+  },
+  "graphify_structure": {
+    "raw_deep_graph": "graphify-out/raw-deep-graph.json",
+    "normalized_graph": "graphify-out/graph.json",
+    "normalization": "doctor-compatible-ast-structure",
+    "raw_nodes": 2039,
+    "raw_edges": 4119,
+    "normalized_nodes": 1809,
+    "normalized_edges": 3615,
+    "doctor_post_graph": "passed",
+    "reason": "Repeatability compares deterministic source-locatable AST structure; raw semantic output remains preserved separately."
+  },
+  "runtime_verification": {
+    "normal_cli": "passed: hello hello hello",
+    "parameter_error": "passed: BadParameter for invalid integer",
+    "cli_runner": "passed: exit 0 and alice output",
+    "bash_completion": "passed: plain,alice and plain,bob, status 0",
+    "atomic_write_exception": "reproduced: atomic_after_exception='new'",
+    "tempfile_pager": "reproduced: TypeError on str write to binary temporary file",
+    "native_windows_end_to_end": "not performed"
+  },
+  "limitations": [
+    "WebSearch/WebFetch external research not performed",
+    "Official website traversal not performed",
+    "Git history not used by constraint",
+    "Native Windows console and multi-shell version matrix not performed",
+    "coverage.py statement/branch percentage report not performed",
+    "Two support-layer defects were reproduced and reported; this run did not modify source to fix them"
+  ],
+  "required_outputs": [
+    "ANALYSIS_REPORT.md",
+    "metadata.json",
+    "execution-log.md",
+    "checks.md",
+    "drafts/03-research.md",
+    "drafts/03-plan.md",
+    "drafts/05-modules-plan.md",
+    "drafts/06-module-command-context.md",
+    "drafts/06-module-parser-types.md",
+    "drafts/06-module-terminal-ui.md",
+    "drafts/06-module-shell-completion.md",
+    "drafts/06-module-secondary.md",
+    "drafts/07-cross-validation.md",
+    "drafts/08-insights.md",
+    "drafts/08-coverage.md"
+  ],
+  "reference_entrypoint": "codex exec --json",
+  "input": "input.md",
+  "exit_status": 0
+}
