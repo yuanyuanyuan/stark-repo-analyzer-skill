@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmodSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
@@ -143,4 +143,63 @@ test("deep 缺能力时 units 拒绝且不生成降级分析路径", () => {
   const result = cli("units", { ...fixture, env, options: { mode: "deep" } });
   assert.notEqual(result.status, 0);
   assert.match(`${result.stderr}\n${result.stdout}`, /不降级|不可用|未放行 deep|缺失能力/);
+});
+
+test("deep units 从 graphify-out/graph.json 写入 exact refs 且 refs_status=complete", () => {
+  const fixture = createFixture();
+  // ctags without reference roles — Graphify graph must supply complete refs
+  writeFileSync(
+    fixture.ctags,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args.includes('--version')) { console.log('Universal Ctags 6.1.0'); process.exit(0); }
+if (args.includes('--list-languages')) { console.log('JavaScript'); process.exit(0); }
+const file = args.at(-1);
+if (file?.endsWith('src/index.js')) console.log(JSON.stringify({_type:'tag',name:'main',line:1,kind:'function'}));
+if (file?.endsWith('src/service.js')) console.log(JSON.stringify({_type:'tag',name:'serve',line:1,kind:'function'}));
+`,
+  );
+  chmodSync(fixture.ctags, 0o755);
+
+  // minimal graphify graph: index.main calls service.serve
+  mkdirSync(join(fixture.repo, "graphify-out"), { recursive: true });
+  writeFileSync(
+    join(fixture.repo, "graphify-out", "graph.json"),
+    JSON.stringify({
+      nodes: [
+        { id: "n_main", label: "main()", file_type: "code", source_file: "src/index.js", source_location: "L1", _origin: "ast" },
+        { id: "n_serve", label: "serve()", file_type: "code", source_file: "src/service.js", source_location: "L1", _origin: "ast" },
+      ],
+      links: [
+        {
+          source: "n_main",
+          target: "n_serve",
+          relation: "calls",
+          confidence: "EXTRACTED",
+          source_file: "src/index.js",
+          source_location: "L1",
+          weight: 1,
+        },
+      ],
+    }),
+  );
+
+  const env = {
+    REPO_ANALYZER_CTAGS: fixture.ctags,
+    REPO_ANALYZER_AST_GREP: "/missing/ast-grep",
+    REPO_ANALYZER_GRAPHIFY: fixture.graphify,
+    REPO_ANALYZER_GRAPHIFY_CAPABILITIES: "graph-queries,symbol-enumeration,reference-edges",
+    // no REPO_ANALYZER_GRAPHIFY_UNITS_REFS — auto from real graph.json
+  };
+  assert.equal(cli("doctor", { ...fixture, env, options: { mode: "deep" } }).status, 0);
+  assert.equal(cli("scan", { ...fixture, env, options: { mode: "deep" } }).status, 0);
+  assert.equal(cli("units", { ...fixture, env, options: { mode: "deep" } }).status, 0);
+
+  const report = JSON.parse(readFileSync(join(fixture.out, "coverage-units.json"), "utf8"));
+  assert.equal(report.graphify_refs?.wired, true);
+  assert.ok(report.graphify_refs?.extracted_ref_links >= 1);
+  const serve = report.units.find((unit) => unit.symbol === "serve");
+  assert.ok(serve, "serve unit exists");
+  assert.equal(serve.refs_status, "complete");
+  assert.ok(serve.refs.some((ref) => ref.source === "graphify" && ref.confidence === "exact" && ref.file === "src/index.js"));
 });

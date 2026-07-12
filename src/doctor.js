@@ -147,6 +147,7 @@ export function doctor({ repo, out, mode, printInstallPrompt = false, installTar
     ctags_reference_tags: referenceProbe.ctags_reference_tags,
     ctags_definition_tags: referenceProbe.ctags_definition_tags,
     graphify_units_refs_wired: referenceProbe.graphify_units_refs_wired,
+    graphify_graph: referenceProbe.graphify_graph ?? null,
     reasons: referenceProbe.reasons,
     remediation: referenceProbe.usable
       ? null

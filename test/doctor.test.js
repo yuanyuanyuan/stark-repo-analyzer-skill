@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmodSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
@@ -207,3 +207,48 @@ if (file?.endsWith('.js')) console.log(JSON.stringify({_type:'tag',name:'main',p
   assert.ok(report.capability_matrix.capabilities["reference-edges"].providers.includes("graphify"));
 });
 
+
+test("doctor 放行：目标仓 graphify-out/graph.json 有 EXTRACTED 边时无需 env 开关", () => {
+  const fixture = createFixture();
+  writeFileSync(
+    fixture.ctags,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args.includes('--version')) { console.log('Universal Ctags 6.1.0'); process.exit(0); }
+if (args.includes('--list-languages')) { console.log('JavaScript'); process.exit(0); }
+const file = args.at(-1);
+if (file?.endsWith('.js')) console.log(JSON.stringify({_type:'tag',name:'main',path:file,line:1,kind:'function'}));
+`,
+  );
+  chmodSync(fixture.ctags, 0o755);
+  mkdirSync(join(fixture.repo, "graphify-out"), { recursive: true });
+  writeFileSync(
+    join(fixture.repo, "graphify-out", "graph.json"),
+    JSON.stringify({
+      nodes: [
+        { id: "a", label: "main()", source_file: "src/index.js", source_location: "L1", file_type: "code" },
+        { id: "b", label: "serve()", source_file: "src/service.js", source_location: "L1", file_type: "code" },
+      ],
+      links: [
+        { source: "a", target: "b", relation: "calls", confidence: "EXTRACTED", source_file: "src/index.js", source_location: "L1" },
+      ],
+    }),
+  );
+
+  const result = cli("doctor", {
+    ...fixture,
+    env: {
+      REPO_ANALYZER_CTAGS: fixture.ctags,
+      REPO_ANALYZER_AST_GREP: "/missing/ast-grep",
+      REPO_ANALYZER_GRAPHIFY: fixture.graphify,
+      REPO_ANALYZER_GRAPHIFY_CAPABILITIES: "graph-queries,symbol-enumeration,reference-edges",
+    },
+    options: { mode: "deep" },
+  });
+  assert.equal(result.status, 0);
+  const report = JSON.parse(readFileSync(join(fixture.out, "doctor-report.json"), "utf8"));
+  assert.equal(report.allowed_deep, true);
+  assert.ok(report.capability_matrix.capabilities["reference-edges"].providers.includes("graphify"));
+  assert.equal(report.reference_probe.graphify_units_refs_wired, true);
+  assert.ok(report.reference_probe.graphify_graph?.extracted_ref_links >= 1);
+});

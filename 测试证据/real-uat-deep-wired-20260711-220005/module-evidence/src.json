@@ -1,0 +1,124 @@
+{
+  "module": "src",
+  "module_role": "产品运行时核心：集中会话状态、下沉内容感知切图计算、旁路 PDF/ZIP 导出，并粘合上传/预览/导航/SEO/移动优化 UI。",
+  "entry_points": [
+    "src/main.tsx:5",
+    "src/App.tsx:28",
+    "src/hooks/useImageProcessor.ts:92",
+    "src/workers/split.worker.js:20",
+    "src/App.tsx:224"
+  ],
+  "core_data_structures": [
+    "ImageSlice(blob,url,index,width,height) — 预览与导出共享的切片契约（src/types/index.ts:3）",
+    "AppState — worker/blobs/objectUrls/imageSlices/selectedSlices/splitHeight 会话模型（src/types/index.ts:11）",
+    "WorkerMessage progress|chunk|done|error — 主从通信协议（src/types/index.ts:44）",
+    "Band/SplitOptions — 内容感知切割参数与空白带（src/utils/splitAnalyzer.ts:17,30）"
+  ],
+  "main_flow": [
+    "挂载：main.tsx createRoot → App → AppContent 组合 useAppState + useImageProcessor + useRouter（src/main.tsx:5, src/App.tsx:28-39）",
+    "上传：FileUploader → handleFileSelect → processImage：cleanupSession → setProcessing → createWorker(module) → startProcessing(file, splitHeight)（src/App.tsx:196, src/hooks/useImageProcessor.ts:92-128）",
+    "Worker：onmessage 校验 → createImageBitmap → OffscreenCanvas → analyzeSplitPoints → computeSliceBounds → convertToBlob JPEG → postMessage chunk/done（src/workers/split.worker.js:20,75,117,228）",
+    "回写：onChunk 建 ObjectURL，img.onload 后 addImageSlice 按 index 写入；0→>0 effect push('/split')（src/hooks/useImageProcessor.ts:30-58, src/hooks/useAppState.ts:47-51, src/App.tsx:121-134）",
+    "导航：useNavigationState 按 originalImage/slices/selection 禁/启步骤；validateNavigation 失败则 redirect/clearState（src/hooks/useNavigationState.ts:105-119, src/App.tsx:142-170）",
+    "导出：ExportControls onExport → handleExport 校验 selectedSlices → exportToPDF/exportToZIP（src/components/ExportControls.tsx:82-92, src/App.tsx:224-255）",
+    "SEO：路由 pageType → SEOManager/Helmet 注入元数据；配置经 SEOConfigManager + seo.config 桥接（src/App.tsx:270-281, src/components/SEOManager.tsx:1, src/config/seo.config.ts:48）"
+  ],
+  "cross_module_dependencies": [
+    "src/App.tsx:21 → shared-components CopyrightInfo: App 引用共享版权组件，会话仍在 src",
+    "src/hooks/useWorker.ts:42 → src/workers/split.worker.js:20: module Worker 创建与消息协议",
+    "src/workers/split.worker.js:12 → src/utils/splitAnalyzer.ts:250: Worker 调用纯函数分析切割点",
+    "src/App.tsx:13-14 → src/utils/pdfExporter.ts:208 / zipExporter: 导出旁路调用",
+    "src/components/SEOManager.tsx:5 → src/utils/seo/SEOConfigManager.ts:142: SEO 配置加载",
+    "config/app/routing.config.ts:66 → src 导航配置候选（Graphify refs 可能 partial，跨模块结论需谨慎）"
+  ],
+  "key_design_decisions": [
+    "状态集中 vs 分散：useAppState 单一 reducer 拥有会话，避免多 Context 同步成本；代价是 App 变编排中心。",
+    "计算下沉 Worker：module worker + OffscreenCanvas 保 UI 流畅；代价是消息协议与资源清理复杂度。",
+    "算法纯函数化：splitAnalyzer 与 I/O 分离便于单测；参数仍为经验值需校准。",
+    "导出旁路：jsPDF/JSZip 不进入 reducer，失败不影响切片状态；高级导出选项与 exporter 实现存在部分未接线风险。",
+    "导航状态守卫：切片未就绪不跳 /split，防止空态；增加 effect 时序耦合。",
+    "SEO 桥接层：JSON 优先 + 硬编码 fallback 换兼容性；多实现并行增加 dual-write 风险。"
+  ],
+  "risk_areas": [
+    {
+      "category": "performance",
+      "evidence": "src/workers/split.worker.js:112",
+      "finding": "全图 getImageData 注释标明 >4000px 分块为未来优化；大图峰值内存高。",
+      "impact": "限制超长截图体验，架构上计算已下沉但未做分块流水线。"
+    },
+    {
+      "category": "correctness",
+      "evidence": "src/hooks/useAppState.ts:49",
+      "finding": "ADD_IMAGE_SLICE 按 index 写入以修复 img.onload 乱序；若稀疏数组 length 与真实切片数不一致，下游 length 检查可能偏差。",
+      "impact": "导航 0→>0 跳转与预览渲染依赖 imageSlices.length，需保持稠密写入。"
+    },
+    {
+      "category": "error-handling",
+      "evidence": "src/workers/split.worker.js:125",
+      "finding": "内容分析异常 catch 后 splitPoints=[] 等分回退，保证不中断。",
+      "impact": "用户可能静默失去内容感知质量而不自知。"
+    },
+    {
+      "category": "config-drift",
+      "evidence": "src/config/seo.config.ts:48",
+      "finding": "SEO_CONFIG getter 桥接 JSON，同时存在 EnhancedSEOManager 与 SEOManager 多入口。",
+      "impact": "配置源漂移与死实现风险；需 insight probe 跟踪。"
+    },
+    {
+      "category": "ui-contract",
+      "evidence": "src/components/ExportControls.tsx:66",
+      "finding": "ExportControls 收集 quality/pdfOptions/zipOptions，但 App.handleExport 主要使用 filename 与 format。",
+      "impact": "部分高级 UI 选项可能未进入 exporter 真实路径。"
+    }
+  ],
+  "semantic_reviews": [
+    {
+      "unit_id": "src/hooks/useAppState.ts:useAppState:export:675d300b2269",
+      "anchor": "src/hooks/useAppState.ts:122",
+      "judgment": "会话状态中枢：useReducer 聚合 worker/blobs/imageSlices/selectedSlices，并把 splitHeight/fileName 防抖持久化，切割会话与 UI 偏好解耦。",
+      "source_observation": "源码显示 useAppState 通过 useReducer(appStateReducer) 暴露 state/actions，并对 splitHeight/fileName 做 debouncedSave；会话大对象不持久化。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/utils/splitAnalyzer.ts:analyzeSplitPoints:export:864b0394d827",
+      "anchor": "src/utils/splitAnalyzer.ts:250",
+      "judgment": "纯函数入口：行变化率→平滑→低变化带→页高驱动选点；算法与 I/O 分离可单测。",
+      "source_observation": "源码显示 analyzeSplitPoints 串联 computeVariationProfile→smooth→findLowVariationBands→chooseSplitPoints，短图直接返回空数组触发等分回退。",
+      "verdict": "supported"
+    },
+    {
+      "unit_id": "src/workers/split.worker.js:processImage:export:30217a770fc2",
+      "anchor": "src/workers/split.worker.js:75",
+      "judgment": "Worker 主流程：createImageBitmap 解码→OffscreenCanvas→analyzeSplitPoints→computeSliceBounds→JPEG chunk 回流。",
+      "source_observation": "源码显示 processImage 解码后 getImageData 调 analyzeSplitPoints，分析异常 catch 后 splitPoints=[]，再 computeSliceBounds 切片并 postMessage chunk/done。",
+      "verdict": "supported"
+    }
+  ],
+  "source_evidence": [
+    "src/main.tsx:5",
+    "src/App.tsx:28",
+    "src/App.tsx:121",
+    "src/App.tsx:196",
+    "src/App.tsx:224",
+    "src/hooks/useAppState.ts:33",
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useImageProcessor.ts:92",
+    "src/hooks/useWorker.ts:42",
+    "src/workers/split.worker.js:75",
+    "src/workers/split.worker.js:228",
+    "src/utils/splitAnalyzer.ts:250",
+    "src/utils/pdfExporter.ts:208",
+    "src/utils/zipExporter.ts:34",
+    "src/hooks/useNavigationState.ts:53",
+    "src/components/ExportControls.tsx:82",
+    "src/components/SEOManager.tsx:1",
+    "src/config/seo.config.ts:48",
+    "src/types/index.ts:3"
+  ],
+  "open_questions": [
+    "ExportControls 高级选项（orientation/compression/imageFormat）是否有另一代码路径传入 PDFExporter/ZIPExporter？当前 App.handleExport 未透传。",
+    "EnhancedSEOManager 与 SEOManager 在生产路由中的实际挂载比例未做运行时验证。",
+    "core 单元 refs_status incomplete≈76.7%，部分跨 config↔src 边仍 partial，相关结论保持开放。"
+  ],
+  "narrative": "src 模块是长截图分割器的产品运行时核心。它不按目录堆叠功能，而是用一条清晰的数据流组织：用户在上传页选择图片后，App.handleFileSelect 调用 useImageProcessor.processImage；该 Hook 先 cleanupSession 释放旧 ObjectURL/Worker，再以 type:'module' 创建 split.worker，并把 File 与 splitHeight 发送到 Worker。Worker 内用 createImageBitmap + OffscreenCanvas 完成解码与绘制，再调用纯函数 analyzeSplitPoints 做内容感知切割；分析失败或无空白带时 computeSliceBounds 回退固定高度等分，保证“绝不切得比现状差”。切片以 JPEG Blob 通过 chunk 消息回流，主线程按 index 写入 imageSlices，避免 onload 乱序。当切片从 0 变为 >0，App effect 才 push('/split')，与导航守卫协同，防止空态被踢回 /upload。导出被设计为旁路：selectedSlices 经 exportToPDF/exportToZIP 下载，不污染 reducer。导航与 SEO 则是同一 AppState/路由上的正交切面：前者约束步骤可达性，后者用 Helmet 注入元数据。这一设计的哲学是：会话状态集中、重计算下沉、算法可测、UI 选项尽量走真实路径——但也暴露出大图内存、SEO 多实现并行、导出高级选项接线不全等真实工程债务。"
+}

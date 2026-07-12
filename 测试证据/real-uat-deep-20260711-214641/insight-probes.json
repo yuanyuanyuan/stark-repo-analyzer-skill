@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "mode": "deep",
+  "probes": [
+    {
+      "category": "ui_promise_runtime_path",
+      "status": "n_a",
+      "summary": "deep 在 Doctor 阶段因 reference-edges 不可验证被拒绝，未进入导出选项/UI 承诺与运行时路径的源码复核；本类不适用本轮阻塞态执行。",
+      "anchors": [],
+      "report_ref": "report.md#blocked-delivery",
+      "candidates_considered": 0
+    },
+    {
+      "category": "multi_source_rules",
+      "status": "n_a",
+      "summary": "未进入导航/SEO 多源规则的源码交叉验证（deep 能力门禁拦截）。",
+      "anchors": [],
+      "report_ref": "report.md#blocked-delivery",
+      "candidates_considered": 0
+    },
+    {
+      "category": "config_dual_write_dead_impl",
+      "status": "n_a",
+      "summary": "未进入配置双写/死实现探测；分析链路在 doctor 终止。",
+      "anchors": [],
+      "report_ref": "report.md#blocked-delivery",
+      "candidates_considered": 0
+    }
+  ],
+  "execution_note": {
+    "doctor_blocked": true,
+    "missing_capabilities": [
+      "reference-edges"
+    ],
+    "analysis_performed": false
+  }
+}

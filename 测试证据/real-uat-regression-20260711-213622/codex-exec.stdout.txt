@@ -1,0 +1,28 @@
+## 真实UAT回归测试·standard — 完成
+
+| 项 | 结果 |
+|---|---|
+| 目标仓 | `/tmp/Long_screenshot_splitting_tool` @ `bdee20b` |
+| 模式 | **standard**（baseline only；未用 Graphify/Ctags/ast-grep） |
+| parallelism | **active**（3 子代理） |
+| 时间 | `2026-07-11 21:36:40 CST` → `21:39:06 CST` |
+| Doctor | 放行 |
+| Gate | **放行** `allowed_to_synthesize: true`（13/13，含 `insight-probe-process`） |
+
+**过程有效：是。产品分析完整通过：是。**
+
+### 产物目录
+[`测试证据/real-uat-regression-20260711-213622`](/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-regression-20260711-213622)
+
+含：`doctor-report.json`、`repo-map.json/md`、`coverage-units.json`、`evidence-plan.md`、`module-evidence/src.json`、`subagent-artifacts/*`、`report.md`、`insight-probes.json`、`quality-gate-report.json`、`ANALYSIS_REPORT.md`、`UAT_EXEC_SUMMARY.md`。
+
+### 覆盖
+- core `src`：159/264 ≈ **60.23%**
+- secondary：config/shared/tools/scripts 均 **≥30%**
+
+### Insight probes
+- `ui_promise_runtime_path`：**hit**（导出高级选项未贯通 exporter）
+- `multi_source_rules`：**hit**（SEO 静态/Manager 多源）
+- `config_dual_write_dead_impl`：**miss**（不挡门）
+
+未改目标仓源码；未覆盖其他历史测试证据目录。详情见 [`UAT_EXEC_SUMMARY.md`](/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-regression-20260711-213622/UAT_EXEC_SUMMARY.md)。

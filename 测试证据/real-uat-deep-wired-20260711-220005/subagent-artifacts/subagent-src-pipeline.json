@@ -1,0 +1,25 @@
+{
+  "subagent_id": "subagent-src-pipeline",
+  "scope": "会话状态 + Worker 内容感知切图主链",
+  "mode": "deep",
+  "parallelism": "active",
+  "key_anchors": [
+    "src/hooks/useAppState.ts:122",
+    "src/hooks/useImageProcessor.ts:92",
+    "src/hooks/useWorker.ts:42",
+    "src/workers/split.worker.js:75",
+    "src/utils/splitAnalyzer.ts:250",
+    "src/App.tsx:196"
+  ],
+  "findings": [
+    "状态集中于 useAppState；ADD_IMAGE_SLICE 按 index 写入修复乱序",
+    "Worker module 化以支持 ESM import splitAnalyzer",
+    "内容感知失败安全回退等分",
+    "切片首次到达后才导航到 /split"
+  ],
+  "coverage_contribution": "src core 主链 PRIORITY 单元优先 analyzed",
+  "outputs": [
+    "module-evidence/src.json#main_flow",
+    "coverage-units.json partial"
+  ]
+}

@@ -3,6 +3,7 @@ import { readdirSync } from "node:fs";
 
 import { loadCapabilities, loadModes, loadToolRules, resolveMode, rulesVersion } from "./rules.js";
 import { runCommand } from "./common.js";
+import { probeGraphifyUnitsRefs } from "./graphify-refs.js";
 
 function executable(envName, fallback) {
   return process.env[envName] ?? fallback;
@@ -87,10 +88,11 @@ function parseCapabilityOverride(raw) {
  * 仅「工具在 PATH」不足以放行 deep——否则会在 evidence/gate 才失败并浪费 token。
  *
  * 当前 units 合同：
- * - complete 仅来自 universal-ctags 的 reference-role 标签；
+ * - complete 可来自 universal-ctags 的 reference-role 标签；
+ * - complete 也可来自 Graphify graph.json 的 EXTRACTED call/import/reference 边（真实接线）；
  * - rg/grep 文本引用一律 partial；
- * - Graphify 边尚未接到 coverage-units.refs_status，除非显式打开
- *   REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1（测试/未来接线开关）。
+ * - REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1 仍可作为强制启用/测试覆盖开关；
+ *   若未设置，只要目标仓存在可用 graphify-out/graph.json EXTRACTED 边，同样视为已接线。
  */
 export function probeReferenceEdgeUsability({ repoPath, languages = [], detected, maxFiles = 6 }) {
   const { ctags, graphify } = detected.enhanced;
@@ -144,9 +146,22 @@ export function probeReferenceEdgeUsability({ repoPath, languages = [], detected
   }
 
   const ctagsUsable = ctags.available && ctagsReferenceTags > 0;
-  const graphifyUnitsWired =
+
+  const envForceGraphifyUnits =
     process.env.REPO_ANALYZER_GRAPHIFY_UNITS_REFS === "1" ||
     process.env.REPO_ANALYZER_GRAPHIFY_UNITS_REFS === "true";
+  const graphifyGraphProbe =
+    graphify.available && graphify.capabilities.includes("reference-edges")
+      ? probeGraphifyUnitsRefs(repoPath)
+      : { usable: false, extracted_ref_links: 0, reasons: ["graphify 不可用或不声明 reference-edges"], graph_path: null, nodes: 0, links: 0, symbol_keys: 0 };
+
+  // Real wiring: units.js loads graphify-out/graph.json EXTRACTED edges into refs_status.
+  // Env flag remains for fixtures / force-on; auto when target repo has usable graph edges.
+  const graphifyUnitsWired =
+    envForceGraphifyUnits ||
+    (graphify.available &&
+      graphify.capabilities.includes("reference-edges") &&
+      graphifyGraphProbe.usable);
   const graphifyUsable =
     graphify.available &&
     graphify.capabilities.includes("reference-edges") &&
@@ -162,15 +177,16 @@ export function probeReferenceEdgeUsability({ repoPath, languages = [], detected
       reasons.push("未检测到 universal-ctags 或 graphify，无法提供 units 可用的 reference edges。");
     } else if (ctags.available && ctagsReferenceTags === 0) {
       reasons.push(
-        `Universal Ctags 在抽样 ${filesProbed || sampleFiles.length} 个源文件中未产出 roles=reference 标签（definition≈${ctagsDefinitionTags}，reference=0）。units 只会把 rg/grep 命中标为 partial，deep 的 reference-quality 几乎必然失败。`,
+        `Universal Ctags 在抽样 ${filesProbed || sampleFiles.length} 个源文件中未产出 roles=reference 标签（definition≈${ctagsDefinitionTags}，reference=0）。若无 Graphify EXTRACTED 边，units 只会把 rg/grep 命中标为 partial，deep 的 reference-quality 几乎必然失败。`,
       );
     }
     if (graphify.available && graphify.capabilities.includes("reference-edges") && !graphifyUnitsWired) {
+      const detail = graphifyGraphProbe.reasons?.join(" ") || "graphify graph 不可用";
       reasons.push(
-        "Graphify 虽声明 reference-edges，但尚未接入 coverage-units.refs_status；在未设置 REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1 前，不得凭存在性放行 deep。",
+        `Graphify 已声明 reference-edges，但目标仓未检测到可用 EXTRACTED 引用边（${detail}）。请在目标仓运行 graphify update . 生成 graphify-out/graph.json，或设置 REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1 并确保 graph 边可被 units 读取。`,
       );
     }
-    if (sampleFiles.length === 0) {
+    if (sampleFiles.length === 0 && !graphifyUsable) {
       reasons.push("目标仓未找到可抽样源码文件，无法验证 reference-edge 可用性。");
     }
   }
@@ -182,7 +198,17 @@ export function probeReferenceEdgeUsability({ repoPath, languages = [], detected
     files_probed: filesProbed,
     ctags_reference_tags: ctagsReferenceTags,
     ctags_definition_tags: ctagsDefinitionTags,
-    graphify_units_refs_wired: graphifyUnitsWired,
+    graphify_units_refs_wired: Boolean(graphifyUnitsWired),
+    graphify_graph: {
+      usable: Boolean(graphifyGraphProbe.usable),
+      path: graphifyGraphProbe.graph_path ?? null,
+      nodes: graphifyGraphProbe.nodes ?? 0,
+      links: graphifyGraphProbe.links ?? 0,
+      extracted_ref_links: graphifyGraphProbe.extracted_ref_links ?? 0,
+      symbol_keys: graphifyGraphProbe.symbol_keys ?? 0,
+      env_force: envForceGraphifyUnits,
+      reasons: graphifyGraphProbe.reasons ?? [],
+    },
     sample_evidence: sampleEvidence,
     reasons,
   };
@@ -482,7 +508,7 @@ function buildRemediation(availability, capabilityState) {
     }
     if (cap === "reference-edges") {
       lines.push(
-        "deep 需要对本仓可验证的 reference edges：Universal Ctags 须在抽样源文件中产出 roles=reference；或完成 Graphify→units 引用接线并设置 REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1。仅安装工具但无法产出 complete refs 仍会拦截 deep，避免后续 evidence/gate 浪费 token。",
+        "deep 需要对本仓可验证的 reference edges：Universal Ctags 须在抽样源文件中产出 roles=reference；或目标仓 graphify-out/graph.json 含 EXTRACTED call/import/reference 边（units 已真实接入 refs_status）。仅安装工具但无法产出 complete refs 仍会拦截 deep，避免后续 evidence/gate 浪费 token。",
       );
     }
   }
@@ -500,7 +526,7 @@ export function buildInstallPrompt({ targetMode = "deep", matrix }) {
 
   const focus = mode === "deep"
     ? missing.length
-      ? `只补齐 deep 缺失能力：${missing.join(", ")}。优先使 reference-edges 在目标仓可验证：Universal Ctags 须能产出 roles=reference；Graphify 图边在接入 units 前不能单独冒充 complete refs。symbol-enumeration 可再补 ast-grep。`
+      ? `只补齐 deep 缺失能力：${missing.join(", ")}。优先使 reference-edges 在目标仓可验证：Universal Ctags 须能产出 roles=reference，或在目标仓运行 graphify update . 使 graphify-out/graph.json 含 EXTRACTED 引用边（units 已接线）。symbol-enumeration 可再补 ast-grep。`
       : "deep 能力已满足；若用户仍要安装，仅做版本确认并回报，不要重复安装。"
     : "standard 仅需 Git + 文本搜索；不要为 standard 安装 Graphify/Ctags/ast-grep。";
 

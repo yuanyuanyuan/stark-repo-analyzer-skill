@@ -1,0 +1,58 @@
+CMD_START 2026-07-11T21:48:26+0800
+PATH=/opt/homebrew/bin:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/Users/chuzu/Library/Application Support/orca/codex-runtime-home/home/tmp/arg0/codex-arg0LBbnhr:/opt/homebrew/bin:/opt/homebrew/bin:/Users/chuzu/Library/Application Support/orca/codex-runtime-home/home/tmp/arg0/codex-arg0AMRA04:/Users/chuzu/anaconda3/bin:/Users/chuzu/anaconda3/condabin:/Users/chuzu/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/sbin:/snap/bin:/home/linuxbrew/.linuxbrew/bin:/nix/var/nix/profiles/default/bin:/Users/chuzu/bin:/Users/chuzu/.local/bin:/Users/chuzu/.nix-profile/bin:/Users/chuzu/.opencode/bin:/Users/chuzu/.vite-plus/bin:/Users/chuzu/.volta/bin:/Users/chuzu/.asdf/shims:/Users/chuzu/.fnm/aliases/default/bin:/Users/chuzu/.local/share/mise/shims:/Users/chuzu/Library/pnpm:/Users/chuzu/.yarn/bin:/Users/chuzu/.bun/bin:/Users/chuzu/.lmstudio/bin
+ctags=/opt/homebrew/bin/ctags; Universal Ctags 6.2.1, Copyright (C) 2015-2025 Universal Ctags Team
+graphify=/Users/chuzu/anaconda3/bin/graphify; graphify 0.9.8
+ast-grep=/opt/homebrew/bin/ast-grep; ast-grep 0.44.1
+
+=== doctor deep ===
+# AI Installation Agent Prompt
+
+目标模式: deep
+规则版本: 2.2.0
+
+## 任务
+为 Repo Analyzer 配置可选增强工具，使目标模式可用。
+
+## 范围约束（强制）
+1. **不得**修改被分析仓库的源码或依赖清单（package.json / Cargo.toml / go.mod / pyproject.toml 等），除非用户对本次安装显式授权且与分析证据隔离。
+2. 只安装或配置满足缺失能力所需的最小工具集；禁止为凑齐工具包盲目安装。
+3. 安装后回报：命令路径、版本号、以及 doctor 能力矩阵是否放行目标模式。
+4. 不要在分析 run 内把 deep 静默降级为 standard。
+
+## 当前能力矩阵摘要
+- available_modes: standard
+- blocked_modes: deep
+- deep missing: reference-edges
+
+## 安装焦点
+只补齐 deep 缺失能力：reference-edges。优先使 reference-edges 在目标仓可验证：Universal Ctags 须能产出 roles=reference；Graphify 图边在接入 units 前不能单独冒充 complete refs。symbol-enumeration 可再补 ast-grep。
+
+## 官方来源
+- ast-grep: https://ast-grep.github.io/ (verified 2026-07-11)
+- git: https://git-scm.com/doc (verified 2026-07-11)
+- graphify: https://github.com/safishamsi/graphify (verified 2026-07-11)
+- grep: https://www.gnu.org/software/grep/manual/ (verified 2026-07-11)
+- jq: https://jqlang.github.io/jq/ (verified 2026-07-11)
+- ripgrep: https://github.com/BurntSushi/ripgrep (verified 2026-07-11)
+- universal-ctags: https://docs.ctags.io/ (verified 2026-07-11)
+
+## 验收
+重新运行:
+`repo-analyzer doctor --repo <REPO> --out <OUT>`
+确认 capability matrix 中目标模式 available，且未污染被分析仓库。
+{"command":"doctor","artifact":"doctor-report.json","allowed":false,"mode":"deep","available_modes":["standard"],"blocked_modes":["deep"]}
+exit=2
+
+=== scan deep ===
+Doctor 未放行 deep：缺失能力合同，拒绝执行且不降级。请查看 capability matrix / install-prompt.md。
+exit=1
+=== summarize deep ===
+Doctor 未放行 deep：缺失能力合同，拒绝执行且不降级。请查看 capability matrix / install-prompt.md。
+exit=1
+=== units deep ===
+Doctor 未放行 deep：缺失能力合同，拒绝执行且不降级。请查看 capability matrix / install-prompt.md。
+exit=1
+=== gate deep ===
+ENOENT: no such file or directory, open '/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-20260711-214641/coverage-units.json'
+exit=1
+CMD_END 2026-07-11T21:48:26+0800

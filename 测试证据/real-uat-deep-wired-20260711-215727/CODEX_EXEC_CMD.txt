@@ -1,0 +1,1 @@
+codex exec -C /Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox --add-dir /tmp/Long_screenshot_splitting_tool --add-dir /Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-wired-20260711-215727 ""

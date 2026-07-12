@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "mode": "deep",
+  "probes": [
+    {
+      "category": "ui_promise_runtime_path",
+      "status": "hit",
+      "summary": "ExportControls 展示 quality/pdfOptions/zipOptions 高级选项，但 App.handleExport 实际主要透传 format 与 filename 给 exportToPDF/exportToZIP，存在用户可感知选项未完全进入导出实现的路径缺口。",
+      "anchors": [
+        "src/components/ExportControls.tsx:66",
+        "src/components/ExportControls.tsx:82",
+        "src/App.tsx:224",
+        "src/utils/pdfExporter.ts:208"
+      ],
+      "report_ref": "批判性评价/导出选项接线",
+      "candidates_considered": 4
+    },
+    {
+      "category": "multi_source_rules",
+      "status": "hit",
+      "summary": "SEO 站点名/关键词等规则同时存在于 seo.config.json（经 SEOConfigManager）、seo.config.ts 桥接 getter 硬编码 fallback，以及类型/页面配置多处定义，存在多源规则漂移风险。",
+      "anchors": [
+        "src/config/seo.config.ts:48",
+        "src/config/seo.config.ts:24",
+        "src/utils/seo/SEOConfigManager.ts:142",
+        "src/config/seo.config.ts:170"
+      ],
+      "report_ref": "SEO 配置面",
+      "candidates_considered": 3
+    },
+    {
+      "category": "config_dual_write_dead_impl",
+      "status": "hit",
+      "summary": "SEOManager 与 EnhancedSEOManager（及 components/seo/*）形成平行实现；桥接层 initializeSEOConfig 与运行时 Helmet 注入并存，部分增强实现是否挂主路径需运行时确认，存在 dual-write/死实现嫌疑。",
+      "anchors": [
+        "src/components/SEOManager.tsx:1",
+        "src/components/EnhancedSEOManager.tsx:1",
+        "src/components/seo/EnhancedSEOManager.tsx:1",
+        "src/App.tsx:24"
+      ],
+      "report_ref": "SEO 平行实现",
+      "candidates_considered": 3
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+21:36:24 i=0 alive=True present=[] me=0 exit=None
+21:36:44 i=1 alive=True present=['doctor-report.json', 'repo-map.json'] me=0 exit=None
+21:37:05 i=2 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json'] me=0 exit=None
+21:37:25 i=3 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json'] me=0 exit=None
+21:37:45 i=4 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json'] me=0 exit=None
+21:38:05 i=5 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'insight-probes.json'] me=1 exit=None
+21:38:25 i=6 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'insight-probes.json'] me=1 exit=None
+21:38:45 i=7 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'insight-probes.json'] me=1 exit=None
+21:39:05 i=8 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'insight-probes.json'] me=1 exit=None
+21:39:25 i=9 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:39:45 i=10 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:40:05 i=11 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:40:25 i=12 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:40:46 i=13 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:41:06 i=14 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:41:26 i=15 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:41:46 i=16 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:42:06 i=17 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:42:26 i=18 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:42:46 i=19 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:43:06 i=20 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:43:26 i=21 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:43:46 i=22 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:44:06 i=23 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:44:26 i=24 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:44:47 i=25 alive=True present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0
+21:45:07 i=26 alive=False present=['doctor-report.json', 'repo-map.json', 'coverage-units.json', 'evidence-plan.md', 'quality-gate-report.json', 'report.md', 'ANALYSIS_REPORT.md', 'insight-probes.json', 'UAT_EXEC_SUMMARY.md'] me=1 exit=0

@@ -1,0 +1,11 @@
+严格执行 /Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/skills/repo-analyzer/SKILL.md
+分析 /tmp/Long_screenshot_splitting_tool
+输出报告到 /Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-wired-20260711-220005
+
+模式必须为 deep。这是真实UAT回归测试·deep。
+完整遵守 doctor/scan/summarize/units/gate；gate 通过才写 ANALYSIS_REPORT.md。
+写 UAT_EXEC_SUMMARY.md（中文）。不得改目标仓业务源码；不得覆盖其他测试证据目录。
+合法 insight-probes.json；miss 不挡门。
+验证 Graphify 接线：doctor allowed_deep=true 且 coverage-units.graphify_refs.wired=true。
+尽量覆盖 Worker/导航/切片/导出/SEO 并附锚点。
+诚实区分过程有效 vs 产品完整通过。

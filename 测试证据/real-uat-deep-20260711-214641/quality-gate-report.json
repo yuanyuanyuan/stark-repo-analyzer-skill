@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "mode": "deep",
+  "rules_version": "2.2.0",
+  "tooling_level": "enhanced",
+  "budget": {
+    "mode": "deep",
+    "note": "deep 分析预算未启用；Doctor 拦截"
+  },
+  "allowed_to_synthesize": false,
+  "blocked_stage": "doctor",
+  "checks": [
+    {
+      "id": "doctor-deep-capability",
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+        "doctor.allowed_deep=false",
+        "missing_capabilities.deep includes reference-edges",
+        "reference-edge-usability probe failed (ctags reference tags=0; graphify_units_refs_wired=false)"
+      ],
+      "evidence": [
+        "doctor-report.json",
+        "diagnostics/reference-edges-block.json"
+      ]
+    },
+    {
+      "id": "workflow-no-silent-downgrade",
+      "status": "pass",
+      "passed": true,
+      "reasons": [
+        "scan/summarize/units 在 deep 上拒绝执行，未改跑 standard 并宣称 deep"
+      ],
+      "evidence": [
+        "diagnostics/cli-refusal-log.txt"
+      ]
+    },
+    {
+      "id": "evidence-plan",
+      "status": "pass",
+      "passed": true,
+      "reasons": [
+        "evidence-plan.md 存在且记录 mode=deep 与 parallelism=degraded 及阻塞原因"
+      ],
+      "evidence": [
+        "evidence-plan.md"
+      ]
+    },
+    {
+      "id": "repo-map",
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+        "scan/summarize 因 doctor 拒绝未生成 repo-map.json/md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "coverage-units",
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+        "units 因 doctor 拒绝未生成 coverage-units.json"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "module-evidence-matrix",
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+        "无有效 Evidence Matrix（仅 blocked 占位 src.json）"
+      ],
+      "evidence": [
+        "module-evidence/src.json"
+      ]
+    },
+    {
+      "id": "key-unit-coverage",
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+        "无 coverage 分母，无法计算 deep 90%/60% 覆盖率"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "reference-quality",
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+        "reference-edges 在 doctor 探针阶段即不可用；未进入 units refs 评估"
+      ],
+      "evidence": [
+        "diagnostics/reference-edges-block.json"
+      ]
+    },
+    {
+      "id": "semantic-source-review",
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+        "无 analyzed units，无法执行 deep SSR"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "insight-probe-process",
+      "status": "pass",
+      "passed": true,
+      "reasons": [
+        "insight-probes.json 存在，Catalog 三类均有合法 status=n_a 结论；miss/n_a 不挡流程完整性"
+      ],
+      "evidence": [
+        "insight-probes.json"
+      ]
+    },
+    {
+      "id": "report-draft",
+      "status": "pass",
+      "passed": true,
+      "reasons": [
+        "report.md 阻塞态草稿已写，明确 Full Delivery=否"
+      ],
+      "evidence": [
+        "report.md"
+      ]
+    },
+    {
+      "id": "parallelism-execution",
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+        "parallelism=degraded；无真实子代理产物/融合（doctor 拦截）"
+      ],
+      "evidence": [
+        "evidence-plan.md"
+      ]
+    }
+  ],
+  "notes": [
+    "本 quality-gate-report.json 为 Doctor 阻塞路径下的审计合成记录。",
+    "官方 CLI `repo-analyzer gate` 因缺少 coverage-units.json 以 ENOENT 失败；见 diagnostics/cli-refusal-log.txt。",
+    "allowed_to_synthesize=false：禁止写 ANALYSIS_REPORT.md。"
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "kind": "deep-capability-block",
+  "mode_requested": "deep",
+  "doctor_allowed": false,
+  "doctor_allowed_deep": false,
+  "missing_capabilities": {
+    "standard": [],
+    "deep": [
+      "reference-edges"
+    ]
+  },
+  "available_modes": [
+    "standard"
+  ],
+  "blocked_modes": [
+    "deep"
+  ],
+  "reference_probe": {
+    "usable": false,
+    "providers": [],
+    "sample_files": [
+      "config/app/app.config.ts",
+      "config/app/routing.config.ts",
+      "config/constants/app.constants.ts",
+      "config/env/development.ts",
+      "config/env/environment.config.ts",
+      "config/env/index.ts"
+    ],
+    "files_probed": 6,
+    "ctags_reference_tags": 0,
+    "ctags_definition_tags": 112,
+    "graphify_units_refs_wired": false,
+    "sample_evidence": [
+      {
+        "file": "config/app/app.config.ts",
+        "ok": true,
+        "definition_tags": 15,
+        "reference_tags": 0
+      },
+      {
+        "file": "config/app/routing.config.ts",
+        "ok": true,
+        "definition_tags": 26,
+        "reference_tags": 0
+      },
+      {
+        "file": "config/constants/app.constants.ts",
+        "ok": true,
+        "definition_tags": 12,
+        "reference_tags": 0
+      },
+      {
+        "file": "config/env/development.ts",
+        "ok": true,
+        "definition_tags": 14,
+        "reference_tags": 0
+      },
+      {
+        "file": "config/env/environment.config.ts",
+        "ok": true,
+        "definition_tags": 18,
+        "reference_tags": 0
+      },
+      {
+        "file": "config/env/index.ts",
+        "ok": true,
+        "definition_tags": 27,
+        "reference_tags": 0
+      }
+    ],
+    "reasons": [
+      "Universal Ctags 在抽样 6 个源文件中未产出 roles=reference 标签（definition≈112，reference=0）。units 只会把 rg/grep 命中标为 partial，deep 的 reference-quality 几乎必然失败。",
+      "Graphify 虽声明 reference-edges，但尚未接入 coverage-units.refs_status；在未设置 REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1 前，不得凭存在性放行 deep。"
+    ]
+  },
+  "root_cause": [
+    "Universal Ctags 对 TypeScript/JavaScript 本仓抽样未产出 roles=reference（REFONLY kinds 对 TS 均为 no，extras reference 默认关闭且语言侧无 reference roles）。",
+    "units 合同仅把 ctags reference-role 标为 refs_status=complete；rg/grep 一律 partial。",
+    "Graphify 虽有 EXTRACTED 边且 doctor 声明 reference-edges，但未接入 coverage-units.refs_status；未设置 REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1 前不得凭存在性放行。",
+    "本轮故意不设置 REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1：该开关仅让 doctor 探针 graphifyUsable=true，units 仍不写 complete refs，会把失败推迟到 gate 并浪费 token，且构成能力合同造假风险。"
+  ],
+  "policy": "on_missing_capability=reject_no_downgrade；未静默降级 standard；未继续 scan/summarize/units 产出伪 deep 分析。",
+  "target_commit": "bdee20b8c4e4985c690a255ed09f64a3e335fd20",
+  "target_commit_meta": "bdee20b8c4e4985c690a255ed09f64a3e335fd20 2026-06-30 22:51:38 +0800 style(format): format codebase with prettier",
+  "generated_at": "2026-07-11T21:49:01.975739+08:00"
+}

@@ -1,5 +1,12 @@
 # 变更日志
 
+## Unreleased
+
+- **research**: 质量落差诊断与纠偏方案落盘 `docs/research/2026-07-11-quality-gap-diagnosis-and-correction-plan.md` （gate 地板 vs Reader 质量；P0 终稿质量合同 / JSON 税 / 模块叙事 / 对照指标）。
+
+- **P4 tooling**: Graphify `graphify-out/graph.json` EXTRACTED call/import/reference 边真实接入 `coverage-units.refs` / `refs_status`（`src/graphify-refs.js`）。doctor 的 reference-edges 探针在目标仓存在可用图边时自动放行 deep，不再仅依赖 `REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1` 假开关。
+
+
 ## 2.2.0
 
 - 分析模式收敛为 **standard（默认）** 与 **deep**；移除 quick。

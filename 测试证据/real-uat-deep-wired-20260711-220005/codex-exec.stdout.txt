@@ -1,0 +1,29 @@
+## 结论
+
+真实UAT回归测试·deep **过程有效**，且 **产品分析完整通过**（gate 放行后已写终稿）。
+
+| 维度 | 结果 |
+|---|---|
+| 过程有效 | 通过（doctor→scan→summarize→units→evidence→gate→合成） |
+| 产品完整通过 | 通过（`allowed_to_synthesize=true`） |
+| Graphify 接线 | 通过（`doctor.allowed_deep=true`，`graphify_refs.wired=true`） |
+
+## 关键结果
+
+- 输出目录：[测试证据/real-uat-deep-wired-20260711-220005](/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-wired-20260711-220005)
+- Graphify：`nodes=2875`，`extracted_ref_links=1507`，`wired=true`
+- 覆盖率：src **90.01%**；tools/shared-components/config/scripts 均 ≥60%
+- SSR：3/3 supported（useAppState / analyzeSplitPoints / processImage）
+- Insight probes：三类均合法；本轮 3 个 **hit**（导出高级选项接线、SEO 多源、SEO 平行实现）；miss 不挡门
+- 主题锚点已覆盖 Worker / 导航 / 切片 / 导出 / SEO
+- 未改目标仓业务源码（目标仓仅既有未跟踪 `ANALYSIS_REPORT.md`，非本轮写入）
+- 未覆盖其他测试证据目录
+
+## 交付物
+
+- [UAT_EXEC_SUMMARY.md](/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-wired-20260711-220005/UAT_EXEC_SUMMARY.md)
+- [ANALYSIS_REPORT.md](/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-wired-20260711-220005/ANALYSIS_REPORT.md)
+- [quality-gate-report.json](/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-wired-20260711-220005/quality-gate-report.json)
+- 以及 doctor/repo-map/coverage-units/evidence-plan/module-evidence/insight-probes/subagent-artifacts 全套工件
+
+**残余风险（不挡门）**：core incomplete refs ≈76.7%（仍 <80%）；导出高级选项与 SEO 平行实现已在报告与 probes 中诚实披露。

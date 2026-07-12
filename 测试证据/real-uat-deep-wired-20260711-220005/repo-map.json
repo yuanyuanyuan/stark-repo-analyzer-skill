@@ -1,0 +1,1403 @@
+{
+  "schema_version": 1,
+  "repo": "/tmp/Long_screenshot_splitting_tool",
+  "commit": "bdee20b8c4e4985c690a255ed09f64a3e335fd20",
+  "generated_by": "repo-analyzer scan",
+  "files": {
+    "source": [
+      "config/app/app.config.ts",
+      "config/app/routing.config.ts",
+      "config/constants/app.constants.ts",
+      "config/env/development.ts",
+      "config/env/environment.config.ts",
+      "config/env/index.ts",
+      "config/env/production.ts",
+      "config/env/test.ts",
+      "config/index.ts",
+      "deploy.config.js",
+      "eslint.config.js",
+      "postcss.config.js",
+      "scripts/dev-workflow.js",
+      "scripts/generate-seo-files.js",
+      "scripts/migrate-seo-config.ts",
+      "scripts/test-parallel.js",
+      "shared-components/components/Button/Button.tsx",
+      "shared-components/components/Button/index.ts",
+      "shared-components/components/Button/types.ts",
+      "shared-components/components/ComponentLibraryIndex.tsx",
+      "shared-components/components/CopyrightInfo/config/defaultConfig.ts",
+      "shared-components/components/CopyrightInfo/CopyrightInfo.tsx",
+      "shared-components/components/CopyrightInfo/types.ts",
+      "shared-components/components/index.ts",
+      "shared-components/core/ComponentCommunicationManager.ts",
+      "shared-components/index.ts",
+      "shared-components/interfaces/ComponentInterface.ts",
+      "shared-components/managers/ComponentCommunicationManager.ts",
+      "shared-components/managers/SharedStateManager.ts",
+      "shared-components/types/index.ts",
+      "shared-components/utils/index.ts",
+      "src/App.tsx",
+      "src/components/DebugInfoControl.tsx",
+      "src/components/DebugPanel.tsx",
+      "src/components/EnhancedHelmetProvider.tsx",
+      "src/components/EnhancedSEOManager.tsx",
+      "src/components/examples/EnhancedSEOExample.tsx",
+      "src/components/ExportControls.tsx",
+      "src/components/FileUploader.tsx",
+      "src/components/I18nTestPanel.tsx",
+      "src/components/ImagePreview.tsx",
+      "src/components/ImagePreviewWrapper.tsx",
+      "src/components/LanguageSwitcher.tsx",
+      "src/components/LazyImage.tsx",
+      "src/components/mobile/Footer.tsx",
+      "src/components/mobile/TouchImageSlicer.tsx",
+      "src/components/mobile/TouchNav.tsx",
+      "src/components/Navigation.tsx",
+      "src/components/PerformanceOptimizer.tsx",
+      "src/components/responsive/index.ts",
+      "src/components/ResponsiveContainer.tsx",
+      "src/components/ScreenshotSplitter.tsx",
+      "src/components/seo/EnhancedSEOManager.tsx",
+      "src/components/seo/HeadingHierarchy.tsx",
+      "src/components/seo/HeadingStructure.tsx",
+      "src/components/seo/SEOIntegration.tsx",
+      "src/components/seo/StructuredDataProvider.tsx",
+      "src/components/SEOManager.tsx",
+      "src/components/StructuredDataProvider.tsx",
+      "src/components/TextDisplayConfig.tsx",
+      "src/components/ViewportDebugger.tsx",
+      "src/config/seo/configLoader.ts",
+      "src/config/seo.config.ts",
+      "src/context/SEOContext.tsx",
+      "src/hooks/useAppState.ts",
+      "src/hooks/useDebugState.ts",
+      "src/hooks/useI18n.ts",
+      "src/hooks/useI18nContext.tsx",
+      "src/hooks/useImageProcessor.ts",
+      "src/hooks/useLazyLoading.ts",
+      "src/hooks/useNavigationState.ts",
+      "src/hooks/useResponsiveLayout.ts",
+      "src/hooks/useRouter.ts",
+      "src/hooks/useSEOConfig.tsx",
+      "src/hooks/useSEOI18n.tsx",
+      "src/hooks/useSEOOptimization.ts",
+      "src/hooks/useSwipeGestures.ts",
+      "src/hooks/useViewport.ts",
+      "src/hooks/useWorker.ts",
+      "src/main.tsx",
+      "src/router/index.ts",
+      "src/test-setup.ts",
+      "src/types/cssmodule.d.ts",
+      "src/types/index.ts",
+      "src/types/seo.types.ts",
+      "src/utils/analytics/performanceMonitor.ts",
+      "src/utils/assetPath.js",
+      "src/utils/BuildErrorHandler.ts",
+      "src/utils/config-helper.ts",
+      "src/utils/DependencyResolver.ts",
+      "src/utils/i18nTestCoverage.ts",
+      "src/utils/languageDetector.ts",
+      "src/utils/mobileCaching.ts",
+      "src/utils/navigationErrorHandler.ts",
+      "src/utils/navigationNetworkHandler.ts",
+      "src/utils/navigationPerformanceMonitor.ts",
+      "src/utils/navigationState.ts",
+      "src/utils/pdfExporter.ts",
+      "src/utils/persistence.ts",
+      "src/utils/seo/configValidation.ts",
+      "src/utils/seo/dynamicMetaInjection.ts",
+      "src/utils/seo/keywordDensityManager.ts",
+      "src/utils/seo/metadataGenerator.ts",
+      "src/utils/seo/robotsGenerator.ts",
+      "src/utils/seo/SEOConfigManager.ts",
+      "src/utils/seo/sitemapGenerator.ts",
+      "src/utils/seo/structuredDataGenerator.ts",
+      "src/utils/splitAnalyzer.ts",
+      "src/utils/styleMapping.ts",
+      "src/utils/textDisplayOptimizer.ts",
+      "src/utils/textFormatter.ts",
+      "src/utils/touchOptimization.ts",
+      "src/utils/zipExporter.ts",
+      "src/vite-env.d.ts",
+      "src/workers/split.worker.js",
+      "tailwind.config.js",
+      "test-setup/screenshot-splitter.setup.js",
+      "test-setup/shared-components.setup.js",
+      "tools/build-scripts/build-all.js",
+      "tools/build-scripts/build-cache-optimizer.js",
+      "tools/build-scripts/build-manager.js",
+      "tools/build-scripts/bundle-analyzer.js",
+      "tools/build-scripts/cdn-config.js",
+      "tools/build-scripts/code-splitting-optimizer.js",
+      "tools/build-scripts/deploy-monitor.js",
+      "tools/build-scripts/deploy-notification.js",
+      "tools/build-scripts/deploy-prepare.js",
+      "tools/build-scripts/deploy-preview.js",
+      "tools/build-scripts/deploy-rollback.js",
+      "tools/build-scripts/deploy-status-check.js",
+      "tools/build-scripts/dev-server.js",
+      "tools/build-scripts/env-config.js",
+      "tools/build-scripts/health-check-generator.js",
+      "tools/build-scripts/multi-target-deploy.js",
+      "tools/build-scripts/preview-single-file.js",
+      "tools/build-scripts/tree-shaking-optimizer.js",
+      "tools/build-scripts/type-check.ts",
+      "vite.config.ts",
+      "vitest.config.ts"
+    ],
+    "docs": [
+      ".agents/skills/make-interfaces-feel-better/animations.md",
+      ".agents/skills/make-interfaces-feel-better/performance.md",
+      ".agents/skills/make-interfaces-feel-better/SKILL.md",
+      ".agents/skills/make-interfaces-feel-better/surfaces.md",
+      ".agents/skills/make-interfaces-feel-better/typography.md",
+      ".claude/todos/task-2.1-seo-manager-enhancement.md",
+      ".roo/rules/rules.md",
+      ".serena/memories/code_style_conventions.md",
+      ".serena/memories/development_workflow.md",
+      ".serena/memories/project_overview.md",
+      ".serena/memories/suggested_commands.md",
+      ".serena/memories/system_commands.md",
+      ".serena/memories/task_completion_checklist.md",
+      "ANALYSIS_REPORT.md",
+      "CLAUDE.md",
+      "docs/AGILE-WORKFLOW-SEO-MOBILE.md",
+      "docs/API-REFERENCE.md",
+      "docs/ARCHITECTURE.md",
+      "docs/component-docs/Component.README.template.md",
+      "docs/configuration.md",
+      "docs/DELEGATION-SUMMARY.md",
+      "docs/DEVELOPMENT-GUIDE.md",
+      "docs/DEVELOPMENT-INFRASTRUCTURE.md",
+      "docs/frontend-spec-new.md",
+      "docs/IMPLEMENTATION-ROADMAP.md",
+      "docs/IMPLEMENTATION-TASKS.md",
+      "docs/prd-draft-20250826.md",
+      "docs/PROJECT-INDEX.md",
+      "docs/README.md",
+      "docs/SEO-CONFIG-STATUS.md",
+      "docs/SEO-INTEGRATION-GUIDE.md",
+      "docs/TASK-1.1-COMPLETION-SUMMARY.md",
+      "docs/TASK-1.3-COMPLETION-SUMMARY.md",
+      "docs/TASK-MANAGEMENT-INDEX.md",
+      "docs/TASK-PROGRESS.md",
+      "docs/TESTING-GUIDE.md",
+      "README.md",
+      "shared-components/README.md",
+      "src/components/SEOManager.README.md",
+      "src/styles/README.md"
+    ],
+    "test": [
+      ".vibedev/specs/multi-repo-architecture-migration/tasks.md",
+      "docs/superpowers/specs/2026-06-25-content-aware-split-design.md",
+      "shared-components/managers/__tests__/ComponentCommunicationManager.test.ts",
+      "shared-components/managers/__tests__/SharedStateManager.test.ts",
+      "src/components/__tests__/EnhancedSEOManager.test.tsx",
+      "src/components/__tests__/ExportControls.test.tsx",
+      "src/components/__tests__/ImagePreview.test.tsx",
+      "src/components/__tests__/Navigation.test.tsx",
+      "src/components/__tests__/PerformanceOptimizer.test.tsx",
+      "src/components/__tests__/ScreenshotSplitter.test.tsx",
+      "src/components/__tests__/SEOManager.test.tsx",
+      "src/components/DebugInfoControl.test.tsx",
+      "src/components/TextDisplayConfig.test.tsx",
+      "src/config/__tests__/app.config.test.ts",
+      "src/config/__tests__/build.config.test.ts",
+      "src/config/__tests__/seo.config.test.ts",
+      "src/hooks/__tests__/useAppState.test.ts",
+      "src/hooks/__tests__/useLazyLoading.test.ts",
+      "src/hooks/__tests__/useNavigationState.test.ts",
+      "src/types/__tests__/seo.types.test.ts",
+      "src/utils/__tests__/BuildErrorHandler.test.ts",
+      "src/utils/__tests__/DependencyResolver.test.ts",
+      "src/utils/__tests__/navigationState.test.ts",
+      "src/utils/__tests__/splitAnalyzer.test.ts",
+      "src/utils/__tests__/textDisplayOptimizer.test.ts",
+      "src/utils/__tests__/textFormatter.test.ts",
+      "src/utils/analytics/__tests__/performanceMonitor.test.ts",
+      "src/utils/seo/__tests__/metadataGenerator.test.ts",
+      "src/utils/seo/__tests__/structuredDataGenerator.test.ts",
+      "src/utils/seo/test/configTest.ts",
+      "tests/e2e/deployment.test.js",
+      "tests/integration/build-flow.test.js",
+      "tools/build-scripts/__tests__/build-manager.test.js",
+      "tools/build-scripts/__tests__/multi-target-deploy.test.js",
+      "tsconfig.test.json"
+    ],
+    "generated": [
+      "config/build/deployment.config.ts"
+    ],
+    "vendor": [],
+    "other": [
+      ".codebuddy/analysis-summary.json",
+      ".env.development",
+      ".env.example",
+      ".env.production",
+      ".env.test",
+      ".github/workflows/ci.yml",
+      ".github/workflows/deploy.yml",
+      ".gitignore",
+      ".graphifyignore",
+      ".playwright-mcp/page-2026-06-26T02-17-20-720Z.yml",
+      ".playwright-mcp/page-2026-06-26T02-18-57-851Z.yml",
+      ".playwright-mcp/page-2026-06-26T02-20-05-096Z.yml",
+      ".playwright-mcp/page-2026-06-26T02-32-53-617Z.yml",
+      ".playwright-mcp/page-2026-06-26T02-33-16-207Z.yml",
+      ".playwright-mcp/page-2026-06-26T02-33-26-953Z.yml",
+      ".prettierignore",
+      ".prettierrc",
+      ".serena/cache/typescript/document_symbols_cache_v23-06-25.pkl",
+      ".serena/project.yml",
+      ".vercel/project.json",
+      "cloudbaserc.json",
+      "graphify-out/.graphify_root",
+      "graphify-out/cache/ast/v0.9.8/077f323478a57159d2f34ddd987c4c258af0394ffcb05c39552079c62e218200.json",
+      "graphify-out/cache/ast/v0.9.8/16e1794d9e9c794529fb2e006d83ce96e408338376afa651516bb503bc266a7f.json",
+      "graphify-out/cache/ast/v0.9.8/1866da32b9eaa2c5fcbdd91f388d184806ac8712cccc4d6c20e6b5385711bead.json",
+      "graphify-out/cache/ast/v0.9.8/205d9d63d0802496ff6d2d5d46fe248fc9f8be9ec67fd5b1d7193d9fff85cb80.json",
+      "graphify-out/cache/ast/v0.9.8/3095eba9574327b0776be484aa109389e1dd8770ded51ee6b12d448496806b91.json",
+      "graphify-out/cache/ast/v0.9.8/324489fea8bbdaa858f8d1102447cc87392ae18feb2cd9000ba106fa005b5ec0.json",
+      "graphify-out/cache/ast/v0.9.8/32879cd3c4323c093105662c9c3b90f7df53e0194b5cdae08057377b6a7d0d83.json",
+      "graphify-out/cache/ast/v0.9.8/3572b7b859b610af3562bea5f6702b1ab1d781d05d5a5658f5858718b658fd6e.json",
+      "graphify-out/cache/ast/v0.9.8/3d97fbb7f77bc8e674706ed8a6f29ce283cc1ee3ba7f9c2d72d67a96b6db2bae.json",
+      "graphify-out/cache/ast/v0.9.8/45422b39374a7f6a4178255d4b214b896f84d5f9994f893df79c88f275dbfdf5.json",
+      "graphify-out/cache/ast/v0.9.8/47ca3286d5afbf3fb3d3feb87a6351ebc61b5c2e11d2e89851d5eacecc1e9e4a.json",
+      "graphify-out/cache/ast/v0.9.8/4d7a3699b951b7932abe1752a4b0e044ff03a20855749c27bc4e1382f97987ce.json",
+      "graphify-out/cache/ast/v0.9.8/529a20dc07bdbe3e04ff42da53a6523eccbe63b6c9a740c0600daa363df663f7.json",
+      "graphify-out/cache/ast/v0.9.8/63b8ad31b35aaf0763395300e9bf5c534475db3ab94d2780de4d9ad03c457833.json",
+      "graphify-out/cache/ast/v0.9.8/77e78620b527ab579f3168d3dd9e718a69d0b26bcec133e82e7b28f8ce3f4b4b.json",
+      "graphify-out/cache/ast/v0.9.8/7e1afa9b0d040bc8581f0aa3f373585a433a22b87c3f487c2eb4eae23a4f796d.json",
+      "graphify-out/cache/ast/v0.9.8/81b804d57590d6f3241b23257089fffdf5caf9f2ca495d6e38ab7ec9d9ad9ac0.json",
+      "graphify-out/cache/ast/v0.9.8/8a9edefa67bd5603a2fb08d18f2cd9920bb3887c6b1b9326c9ee053b64bd9927.json",
+      "graphify-out/cache/ast/v0.9.8/8b2cae1f44a43da13509f6a2e1138b9db54a26e0bcb1ac973389c15ac61a463f.json",
+      "graphify-out/cache/ast/v0.9.8/91bffa49e9b96e23fa4ba17129448befa053dcf5d244a5016dc5175b2b6f3608.json",
+      "graphify-out/cache/ast/v0.9.8/9d53d7ca6841c394d695546fbcc4597576b054fbbd262aac92cb6f4c3ada7edf.json",
+      "graphify-out/cache/ast/v0.9.8/9f2e392b3aa05fbf67ff6dbf636e3fcb30a78690311692daa8c5d03fcadce0e4.json",
+      "graphify-out/cache/ast/v0.9.8/a2caccb60a8d31dab7a842d9b97fc69e3a3d429318473734ff9d0e2cf13810a9.json",
+      "graphify-out/cache/ast/v0.9.8/a336e1c6454e33884da0d217e79d6259f5204180cf2ef0d81ecae6952047350f.json",
+      "graphify-out/cache/ast/v0.9.8/b10dba90f9a9c3b6498e5fed9720a530bc27e49d5099bac08350ed97b05df162.json",
+      "graphify-out/cache/ast/v0.9.8/b1455a959a76eff559e7e02f7658ee65911031edfa1b4fb49551eb8cd697fd10.json",
+      "graphify-out/cache/ast/v0.9.8/b536ec96af33039f7614ebcef7682e7b89491c1bf58eb6a7f3ebdc60faa00c07.json",
+      "graphify-out/cache/ast/v0.9.8/b5ee07a9f451794fd26c70df948253b4873d56fb26d6234405952520108e7200.json",
+      "graphify-out/cache/ast/v0.9.8/c3a3d80da2ce691afba8aa74d683ba92ff4344de52b504a20c987b13ce1d330c.json",
+      "graphify-out/cache/ast/v0.9.8/c5b1b9f02f4ef56a44b7519eddda8f410a4c637a787e7e6c810a4179aa1100a8.json",
+      "graphify-out/cache/ast/v0.9.8/c68cc601a97e76d0c6550f11de7c9c730c6e4c6fa3e702d27595ebc49d9aa85c.json",
+      "graphify-out/cache/ast/v0.9.8/c7f9673782b001c68e65892c8aa8ab8d99dd56b1e0c9289fcb2bb07c485e49ce.json",
+      "graphify-out/cache/ast/v0.9.8/d62315d4aa403f120c2197e84be5525483640bc337f3676a469a5be8c1a97294.json",
+      "graphify-out/cache/ast/v0.9.8/d63bfb67599fb7c8464f9e787c16237af6cb1d6edf782e521b8d1c6b61fb2a25.json",
+      "graphify-out/cache/ast/v0.9.8/db1544f6ebdcfe775dccc34ea083dc173424393b6441b273d3c137485f549cc4.json",
+      "graphify-out/cache/ast/v0.9.8/e443520042a953b8edbc8c6ab206e46ef3275e6e2032eb2e9a179c920dc7da9c.json",
+      "graphify-out/cache/ast/v0.9.8/fea8b5e35ddd3ea975867cc40488607320f230e6c160bea4e8cdf33934d6811f.json",
+      "graphify-out/cache/stat-index.json",
+      "graphify-out/graph.json",
+      "graphify-out/manifest.json",
+      "index.html",
+      "package-lock.json",
+      "package.json",
+      "pnpm-lock.yaml",
+      "shared-components/components/Button/Button.module.css",
+      "shared-components/components/ComponentLibraryIndex.css",
+      "shared-components/components/CopyrightInfo/CopyrightInfo.module.css",
+      "shared-components/components/CopyrightInfo/locales/en.json",
+      "shared-components/components/CopyrightInfo/locales/zh-CN.json",
+      "skills-lock.json",
+      "src/App.css",
+      "src/assets/react.svg",
+      "src/components/Components.css",
+      "src/components/DebugInfoControl.module.css",
+      "src/components/mobile/Footer.module.css",
+      "src/components/mobile/TouchImageSlicer.module.css",
+      "src/components/mobile/TouchNav.module.css",
+      "src/components/Navigation.css",
+      "src/config/seo/seo.config.json",
+      "src/config/seo/seo.config.schema.json",
+      "src/config/seo.config.json",
+      "src/index.css",
+      "src/locales/en.json",
+      "src/locales/zh-CN.json",
+      "src/styles/responsive.css",
+      "test-results/results.json",
+      "tsconfig.json"
+    ]
+  },
+  "languages": [
+    {
+      "language": "TypeScript",
+      "files": 110,
+      "lines": 29700
+    },
+    {
+      "language": "JavaScript",
+      "files": 29,
+      "lines": 7862
+    }
+  ],
+  "module_candidates": [
+    {
+      "name": "src",
+      "source_files": 84,
+      "lines": 27065,
+      "signal": "top-level source path"
+    },
+    {
+      "name": "tools",
+      "source_files": 19,
+      "lines": 6498,
+      "signal": "top-level source path"
+    },
+    {
+      "name": "shared-components",
+      "source_files": 15,
+      "lines": 1733,
+      "signal": "top-level source path"
+    },
+    {
+      "name": "config",
+      "source_files": 9,
+      "lines": 878,
+      "signal": "top-level source path"
+    },
+    {
+      "name": "scripts",
+      "source_files": 4,
+      "lines": 786,
+      "signal": "top-level source path"
+    },
+    {
+      "name": ".",
+      "source_files": 6,
+      "lines": 422,
+      "signal": "top-level source path"
+    },
+    {
+      "name": "test-setup",
+      "source_files": 2,
+      "lines": 180,
+      "signal": "top-level source path"
+    }
+  ],
+  "manifests": [
+    "package.json"
+  ],
+  "dependencies": [
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@eslint/js",
+      "version": "^9.32.0"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@testing-library/dom",
+      "version": "^10.4.1"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@testing-library/jest-dom",
+      "version": "^6.6.4"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@testing-library/react",
+      "version": "^16.3.0"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@testing-library/user-event",
+      "version": "^14.6.1"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@types/node",
+      "version": "^24.2.1"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@types/react",
+      "version": "^19.1.9"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@types/react-dom",
+      "version": "^19.1.7"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@vitejs/plugin-react",
+      "version": "^4.7.0"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "@vitest/coverage-v8",
+      "version": "^3.2.6"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "autoprefixer",
+      "version": "^10.4.21"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "eslint",
+      "version": "^9.32.0"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "eslint-config-prettier",
+      "version": "^10.1.8"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "eslint-plugin-prettier",
+      "version": "^5.5.4"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "eslint-plugin-react-hooks",
+      "version": "^5.2.0"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "eslint-plugin-react-refresh",
+      "version": "^0.4.20"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "globals",
+      "version": "^16.3.0"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "jsdom",
+      "version": "^26.1.0"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "postcss",
+      "version": "^8.5.6"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "prettier",
+      "version": "^3.6.2"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "tailwindcss",
+      "version": "^3.4.17"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "terser",
+      "version": "^5.43.1"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "typescript",
+      "version": "~5.8.3"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "typescript-eslint",
+      "version": "^8.39.0"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "vite",
+      "version": "^4.5.0"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "vite-plugin-externals",
+      "version": "^0.6.2"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "development",
+      "name": "vitest",
+      "version": "^3.2.4"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "runtime",
+      "name": "jspdf",
+      "version": "^3.0.1"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "runtime",
+      "name": "jszip",
+      "version": "^3.10.1"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "runtime",
+      "name": "react",
+      "version": "^19.1.1"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "runtime",
+      "name": "react-dom",
+      "version": "^19.1.1"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "runtime",
+      "name": "react-helmet-async",
+      "version": "^2.0.5"
+    },
+    {
+      "manifest": "package.json",
+      "scope": "runtime",
+      "name": "web-vitals",
+      "version": "^5.1.0"
+    }
+  ],
+  "entry_candidates": [
+    {
+      "file": "config/env/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "config/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "shared-components/components/Button/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "shared-components/components/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "shared-components/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "shared-components/types/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "shared-components/utils/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/App.tsx",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/components/responsive/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/main.tsx",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/router/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/types/index.ts",
+      "signal": "entry-like filename",
+      "source": "filename"
+    }
+  ],
+  "document_candidates": [
+    {
+      "file": ".agents/skills/make-interfaces-feel-better/animations.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".agents/skills/make-interfaces-feel-better/performance.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".agents/skills/make-interfaces-feel-better/SKILL.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".agents/skills/make-interfaces-feel-better/surfaces.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".agents/skills/make-interfaces-feel-better/typography.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".claude/todos/task-2.1-seo-manager-enhancement.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".roo/rules/rules.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".serena/memories/code_style_conventions.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".serena/memories/development_workflow.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".serena/memories/project_overview.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".serena/memories/suggested_commands.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".serena/memories/system_commands.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": ".serena/memories/task_completion_checklist.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "ANALYSIS_REPORT.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "CLAUDE.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/AGILE-WORKFLOW-SEO-MOBILE.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/API-REFERENCE.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/ARCHITECTURE.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/component-docs/Component.README.template.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/configuration.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/DELEGATION-SUMMARY.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/DEVELOPMENT-GUIDE.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/DEVELOPMENT-INFRASTRUCTURE.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/frontend-spec-new.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/IMPLEMENTATION-ROADMAP.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/IMPLEMENTATION-TASKS.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/prd-draft-20250826.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/PROJECT-INDEX.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/README.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/SEO-CONFIG-STATUS.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/SEO-INTEGRATION-GUIDE.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/TASK-1.1-COMPLETION-SUMMARY.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/TASK-1.3-COMPLETION-SUMMARY.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/TASK-MANAGEMENT-INDEX.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/TASK-PROGRESS.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "docs/TESTING-GUIDE.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "README.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "shared-components/README.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "src/components/SEOManager.README.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    },
+    {
+      "file": "src/styles/README.md",
+      "signal": "documentation path or extension",
+      "source": "path"
+    }
+  ],
+  "config_candidates": [
+    {
+      "file": "config/app/app.config.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "config/app/routing.config.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "config/build/deployment.config.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "config/env/environment.config.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "deploy.config.js",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "eslint.config.js",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "postcss.config.js",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/config/__tests__/app.config.test.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/config/__tests__/build.config.test.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/config/__tests__/seo.config.test.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/config/seo/seo.config.json",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/config/seo/seo.config.schema.json",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/config/seo.config.json",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "src/config/seo.config.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "tailwind.config.js",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "vite.config.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    },
+    {
+      "file": "vitest.config.ts",
+      "signal": "configuration-like filename",
+      "source": "filename"
+    }
+  ],
+  "risk_candidates": [
+    {
+      "file": ".serena/cache/typescript/document_symbols_cache_v23-06-25.pkl",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": ".vibedev/specs/multi-repo-architecture-migration/tasks.md",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/app/app.config.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/app/routing.config.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/build/deployment.config.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/constants/app.constants.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/env/development.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/env/environment.config.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/env/index.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/env/production.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/env/test.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "config/index.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "deploy.config.js",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "docs/configuration.md",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "docs/SEO-CONFIG-STATUS.md",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "eslint.config.js",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/077f323478a57159d2f34ddd987c4c258af0394ffcb05c39552079c62e218200.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/16e1794d9e9c794529fb2e006d83ce96e408338376afa651516bb503bc266a7f.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/1866da32b9eaa2c5fcbdd91f388d184806ac8712cccc4d6c20e6b5385711bead.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/205d9d63d0802496ff6d2d5d46fe248fc9f8be9ec67fd5b1d7193d9fff85cb80.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/3095eba9574327b0776be484aa109389e1dd8770ded51ee6b12d448496806b91.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/324489fea8bbdaa858f8d1102447cc87392ae18feb2cd9000ba106fa005b5ec0.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/32879cd3c4323c093105662c9c3b90f7df53e0194b5cdae08057377b6a7d0d83.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/3572b7b859b610af3562bea5f6702b1ab1d781d05d5a5658f5858718b658fd6e.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/3d97fbb7f77bc8e674706ed8a6f29ce283cc1ee3ba7f9c2d72d67a96b6db2bae.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/45422b39374a7f6a4178255d4b214b896f84d5f9994f893df79c88f275dbfdf5.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/47ca3286d5afbf3fb3d3feb87a6351ebc61b5c2e11d2e89851d5eacecc1e9e4a.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/4d7a3699b951b7932abe1752a4b0e044ff03a20855749c27bc4e1382f97987ce.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/529a20dc07bdbe3e04ff42da53a6523eccbe63b6c9a740c0600daa363df663f7.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/63b8ad31b35aaf0763395300e9bf5c534475db3ab94d2780de4d9ad03c457833.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/77e78620b527ab579f3168d3dd9e718a69d0b26bcec133e82e7b28f8ce3f4b4b.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/7e1afa9b0d040bc8581f0aa3f373585a433a22b87c3f487c2eb4eae23a4f796d.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/81b804d57590d6f3241b23257089fffdf5caf9f2ca495d6e38ab7ec9d9ad9ac0.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/8a9edefa67bd5603a2fb08d18f2cd9920bb3887c6b1b9326c9ee053b64bd9927.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/8b2cae1f44a43da13509f6a2e1138b9db54a26e0bcb1ac973389c15ac61a463f.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/91bffa49e9b96e23fa4ba17129448befa053dcf5d244a5016dc5175b2b6f3608.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/9d53d7ca6841c394d695546fbcc4597576b054fbbd262aac92cb6f4c3ada7edf.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/9f2e392b3aa05fbf67ff6dbf636e3fcb30a78690311692daa8c5d03fcadce0e4.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/a2caccb60a8d31dab7a842d9b97fc69e3a3d429318473734ff9d0e2cf13810a9.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/a336e1c6454e33884da0d217e79d6259f5204180cf2ef0d81ecae6952047350f.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/b10dba90f9a9c3b6498e5fed9720a530bc27e49d5099bac08350ed97b05df162.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/b1455a959a76eff559e7e02f7658ee65911031edfa1b4fb49551eb8cd697fd10.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/b536ec96af33039f7614ebcef7682e7b89491c1bf58eb6a7f3ebdc60faa00c07.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/b5ee07a9f451794fd26c70df948253b4873d56fb26d6234405952520108e7200.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/c3a3d80da2ce691afba8aa74d683ba92ff4344de52b504a20c987b13ce1d330c.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/c5b1b9f02f4ef56a44b7519eddda8f410a4c637a787e7e6c810a4179aa1100a8.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/c68cc601a97e76d0c6550f11de7c9c730c6e4c6fa3e702d27595ebc49d9aa85c.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/c7f9673782b001c68e65892c8aa8ab8d99dd56b1e0c9289fcb2bb07c485e49ce.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/d62315d4aa403f120c2197e84be5525483640bc337f3676a469a5be8c1a97294.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/d63bfb67599fb7c8464f9e787c16237af6cb1d6edf782e521b8d1c6b61fb2a25.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/db1544f6ebdcfe775dccc34ea083dc173424393b6441b273d3c137485f549cc4.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/e443520042a953b8edbc8c6ab206e46ef3275e6e2032eb2e9a179c920dc7da9c.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/ast/v0.9.8/fea8b5e35ddd3ea975867cc40488607320f230e6c160bea4e8cdf33934d6811f.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "graphify-out/cache/stat-index.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "postcss.config.js",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "scripts/migrate-seo-config.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "shared-components/components/CopyrightInfo/config/defaultConfig.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/components/TextDisplayConfig.test.tsx",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/components/TextDisplayConfig.tsx",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/config/__tests__/app.config.test.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/config/__tests__/build.config.test.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/config/__tests__/seo.config.test.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/config/seo/configLoader.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/config/seo/seo.config.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/config/seo/seo.config.schema.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/config/seo.config.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/config/seo.config.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/hooks/useSEOConfig.tsx",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/hooks/useWorker.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/utils/__tests__/BuildErrorHandler.test.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/utils/BuildErrorHandler.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/utils/config-helper.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/utils/navigationErrorHandler.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/utils/seo/configValidation.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/utils/seo/SEOConfigManager.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/utils/seo/test/configTest.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "src/workers/split.worker.js",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "tailwind.config.js",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "tools/build-scripts/build-cache-optimizer.js",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "tools/build-scripts/cdn-config.js",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "tools/build-scripts/env-config.js",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "tsconfig.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "tsconfig.test.json",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "vite.config.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    },
+    {
+      "file": "vitest.config.ts",
+      "signal": "risk-related path keyword",
+      "source": "path"
+    }
+  ],
+  "exclusions": {
+    "test": [
+      ".vibedev/specs/multi-repo-architecture-migration/tasks.md",
+      "docs/superpowers/specs/2026-06-25-content-aware-split-design.md",
+      "shared-components/managers/__tests__/ComponentCommunicationManager.test.ts",
+      "shared-components/managers/__tests__/SharedStateManager.test.ts",
+      "src/components/__tests__/EnhancedSEOManager.test.tsx",
+      "src/components/__tests__/ExportControls.test.tsx",
+      "src/components/__tests__/ImagePreview.test.tsx",
+      "src/components/__tests__/Navigation.test.tsx",
+      "src/components/__tests__/PerformanceOptimizer.test.tsx",
+      "src/components/__tests__/ScreenshotSplitter.test.tsx",
+      "src/components/__tests__/SEOManager.test.tsx",
+      "src/components/DebugInfoControl.test.tsx",
+      "src/components/TextDisplayConfig.test.tsx",
+      "src/config/__tests__/app.config.test.ts",
+      "src/config/__tests__/build.config.test.ts",
+      "src/config/__tests__/seo.config.test.ts",
+      "src/hooks/__tests__/useAppState.test.ts",
+      "src/hooks/__tests__/useLazyLoading.test.ts",
+      "src/hooks/__tests__/useNavigationState.test.ts",
+      "src/types/__tests__/seo.types.test.ts",
+      "src/utils/__tests__/BuildErrorHandler.test.ts",
+      "src/utils/__tests__/DependencyResolver.test.ts",
+      "src/utils/__tests__/navigationState.test.ts",
+      "src/utils/__tests__/splitAnalyzer.test.ts",
+      "src/utils/__tests__/textDisplayOptimizer.test.ts",
+      "src/utils/__tests__/textFormatter.test.ts",
+      "src/utils/analytics/__tests__/performanceMonitor.test.ts",
+      "src/utils/seo/__tests__/metadataGenerator.test.ts",
+      "src/utils/seo/__tests__/structuredDataGenerator.test.ts",
+      "src/utils/seo/test/configTest.ts",
+      "tests/e2e/deployment.test.js",
+      "tests/integration/build-flow.test.js",
+      "tools/build-scripts/__tests__/build-manager.test.js",
+      "tools/build-scripts/__tests__/multi-target-deploy.test.js",
+      "tsconfig.test.json"
+    ],
+    "generated": [
+      "config/build/deployment.config.ts"
+    ],
+    "vendor": []
+  }
+}

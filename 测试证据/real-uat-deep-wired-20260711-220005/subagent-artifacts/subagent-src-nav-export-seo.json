@@ -1,0 +1,27 @@
+{
+  "subagent_id": "subagent-src-nav-export-seo",
+  "scope": "导航 + 导出 + SEO",
+  "mode": "deep",
+  "parallelism": "active",
+  "key_anchors": [
+    "src/hooks/useNavigationState.ts:53",
+    "src/components/Navigation.tsx:1",
+    "src/components/ExportControls.tsx:82",
+    "src/utils/pdfExporter.ts:208",
+    "src/utils/zipExporter.ts:34",
+    "src/App.tsx:224",
+    "src/components/SEOManager.tsx:1",
+    "src/utils/seo/SEOConfigManager.ts:142",
+    "src/config/seo.config.ts:48"
+  ],
+  "findings": [
+    "导航按 originalImage/slices/selection 禁用步骤",
+    "PDF/ZIP 导出旁路调用，format 选项进入 handleExport",
+    "ExportControls 高级选项未完整透传（probe hit 候选）",
+    "SEO 存在 Manager + 桥接 + Enhanced 并行面（dual-write 风险）"
+  ],
+  "outputs": [
+    "insight-probes.json 输入",
+    "module-evidence/src.json#risk_areas"
+  ]
+}

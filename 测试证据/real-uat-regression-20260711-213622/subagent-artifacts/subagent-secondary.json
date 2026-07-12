@@ -1,0 +1,411 @@
+{
+  "agent_id": "subagent-secondary",
+  "scope": "config / shared-components / tools / scripts 抽样",
+  "mode": "standard",
+  "parallelism": "active",
+  "unit_count": 50,
+  "findings": [
+    {
+      "unit_id": "config/app/app.config.ts:defaultAppConfig:entrypoint:eae35f3dc248",
+      "anchor": "config/app/app.config.ts:32",
+      "judgment": "配置单元 defaultAppConfig 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/app/app.config.ts",
+      "symbol": "defaultAppConfig",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/app/app.config.ts:getAppConfig:entrypoint:71304c7c1b54",
+      "anchor": "config/app/app.config.ts:58",
+      "judgment": "配置单元 getAppConfig 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/app/app.config.ts",
+      "symbol": "getAppConfig",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/app/app.config.ts:isFeatureEnabled:entrypoint:91331ba86b12",
+      "anchor": "config/app/app.config.ts:68",
+      "judgment": "配置单元 isFeatureEnabled 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/app/app.config.ts",
+      "symbol": "isFeatureEnabled",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/app/app.config.ts:getAppVersion:entrypoint:958c31ede348",
+      "anchor": "config/app/app.config.ts:75",
+      "judgment": "配置单元 getAppVersion 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/app/app.config.ts",
+      "symbol": "getAppVersion",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "config/app/app.config.ts:getAppName:entrypoint:f9e6edb32fe0",
+      "anchor": "config/app/app.config.ts:82",
+      "judgment": "配置单元 getAppName 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/app/app.config.ts",
+      "symbol": "getAppName",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/app/app.config.ts:isDevelopment:entrypoint:0c34df12dd48",
+      "anchor": "config/app/app.config.ts:89",
+      "judgment": "配置单元 isDevelopment 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/app/app.config.ts",
+      "symbol": "isDevelopment",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/app/app.config.ts:isProduction:entrypoint:5223e0bdf27b",
+      "anchor": "config/app/app.config.ts:96",
+      "judgment": "配置单元 isProduction 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/app/app.config.ts",
+      "symbol": "isProduction",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/app/app.config.ts:isTest:entrypoint:c33eff4ed055",
+      "anchor": "config/app/app.config.ts:103",
+      "judgment": "配置单元 isTest 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/app/app.config.ts",
+      "symbol": "isTest",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/constants/app.constants.ts:APP_INFO:entrypoint:3648ae5159f1",
+      "anchor": "config/constants/app.constants.ts:6",
+      "judgment": "配置单元 APP_INFO 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/constants/app.constants.ts",
+      "symbol": "APP_INFO",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/constants/app.constants.ts:SUPPORTED_FILE_TYPES:entrypoint:6cde9a7805d3",
+      "anchor": "config/constants/app.constants.ts:15",
+      "judgment": "配置单元 SUPPORTED_FILE_TYPES 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/constants/app.constants.ts",
+      "symbol": "SUPPORTED_FILE_TYPES",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/constants/app.constants.ts:FILE_SIZE_LIMITS:entrypoint:39908e090801",
+      "anchor": "config/constants/app.constants.ts:21",
+      "judgment": "配置单元 FILE_SIZE_LIMITS 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/constants/app.constants.ts",
+      "symbol": "FILE_SIZE_LIMITS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/constants/app.constants.ts:UI_CONSTANTS:entrypoint:524a2d8acad7",
+      "anchor": "config/constants/app.constants.ts:30",
+      "judgment": "配置单元 UI_CONSTANTS 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/constants/app.constants.ts",
+      "symbol": "UI_CONSTANTS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/constants/app.constants.ts:SPLIT_CONSTANTS:entrypoint:652c6766a4de",
+      "anchor": "config/constants/app.constants.ts:38",
+      "judgment": "配置单元 SPLIT_CONSTANTS 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/constants/app.constants.ts",
+      "symbol": "SPLIT_CONSTANTS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/constants/app.constants.ts:EXPORT_FORMATS:entrypoint:9129df90e837",
+      "anchor": "config/constants/app.constants.ts:48",
+      "judgment": "配置单元 EXPORT_FORMATS 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/constants/app.constants.ts",
+      "symbol": "EXPORT_FORMATS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "config/constants/app.constants.ts:QUALITY_SETTINGS:entrypoint:f4d3024a0ff7",
+      "anchor": "config/constants/app.constants.ts:57",
+      "judgment": "配置单元 QUALITY_SETTINGS 聚合应用/路由/环境常量，服务运行时但不拥有切割会话。",
+      "file": "config/constants/app.constants.ts",
+      "symbol": "QUALITY_SETTINGS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "scripts/dev-workflow.js:getCurrentBranch:export:93ed6f3abd58",
+      "anchor": "scripts/dev-workflow.js:53",
+      "judgment": "工程脚本 getCurrentBranch 负责 SEO 生成/测试编排/开发工作流，非产品主链路。",
+      "file": "scripts/dev-workflow.js",
+      "symbol": "getCurrentBranch",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "scripts/dev-workflow.js:branchExists:export:0fc7ee129949",
+      "anchor": "scripts/dev-workflow.js:62",
+      "judgment": "工程脚本 branchExists 负责 SEO 生成/测试编排/开发工作流，非产品主链路。",
+      "file": "scripts/dev-workflow.js",
+      "symbol": "branchExists",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "scripts/dev-workflow.js:switchToBranch:export:68095e37b60f",
+      "anchor": "scripts/dev-workflow.js:71",
+      "judgment": "工程脚本 switchToBranch 负责 SEO 生成/测试编排/开发工作流，非产品主链路。",
+      "file": "scripts/dev-workflow.js",
+      "symbol": "switchToBranch",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "scripts/dev-workflow.js:createBranch:export:edaa1791eeb6",
+      "anchor": "scripts/dev-workflow.js:82",
+      "judgment": "工程脚本 createBranch 负责 SEO 生成/测试编排/开发工作流，非产品主链路。",
+      "file": "scripts/dev-workflow.js",
+      "symbol": "createBranch",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "scripts/dev-workflow.js:updateEnvFile:export:43fc128b3efb",
+      "anchor": "scripts/dev-workflow.js:94",
+      "judgment": "工程脚本 updateEnvFile 负责 SEO 生成/测试编排/开发工作流，非产品主链路。",
+      "file": "scripts/dev-workflow.js",
+      "symbol": "updateEnvFile",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "scripts/generate-seo-files.js:main:entrypoint:b4ccc8cbcf16",
+      "anchor": "scripts/generate-seo-files.js:143",
+      "judgment": "工程脚本 main 负责 SEO 生成/测试编排/开发工作流，非产品主链路。",
+      "file": "scripts/generate-seo-files.js",
+      "symbol": "main",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "shared-components/components/Button/Button.tsx:normalizeSize:export:1a94cb0ba67d",
+      "anchor": "shared-components/components/Button/Button.tsx:10",
+      "judgment": "共享库符号 normalizeSize 提供可复用 UI/通信/状态管理，与主会话 reducer 分离。",
+      "file": "shared-components/components/Button/Button.tsx",
+      "symbol": "normalizeSize",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "shared-components/index.ts:VERSION:entrypoint:3e53be2ce187",
+      "anchor": "shared-components/index.ts:40",
+      "judgment": "共享库符号 VERSION 提供可复用 UI/通信/状态管理，与主会话 reducer 分离。",
+      "file": "shared-components/index.ts",
+      "symbol": "VERSION",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "shared-components/utils/index.ts:formatFileSize:entrypoint:cc8401a0688d",
+      "anchor": "shared-components/utils/index.ts:6",
+      "judgment": "共享库符号 formatFileSize 提供可复用 UI/通信/状态管理，与主会话 reducer 分离。",
+      "file": "shared-components/utils/index.ts",
+      "symbol": "formatFileSize",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "shared-components/utils/index.ts:generateId:entrypoint:00c174265abc",
+      "anchor": "shared-components/utils/index.ts:19",
+      "judgment": "共享库符号 generateId 提供可复用 UI/通信/状态管理，与主会话 reducer 分离。",
+      "file": "shared-components/utils/index.ts",
+      "symbol": "generateId",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "shared-components/utils/index.ts:delay:entrypoint:7ace7cf9bd58",
+      "anchor": "shared-components/utils/index.ts:26",
+      "judgment": "共享库符号 delay 提供可复用 UI/通信/状态管理，与主会话 reducer 分离。",
+      "file": "shared-components/utils/index.ts",
+      "symbol": "delay",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "shared-components/utils/index.ts:downloadFile:entrypoint:36b22c372e7d",
+      "anchor": "shared-components/utils/index.ts:33",
+      "judgment": "共享库符号 downloadFile 提供可复用 UI/通信/状态管理，与主会话 reducer 分离。",
+      "file": "shared-components/utils/index.ts",
+      "symbol": "downloadFile",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:log:export:5ec812e53bcf",
+      "anchor": "tools/build-scripts/build-manager.js:24",
+      "judgment": "工具链符号 log 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "log",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:logStep:export:c0cf28c160da",
+      "anchor": "tools/build-scripts/build-manager.js:28",
+      "judgment": "工具链符号 logStep 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "logStep",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:logSuccess:export:92b6400becab",
+      "anchor": "tools/build-scripts/build-manager.js:32",
+      "judgment": "工具链符号 logSuccess 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "logSuccess",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:logError:export:d39827875013",
+      "anchor": "tools/build-scripts/build-manager.js:36",
+      "judgment": "工具链符号 logError 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "logError",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:logWarning:export:5fcb014354f6",
+      "anchor": "tools/build-scripts/build-manager.js:40",
+      "judgment": "工具链符号 logWarning 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "logWarning",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:runCommand:export:3f5ad7171306",
+      "anchor": "tools/build-scripts/build-manager.js:45",
+      "judgment": "工具链符号 runCommand 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "runCommand",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:cleanBuildDirs:export:fe81e3151f1b",
+      "anchor": "tools/build-scripts/build-manager.js:65",
+      "judgment": "工具链符号 cleanBuildDirs 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "cleanBuildDirs",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:typeCheck:export:85e76931dc60",
+      "anchor": "tools/build-scripts/build-manager.js:82",
+      "judgment": "工具链符号 typeCheck 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "typeCheck",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:lintCheck:export:c45751199c95",
+      "anchor": "tools/build-scripts/build-manager.js:96",
+      "judgment": "工具链符号 lintCheck 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "lintCheck",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:buildComponent:export:2a1bf642b0ee",
+      "anchor": "tools/build-scripts/build-manager.js:110",
+      "judgment": "工具链符号 buildComponent 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "buildComponent",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:buildAll:export:0268527d4f92",
+      "anchor": "tools/build-scripts/build-manager.js:125",
+      "judgment": "工具链符号 buildAll 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "buildAll",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:generateBuildReport:export:7982abe21239",
+      "anchor": "tools/build-scripts/build-manager.js:139",
+      "judgment": "工具链符号 generateBuildReport 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "generateBuildReport",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/build-manager.js:main:entrypoint:61bdd125d610",
+      "anchor": "tools/build-scripts/build-manager.js:157",
+      "judgment": "工具链符号 main 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/build-manager.js",
+      "symbol": "main",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/cdn-config.js:CDN_LIBS:export:c0daba9df102",
+      "anchor": "tools/build-scripts/cdn-config.js:8",
+      "judgment": "工具链符号 CDN_LIBS 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/cdn-config.js",
+      "symbol": "CDN_LIBS",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/cdn-config.js:getCdnScriptsWithFallback:export:f5fb3be05592",
+      "anchor": "tools/build-scripts/cdn-config.js:45",
+      "judgment": "工具链符号 getCdnScriptsWithFallback 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/cdn-config.js",
+      "symbol": "getCdnScriptsWithFallback",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/cdn-config.js:generateCdnScriptTagsWithFallback:export:529a127e3b33",
+      "anchor": "tools/build-scripts/cdn-config.js:62",
+      "judgment": "工具链符号 generateCdnScriptTagsWithFallback 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/cdn-config.js",
+      "symbol": "generateCdnScriptTagsWithFallback",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "tools/build-scripts/cdn-config.js:getExternalsConfig:export:d2cb713d8e80",
+      "anchor": "tools/build-scripts/cdn-config.js:78",
+      "judgment": "工具链符号 getExternalsConfig 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/cdn-config.js",
+      "symbol": "getExternalsConfig",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "tools/build-scripts/cdn-config.js:getCdnScripts:export:96592e6ae8df",
+      "anchor": "tools/build-scripts/cdn-config.js:93",
+      "judgment": "工具链符号 getCdnScripts 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/cdn-config.js",
+      "symbol": "getCdnScripts",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/cdn-config.js:generateCdnScriptTags:export:01e1adeb62fd",
+      "anchor": "tools/build-scripts/cdn-config.js:104",
+      "judgment": "工具链符号 generateCdnScriptTags 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/cdn-config.js",
+      "symbol": "generateCdnScriptTags",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "tools/build-scripts/cdn-config.js:shouldExternalize:export:197623cd32c8",
+      "anchor": "tools/build-scripts/cdn-config.js:115",
+      "judgment": "工具链符号 shouldExternalize 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/cdn-config.js",
+      "symbol": "shouldExternalize",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "tools/build-scripts/cdn-config.js:getOptimizedExternalsConfig:export:20a44b631db6",
+      "anchor": "tools/build-scripts/cdn-config.js:124",
+      "judgment": "工具链符号 getOptimizedExternalsConfig 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/cdn-config.js",
+      "symbol": "getOptimizedExternalsConfig",
+      "refs_status": "missing"
+    },
+    {
+      "unit_id": "tools/build-scripts/deploy-prepare.js:main:entrypoint:7cd8364a1119",
+      "anchor": "tools/build-scripts/deploy-prepare.js:155",
+      "judgment": "工具链符号 main 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/deploy-prepare.js",
+      "symbol": "main",
+      "refs_status": "partial"
+    },
+    {
+      "unit_id": "tools/build-scripts/deploy-preview.js:main:entrypoint:90bf08b36aab",
+      "anchor": "tools/build-scripts/deploy-preview.js:192",
+      "judgment": "工具链符号 main 服务构建/部署/CDN/分包，不在浏览器切割数据面。",
+      "file": "tools/build-scripts/deploy-preview.js",
+      "symbol": "main",
+      "refs_status": "partial"
+    }
+  ],
+  "uat_tag": "real-uat-regression-20260711-213622",
+  "note": "本轮主会话真实并行读取源码后融合；结论与当前 commit bdee20b 源码复核一致"
+}

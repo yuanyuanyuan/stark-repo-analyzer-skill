@@ -1,0 +1,23 @@
+## 真实UAT回归测试·deep 结果
+
+**过程有效，产品分析未完整通过。** 未静默降级 standard，未写 `ANALYSIS_REPORT.md`。
+
+| 项 | 结果 |
+|---|---|
+| 模式 | deep（请求未改） |
+| Doctor | `allowed=false`，`allowed_deep=false` |
+| 缺失能力 | **reference-edges** |
+| 后续 CLI | scan/summarize/units 均拒绝（不降级） |
+| parallelism | **degraded**（doctor 拦截，无子代理） |
+| gate | `allowed_to_synthesize=false` |
+| Full Delivery | **否** |
+
+**根因**：ctags 对本仓 TS/JS 无 `roles=reference`；Graphify 边未接入 `coverage-units.refs_status`。未设置 `REPO_ANALYZER_GRAPHIFY_UNITS_REFS=1`（只会假放行 doctor，units 仍无 complete refs）。
+
+**产物目录**：[real-uat-deep-20260711-214641](/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-20260711-214641)
+
+已写：`doctor-report.json`、`install-prompt.md`、`evidence-plan.md`、`module-evidence/src.json`（阻塞占位）、`report.md`、`insight-probes.json`（三类 `n_a`）、`quality-gate-report.json`、`diagnostics/*`、`UAT_EXEC_SUMMARY.md`。
+
+**按合同未生成**（doctor 拒绝后不得伪造）：`repo-map.json/md`、`coverage-units.json`、`ANALYSIS_REPORT.md`。
+
+Worker/导航/切片/导出/SEO 等主题未做源码锚点分析（链路在 Phase 0 终止）。详情见 [UAT_EXEC_SUMMARY.md](/Users/chuzu/projests/stark-repo-analyzer-skill/spec-v2.2-standard-deep-modes-and-rules-based-to/测试证据/real-uat-deep-20260711-214641/UAT_EXEC_SUMMARY.md)。

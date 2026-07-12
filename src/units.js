@@ -4,6 +4,7 @@ import { basename, extname, join, resolve, sep } from "node:path";
 
 import { readJson, runCommand, writeJson } from "./common.js";
 import { LANGUAGE_BY_EXTENSION } from "./languages.js";
+import { graphifyRefsForSymbol, loadGraphifyRefIndex, mergeRefs, refsStatusFor } from "./graphify-refs.js";
 
 const DATA_KINDS = new Set(["class", "struct", "interface", "enum", "union"]);
 const TYPE_KINDS = new Set(["typedef", "type", "trait"]);
@@ -310,6 +311,20 @@ export function units({ repo, out, doctor, mode = "deep" }) {
     const primaryLanguages = map.languages.filter((language) => language.lines === largestLanguageSize).map((language) => language.language);
     const primaryFiles = map.files.source.filter((file) => primaryLanguages.includes(LANGUAGE_BY_EXTENSION[extname(file).toLowerCase()]));
     const primaryHealth = healthFor(primaryFiles, parsedFiles);
+    const graphifyIndex = loadGraphifyRefIndex(repoPath);
+    const unitsWithGraphify = heuristic.discovered.map((unit) => {
+      const graphifyExact = graphifyRefsForSymbol(graphifyIndex, unit.symbol, unit.file, unit.line).filter((ref) => ref.confidence === "exact");
+      const graphifyHeuristic = graphifyRefsForSymbol(graphifyIndex, unit.symbol, unit.file, unit.line).filter((ref) => ref.confidence !== "exact");
+      const exactRefs = graphifyExact;
+      const heuristicRefs = mergeRefs(graphifyHeuristic, unit.refs || []);
+      const refs = mergeRefs(exactRefs, heuristicRefs);
+      return {
+        ...unit,
+        refs,
+        refs_status: refsStatusFor(exactRefs, heuristicRefs),
+        discovery: unit.discovery ?? "heuristic+graphify-refs",
+      };
+    });
     const report = {
       schema_version: 1,
       repo: {
@@ -321,7 +336,7 @@ export function units({ repo, out, doctor, mode = "deep" }) {
         tooling_level: "enhanced",
       },
       modules: heuristic.modules,
-      units: heuristic.discovered
+      units: unitsWithGraphify
         .sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.symbol.localeCompare(b.symbol))
         .map((unit) => mergeAgentFields(unit, previousById.get(unit.id))),
       parsed: heuristic.parsed,
@@ -333,8 +348,18 @@ export function units({ repo, out, doctor, mode = "deep" }) {
         primary: primaryHealth,
       },
       enumerator: { name: "graphify", version: enumerator.version },
+      graphify_refs: {
+        wired: true,
+        path: graphifyIndex.path,
+        nodes: graphifyIndex.nodes,
+        links: graphifyIndex.links,
+        extracted_ref_links: graphifyIndex.extracted_ref_links,
+      },
       capability_state: doctor.capability_state ?? doctor.capability_matrix?.capabilities ?? null,
-      limitations: ["Graphify provider present; unit extraction used text discovery fallback for this runtime path."],
+      limitations: [
+        "Graphify provider present; symbol discovery used text fallback when graphify is sole enumerator.",
+        ...(graphifyIndex.ok ? [] : graphifyIndex.reasons),
+      ],
     };
     writeJson(artifactPath, report);
     return report;
@@ -356,13 +381,34 @@ export function units({ repo, out, doctor, mode = "deep" }) {
     parsed.push(file);
     tagsByFile.set(file, result.tags);
   }
+  // Graphify EXTRACTED edges → units.refs / refs_status (real wiring; not presence-only).
+  const graphifyIndex = loadGraphifyRefIndex(repoPath);
+  const graphifyLimitations = [];
+  if (!graphifyIndex.ok) {
+    graphifyLimitations.push(...(graphifyIndex.reasons.length ? graphifyIndex.reasons : ["Graphify refs 未加载"]));
+  } else if (graphifyIndex.extracted_ref_links === 0) {
+    graphifyLimitations.push("graphify graph.json 已加载但无 EXTRACTED reference 边");
+  }
+
   for (const [file, tags] of tagsByFile) {
     for (const tag of tags.filter((item) => !item.reference)) {
       const lineText = sourceLine(repoPath, file, tag.line);
       const type = unitType(tag, file, lineText);
       if (!type) continue;
-      const exactRefs = enumerator.name === "universal-ctags" ? enumeratorRefs(tagsByFile, tag.name, file, tag.line) : [];
-      const refs = exactRefs.length > 0 || !searchCommand ? exactRefs : findRefs(repoPath, map.files.source, tag.name, file, tag.line, searchCommand);
+      const ctagsExact = enumerator.name === "universal-ctags" ? enumeratorRefs(tagsByFile, tag.name, file, tag.line) : [];
+      const graphifyExact = graphifyRefsForSymbol(graphifyIndex, tag.name, file, tag.line).filter((ref) => ref.confidence === "exact");
+      const graphifyHeuristic = graphifyRefsForSymbol(graphifyIndex, tag.name, file, tag.line).filter((ref) => ref.confidence !== "exact");
+      const exactRefs = mergeRefs(ctagsExact, graphifyExact);
+      let heuristicRefs = [];
+      if (exactRefs.length === 0) {
+        const textRefs = searchCommand
+          ? findRefs(repoPath, map.files.source, tag.name, file, tag.line, searchCommand)
+          : [];
+        heuristicRefs = mergeRefs(graphifyHeuristic, textRefs);
+      } else {
+        heuristicRefs = graphifyHeuristic;
+      }
+      const refs = mergeRefs(exactRefs, heuristicRefs);
       discovered.push({
         id: stableId(file, tag.name, type, tag.kind),
         file,
@@ -371,7 +417,7 @@ export function units({ repo, out, doctor, mode = "deep" }) {
         type,
         module: moduleFor(file, modules),
         refs,
-        refs_status: exactRefs.length > 0 ? "complete" : refs.length > 0 ? "partial" : "missing",
+        refs_status: refsStatusFor(exactRefs, heuristicRefs),
         status: "unanalyzed",
         anchor: null,
         judgment: null,
@@ -421,8 +467,15 @@ export function units({ repo, out, doctor, mode = "deep" }) {
       primary: primaryHealth,
     },
     enumerator: { name: enumerator.name, version: enumerator.version },
+    graphify_refs: {
+      wired: true,
+      path: graphifyIndex.path,
+      nodes: graphifyIndex.nodes,
+      links: graphifyIndex.links,
+      extracted_ref_links: graphifyIndex.extracted_ref_links,
+    },
     capability_state: doctor.capability_state ?? doctor.capability_matrix?.capabilities ?? null,
-    limitations: [],
+    limitations: graphifyLimitations,
   };
   writeJson(artifactPath, report);
   return report;

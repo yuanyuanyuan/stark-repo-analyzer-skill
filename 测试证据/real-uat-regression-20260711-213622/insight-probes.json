@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "mode": "standard",
+  "probes": [
+    {
+      "category": "ui_promise_runtime_path",
+      "status": "hit",
+      "summary": "ExportControls 展示 PDF/ZIP 格式、质量、页向/页尺寸/压缩等高级选项，但 App.handleExport 仅把 filename 传给 exportToPDF/exportToZIP，createPDFExporter()/createZIPExporter() 使用默认配置；用户可感知的 quality/pageSize/orientation/compression 未贯通到导出引擎。",
+      "anchors": [
+        "src/components/ExportControls.tsx:43",
+        "src/components/ExportControls.tsx:66",
+        "src/App.tsx:224",
+        "src/utils/pdfExporter.ts:201",
+        "src/utils/pdfExporter.ts:208",
+        "src/utils/zipExporter.ts:213",
+        "src/utils/zipExporter.ts:217"
+      ],
+      "report_ref": "report.md#insight-probe-ui-promise",
+      "candidates_considered": 4
+    },
+    {
+      "category": "multi_source_rules",
+      "status": "hit",
+      "summary": "SEO 存在平行实现面：根组件 SEOManager.tsx 与 components/seo 及 EnhancedSEOManager 双路径；seo.config.ts 静态 SEO_CONFIG 与 SEOConfigManager 运行时 loadConfig 并存。同一「页面元数据」规则可从静态表或 Manager 取出，存在语义漂移风险。",
+      "anchors": [
+        "src/components/SEOManager.tsx:4",
+        "src/components/SEOManager.tsx:146",
+        "src/components/EnhancedSEOManager.tsx:144",
+        "src/config/seo.config.ts:26",
+        "src/config/seo.config.ts:170",
+        "src/utils/seo/SEOConfigManager.ts:142",
+        "src/utils/seo/SEOConfigManager.ts:656"
+      ],
+      "report_ref": "report.md#insight-probe-multi-source",
+      "candidates_considered": 3
+    },
+    {
+      "category": "config_dual_write_dead_impl",
+      "status": "miss",
+      "summary": "SEOConfigManager 以 load/get 为主，未见对同一配置键的双写落盘；config/ 聚合为只读 re-export。未发现「写 A 却读 B」的 dead dual-write 实现。平行 SEO 管理器问题归 multi_source_rules。",
+      "anchors": [
+        "src/utils/seo/SEOConfigManager.ts:159",
+        "config/index.ts:77"
+      ],
+      "report_ref": "report.md#insight-probe-dual-write",
+      "candidates_considered": 2
+    }
+  ]
+}

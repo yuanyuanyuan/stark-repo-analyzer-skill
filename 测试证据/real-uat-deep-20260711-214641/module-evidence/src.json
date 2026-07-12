@@ -1,0 +1,19 @@
+{
+  "module": "src",
+  "module_role": "目标仓主业务模块（规划）",
+  "entry_points": [],
+  "core_data_structures": [],
+  "main_flow": [],
+  "cross_module_dependencies": [],
+  "key_design_decisions": [],
+  "risk_areas": [],
+  "semantic_reviews": [],
+  "source_evidence": [],
+  "open_questions": [
+    "deep Doctor 未放行，本 Matrix 为空壳审计记录，不代表已分析。",
+    "Worker 协议/时序、导航规则、切片索引、导出贯通、SEO 多源均未做源码锚点验证。"
+  ],
+  "narrative": "本轮真实UAT·deep 在 Phase 0 因 reference-edges 能力探针失败被拒绝，按 reject_no_downgrade 未进入模块证据阶段。本文件仅作审计占位，证明未伪造 Evidence Matrix。",
+  "status": "blocked_at_doctor",
+  "blocked_reason": "missing capability: reference-edges"
+}

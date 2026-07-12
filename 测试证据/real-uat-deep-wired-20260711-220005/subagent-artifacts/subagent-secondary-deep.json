@@ -1,0 +1,20 @@
+{
+  "subagent_id": "subagent-secondary-deep",
+  "scope": "config/shared-components/tools/scripts ≥60%",
+  "mode": "deep",
+  "parallelism": "active",
+  "key_anchors": [
+    "config/app/app.config.ts:6",
+    "config/app/routing.config.ts:66",
+    "shared-components/index.ts",
+    "scripts/generate-seo-files.js:32",
+    "tools/build-scripts/build-manager.js"
+  ],
+  "findings": [
+    "config 提供参数不拥有会话",
+    "shared-components 被 App 引用 CopyrightInfo",
+    "scripts 生成 robots/sitemap 属工程侧 SEO",
+    "tools 构建部署脚本 secondary 覆盖达标"
+  ],
+  "coverage_contribution": "secondary 四模块均 ≥60%"
+}
