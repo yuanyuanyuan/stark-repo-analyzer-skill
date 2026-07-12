@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from stark_repo_analyzer.cli import analyze, feature_questions, finalize, graphify_postprocess, normalize_input, resume, size_report
+from stark_repo_analyzer.cli import RunFailure, analyze, feature_questions, finalize, graphify_postprocess, normalize_input, resume, size_report
 from stark_repo_analyzer.contracts import ContractError, validate_run_contract
 
 
@@ -71,9 +71,17 @@ class CliContractTests(unittest.TestCase):
 
             from stark_repo_analyzer.cli import graphify_extract
             with patch("stark_repo_analyzer.cli.run", side_effect=fake_run):
-                self.assertEqual(graphify_extract(target, work_dir, []), [{"exit_code": 0, "elapsed_seconds": 0.0, "transient_failure": False}])
+                attempt = graphify_extract(target, work_dir, [])[0]
+            self.assertEqual(attempt["exit_code"], 0)
+            self.assertEqual(attempt["elapsed_seconds"], 0.0)
+            self.assertFalse(attempt["transient_failure"])
+            self.assertEqual(attempt["stdout_class"], "empty")
+            self.assertEqual(attempt["stderr_class"], "empty")
+            self.assertIn(str(target), attempt["command"])
+            self.assertIn(str(work_dir), attempt["command"])
             self.assertEqual(calls[0][1], work_dir)
             self.assertEqual(calls[0][2], str((work_dir / "graphify-out").resolve()))
+            self.assertEqual(calls[0][0][-6:], ["--max-concurrency", "8", "--token-budget", "24000", "--api-timeout", "120"])
 
     def test_graphify_postprocess_retains_raw_and_normalizes_source_evidence(self):
         target = Path(__file__).resolve().parents[1]
@@ -105,6 +113,18 @@ class CliContractTests(unittest.TestCase):
             self.assertEqual(len(normalized["links"]), 1)
             self.assertTrue((graph_dir / "raw-deep-graph.json").is_file())
             self.assertIn("2 nodes · 1 edges", (graph_dir / "GRAPH_REPORT.md").read_text(encoding="utf-8"))
+
+    def test_process_timeout_is_not_retried_as_network_failure(self):
+        target = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            with patch(
+                "stark_repo_analyzer.cli.run",
+                return_value=subprocess.CompletedProcess([], 124, "", "process timeout"),
+            ):
+                with self.assertRaises(RunFailure) as caught:
+                    from stark_repo_analyzer.cli import graphify_extract
+                    graphify_extract(target, Path(directory) / "run", [])
+            self.assertEqual(caught.exception.failure_class, "graphify-execution")
 
     def test_size_report_excludes_tests_and_generated_dependency_directories(self):
         with tempfile.TemporaryDirectory() as directory:

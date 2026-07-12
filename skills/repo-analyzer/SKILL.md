@@ -16,7 +16,7 @@ acceptance/doctor.sh post-graph --target <target> --work-dir <WORK_DIR> --json
 
 两个 doctor 检查任一非零都必须中止本次分析。命令不传 `--backend`，由 Graphify 自己探测 backend/model；技能不得硬编码供应商、密钥或探测优先级。仅网络超时、HTTP 429 和 HTTP 5xx 可最多退避重试两次。Graphify 产物只允许位于 `<WORK_DIR>/graphify-out/`，目标仓库保持只读。
 
-Graphify `extract` 在当前 headless CLI 中只保证写入图谱和分析 sidecar，不保证生成 `GRAPH_REPORT.md`。控制面随后调用 Graphify 官方 `cluster-only <WORK_DIR> --no-label --no-viz`，保留 raw graph/report，并生成 source-locatable normalized graph/report 供 doctor 验证；两套证据都留在 `<WORK_DIR>/graphify-out/`。若外部报告修复后需要继续，使用 `PYTHONPATH=src python -m stark_repo_analyzer.cli resume --work-dir <WORK_DIR>`，它会重新运行 post-graph doctor 并恢复到 Agent handoff，不跳过健康门。
+Graphify `extract` 在当前 headless CLI 中只保证写入图谱和分析 sidecar，不保证生成 `GRAPH_REPORT.md`。控制面随后调用 Graphify 官方 `cluster-only <WORK_DIR> --no-label --no-viz`，保留 raw graph/report，并生成 source-locatable normalized graph/report 供 doctor 验证；两套证据都留在 `<WORK_DIR>/graphify-out/`。为避免大型文档语义分块长期无进度，控制面使用官方 bounded tuning flags `--max-concurrency 8 --token-budget 24000 --api-timeout 120`，不改变 `--mode deep` 或 backend 自动探测。若外部报告修复后需要继续，使用 `PYTHONPATH=src python -m stark_repo_analyzer.cli resume --work-dir <WORK_DIR>`，它会重新运行 post-graph doctor 并恢复到 Agent handoff，不跳过健康门。
 
 post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `graph.json`，把结构地图写入 `drafts/01-graphify-map.md`，作为后续模块识别的导航上下文。图谱不替代源码阅读：`EXTRACTED` 关系必须回到源码验证，`INFERRED` 只能标记待验证，`AMBIGUOUS` 只能作为风险或疑问；图谱与源码冲突时以源码及其文件/行号证据为准，并把冲突写入 `drafts/07-cross-validation.md`。
 

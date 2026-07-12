@@ -24,7 +24,7 @@
   - 首个负向样本：当前仓库的 `graphify-out/` 报告为 0 nodes / 0 edges / 0 communities，验证器必须稳定拒绝。
   - LLM 闸门：doctor 必须调用 Graphify 的自动探测逻辑，确认实际 backend/model；不允许技能写死 DeepSeek 或自行确定探测优先级。
   - Bootstrap：Graphify 不可用时，Agent 可执行官方非敏感安装/升级和复检；API key、企业代理、私有 provider 地址必须由用户提供。
-  - 执行器：使用 `graphify extract <target> --mode deep --out <WORK_DIR>`，不传 `--backend`；随后使用官方 `graphify cluster-only <WORK_DIR> --no-label --no-viz` 生成报告，记录 Graphify 版本、退出码、实际 backend/model 和 raw/normalized 产物路径。
+  - 执行器：使用 `graphify extract <target> --mode deep --out <WORK_DIR>`，不传 `--backend`；控制面追加官方性能参数 `--max-concurrency 8 --token-budget 24000 --api-timeout 120`，随后使用官方 `graphify cluster-only <WORK_DIR> --no-label --no-viz` 生成报告，记录完整命令、Graphify 版本、退出码、实际 backend/model 和 raw/normalized 产物路径。
   - 输出边界：只接受 `$WORK_DIR/graphify-out/` 中的产物，目标仓库不得出现本次运行写入的 `graphify-out/`。
   - 自愈：仅网络超时、429、5xx 可退避重试，最多两次；无可用 LLM、SDK/权限/执行器错误、空图和无效产物立即失败。
   - 健康：doctor post-graph 检查 `graph.json`、`GRAPH_REPORT.md`、节点、边和来源引用；`click` 还必须有一条带来源定位的 `EXTRACTED` 边。
@@ -154,28 +154,31 @@
 - [!] R03 回归 `httpx` 和 `ruff`
   - 依赖：R02、I04、I05、I06、I07
   - 验证：报告主线、证据引用、覆盖率和限制记录符合验收清单。
-  - 证据：`/tmp/stark-repo-analyzer-impl-httpx-fixture` 仅证明机械控制面完成（HEAD `b5addb...`）；真实 HTTPX retry `/tmp/stark-repo-analyzer-real-httpx-v1` 与 Ruff retry 均没有可接受的 `graphify-out/graph.json`/`GRAPH_REPORT.md`，控制面按声明边界保留失败，未绕过 Graphify 生成报告。
+  - 证据：`/tmp/stark-repo-analyzer-real-httpx-v2` 使用固定 HEAD `b5addb...` 和官方 bounded tuning flags 完成真实 Graphify、source-locatable normalization、Agent 模块阅读、adjudication、coverage gate 与最终融合；manifest 为 `complete`，源树 clean。Ruff 的 `/tmp/stark-repo-analyzer-real-ruff-v1` 与最终 tuned retry `/tmp/stark-repo-analyzer-real-ruff-v2` 均在 Graphify 语义提取阶段无 graph/report，失败记录完整，未绕过 Graphify 生成报告。
 - [!] R04 回归 `claude-code` 和 `codex`
   - 依赖：R03
   - 验证：bounded scope、未读范围和大型项目失败边界不被隐藏。
-  - 证据：`/tmp/stark-repo-analyzer-impl-claude-code-fixture` 完成并通过（16,205 nodes/61,615 edges，bounded）；`codex` 基线及控制面重试 `/tmp/stark-repo-analyzer-real-codex-v2` 均无可接受 Graphify 图对，控制平面保留限制，不伪造 bounded 报告。
-- [!] R05 汇总参考结果与重实现结果差异
+  - 证据：`/tmp/stark-repo-analyzer-real-claude-code-v2` 使用固定 HEAD `a371ab...` 和官方 bounded tuning flags 完成真实 Graphify、source-locatable normalization、bounded Agent 模块阅读、源码 adjudication、coverage gate 与最终融合；manifest 为 `complete`，源树 clean。`codex` 基线及控制面重试 `/tmp/stark-repo-analyzer-real-codex-v2` 均无可接受 Graphify 图对，控制平面保留限制，不伪造 bounded 报告。
+- [x] R05 汇总参考结果与重实现结果差异
   - 依赖：R01-R04
   - 输出：`docs/baseline/implementation-comparison.md`
   - 验证：每个差异有来源、影响、是否接受和修正任务。
-  - 证据：`docs/baseline/implementation-comparison.md` 记录六个 fixture 结果、真实 HTTPX/Ruff/Codex 重试阻断、两次真实 Agent-gated 完成运行和“不宣称语义等价”的影响/后续任务；R03/R04 仍保留 Graphify 阻断，未伪造完成。
+  - 证据：`docs/baseline/implementation-comparison.md` 记录六个 fixture 结果、失败重试、四次真实 Agent-gated 完成或边界判定运行和“不宣称语义等价”的影响/后续任务；Ruff 与 Codex 的 Graphify 阻断均保留为明确残余风险，未伪造报告。
 
 ## Phase 4: Release Gate
 
-- [ ] G01 运行完整自动验证器
+- [x] G01 运行完整自动验证器
   - 依赖：R05
   - 验证：结构、JSON、链接、Mermaid、覆盖率、metadata 和回归均通过。
-- [ ] G02 人工复核高风险项
+  - 证据：`acceptance/skill-structure-check.sh`、`acceptance/run-contract-check.sh`、`acceptance/physical-baseline-check.sh`、`acceptance/doctor-self-test.sh`、`pytest -q`（16 passed）、四个真实 complete manifest 和 `git diff --check` 均通过；物理 Graphify P3 为 partial、P5 动态行为按范围标记未就绪，均有 failure evidence。
+- [x] G02 人工复核高风险项
   - 依赖：G01
   - 验证：无未决的契约冲突、伪造证据或越界写入。
-- [ ] G03 生成最终交付报告和变更说明
+  - 证据：人工抽查 Claude Code 核心源码与模块引用；确认六个固定源树 clean、接受运行无目标仓库 Graphify 输出、失败项目无伪造图谱/报告、Ruff/Codex 限制明确记录。
+- [x] G03 生成最终交付报告和变更说明
   - 依赖：G02
   - 验证：用户能从报告追溯到任务、代码、验证输出和残余风险。
+  - 证据：`docs/baseline/reimplementation-release-report.md`、`docs/baseline/implementation-comparison.md`、真实运行 workspace 的 `metadata.json`/`execution-log.md`/`checks.md`/`manifest.json`。
 
 ## Dependency Summary
 

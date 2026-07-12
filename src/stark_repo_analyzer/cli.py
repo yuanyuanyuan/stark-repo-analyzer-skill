@@ -12,6 +12,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -35,6 +36,11 @@ PUBLIC_HOSTS = {"github.com", "gitlab.com", "gitee.com"}
 TRANSIENT_FAILURE = re.compile(
     r"(?:timeout|timed out|HTTP[ /](?:429|5[0-9][0-9])|status[=: ]+(?:429|5[0-9][0-9]))",
     re.IGNORECASE,
+)
+GRAPHIFY_EXTRACT_OPTIONS = (
+    "--max-concurrency", "8",
+    "--token-budget", "24000",
+    "--api-timeout", "120",
 )
 
 
@@ -77,7 +83,7 @@ def run(
             env=env,
         )
     except subprocess.TimeoutExpired:
-        return subprocess.CompletedProcess(command, 124, "", "timeout")
+        return subprocess.CompletedProcess(command, 124, "", "process timeout")
 
 
 def _git_output(target: Path, args: list[str]) -> str | None:
@@ -255,14 +261,13 @@ def doctor(script: Path, phase: str, target: Path, work_dir: Path) -> tuple[int,
 
 
 def target_graphify_signature(target: Path) -> tuple | None:
-    output = target / "graphify-out"
-    if not output.exists():
+    if not target.exists():
         return None
     return tuple(
         sorted(
-            (str(path.relative_to(output)), path.stat().st_size, path.stat().st_mtime_ns)
-            for path in output.rglob("*")
-            if path.is_file()
+            (str(path.relative_to(target)), path.stat().st_size, path.stat().st_mtime_ns)
+            for path in target.rglob("*")
+            if path.is_file() and ".git" not in path.relative_to(target).parts
         )
     )
 
@@ -290,7 +295,7 @@ def ensure_source_unchanged(target: Path, before: dict[str, object], *, phase: s
 def graphify_extract(target: Path, work_dir: Path, log: list[str]) -> list[dict[str, object]]:
     """Run Graphify with retries limited to classified transient failures."""
 
-    command = ["graphify", "extract", str(target), "--mode", "deep", "--out", str(work_dir)]
+    command = graphify_extract_command(target, work_dir)
     retries = 0
     attempts: list[dict[str, object]] = []
     while True:
@@ -301,8 +306,21 @@ def graphify_extract(target: Path, work_dir: Path, log: list[str]) -> list[dict[
         result = run(command, cwd=work_dir, env=child_env)
         elapsed = round(time.monotonic() - started, 2)
         combined = result.stdout + "\n" + result.stderr
-        transient = bool(result.returncode != 0 and TRANSIENT_FAILURE.search(combined))
-        attempts.append({"exit_code": result.returncode, "elapsed_seconds": elapsed, "transient_failure": transient})
+        transient = bool(
+            result.returncode != 0
+            and result.returncode != 124
+            and TRANSIENT_FAILURE.search(combined)
+        )
+        attempts.append(
+            {
+                "command": shlex.join(command),
+                "exit_code": result.returncode,
+                "elapsed_seconds": elapsed,
+                "transient_failure": transient,
+                "stdout_class": classify_stream(result.stdout),
+                "stderr_class": classify_stream(result.stderr),
+            }
+        )
         log.append(f"graphify extract exit={result.returncode} elapsed={elapsed}s transient={transient}")
         if result.returncode == 0:
             return attempts
@@ -313,6 +331,19 @@ def graphify_extract(target: Path, work_dir: Path, log: list[str]) -> list[dict[
         delay = 2**retries
         log.append(f"transient Graphify failure; retry {retries}/2 after {delay}s")
         time.sleep(delay)
+
+
+def graphify_extract_command(target: Path, work_dir: Path) -> list[str]:
+    return [
+        "graphify",
+        "extract",
+        str(target),
+        "--mode",
+        "deep",
+        "--out",
+        str(work_dir),
+        *GRAPHIFY_EXTRACT_OPTIONS,
+    ]
 
 
 def _locatable_graph_source(item: object, target: Path) -> bool:
@@ -337,6 +368,20 @@ def _locatable_graph_source(item: object, target: Path) -> bool:
     return 1 <= first <= last <= lines
 
 
+def classify_stream(value: str) -> str:
+    """Record diagnostic shape without persisting command output or secrets."""
+
+    if not value.strip():
+        return "empty"
+    if re.search(r"HTTP[ /]429|status[=: ]+429", value, re.IGNORECASE):
+        return "http-429"
+    if re.search(r"HTTP[ /]5[0-9][0-9]|status[=: ]+5[0-9][0-9]", value, re.IGNORECASE):
+        return "http-5xx"
+    if re.search(r"timeout|timed out", value, re.IGNORECASE):
+        return "timeout"
+    return "non-empty"
+
+
 def graphify_postprocess(target: Path, work_dir: Path, log: list[str]) -> dict[str, object]:
     """Generate the report, retain raw deep output, and normalize source evidence."""
 
@@ -349,11 +394,13 @@ def graphify_postprocess(target: Path, work_dir: Path, log: list[str]) -> dict[s
     started = time.monotonic()
     result = run(cluster_command, cwd=work_dir, env=cluster_env)
     cluster_summary: dict[str, object] = {
-        "command": "graphify cluster-only <WORK_DIR> --no-label --no-viz",
+        "command": shlex.join(cluster_command),
         "exit_code": result.returncode,
         "elapsed_seconds": round(time.monotonic() - started, 2),
         "no_label": True,
         "no_viz": True,
+        "stdout_class": classify_stream(result.stdout),
+        "stderr_class": classify_stream(result.stderr),
     }
     log.append(f"graphify cluster-only exit={result.returncode} no-label=true no-viz=true")
     if result.returncode != 0:
@@ -830,7 +877,7 @@ def analyze(args: argparse.Namespace) -> int:
                 "version": pre.get("graphify", {}).get("version"),
                 "backend": pre.get("graphify", {}).get("backend"),
                 "model": pre.get("graphify", {}).get("model"),
-                "extract_command": "graphify extract <target> --mode deep --out <WORK_DIR>",
+                "extract_command": shlex.join(graphify_extract_command(target, work_dir)),
             }
         )
         before = target_graphify_signature(target)

@@ -8,4 +8,4 @@
 
 ## Control-plane retry
 
-On 2026-07-12, the implementation control plane retried the fixed HTTPX source in isolated work directory `/tmp/stark-repo-analyzer-real-httpx-v1`. After approximately nine minutes it remained in partial semantic extraction with no accepted `graph.json`/`GRAPH_REPORT.md` pair and was stopped. The HTTPX source tree remained clean, so no implementation report was accepted from this retry.
+On 2026-07-12, the implementation control plane retried the fixed HTTPX source in isolated work directory `/tmp/stark-repo-analyzer-real-httpx-v1`. After approximately nine minutes it remained in partial semantic extraction with no accepted `graph.json`/`GRAPH_REPORT.md` pair and was stopped. The HTTPX source tree remained clean, so no implementation report was accepted from this retry. A separate direct Graphify tuning experiment using the official bounded flags completed and passed normalization/doctor in `/tmp/stark-graphify-httpx-fast-v2`; it is not yet a control-plane run or Agent-gated report.
