@@ -154,16 +154,16 @@
 - [!] R03 回归 `httpx` 和 `ruff`
   - 依赖：R02、I04、I05、I06、I07
   - 验证：报告主线、证据引用、覆盖率和限制记录符合验收清单。
-  - 证据：`/tmp/stark-repo-analyzer-impl-httpx-fixture` 完成并通过（HEAD `b5addb...`）；`ruff` 固定基线没有可接受的 `graphify-out/graph.json`/`GRAPH_REPORT.md`，控制平面按声明边界返回失败，未绕过 Graphify 生成报告。
+  - 证据：`/tmp/stark-repo-analyzer-impl-httpx-fixture` 仅证明机械控制面完成（HEAD `b5addb...`）；真实 HTTPX retry `/tmp/stark-repo-analyzer-real-httpx-v1` 与 Ruff retry 均没有可接受的 `graphify-out/graph.json`/`GRAPH_REPORT.md`，控制面按声明边界保留失败，未绕过 Graphify 生成报告。
 - [!] R04 回归 `claude-code` 和 `codex`
   - 依赖：R03
   - 验证：bounded scope、未读范围和大型项目失败边界不被隐藏。
-  - 证据：`/tmp/stark-repo-analyzer-impl-claude-code-fixture` 完成并通过（16,205 nodes/61,615 edges，bounded）；`codex` 基线无可接受 Graphify 图对，控制平面返回失败并保留限制，不伪造 bounded 报告。
+  - 证据：`/tmp/stark-repo-analyzer-impl-claude-code-fixture` 完成并通过（16,205 nodes/61,615 edges，bounded）；`codex` 基线及控制面重试 `/tmp/stark-repo-analyzer-real-codex-v2` 均无可接受 Graphify 图对，控制平面保留限制，不伪造 bounded 报告。
 - [!] R05 汇总参考结果与重实现结果差异
   - 依赖：R01-R04
   - 输出：`docs/baseline/implementation-comparison.md`
   - 验证：每个差异有来源、影响、是否接受和修正任务。
-  - 证据：`docs/baseline/implementation-comparison.md` 记录六个 fixture 结果、两个 Graphify 阻断、两次真实 Agent-gated 完成运行和“不宣称语义等价”的影响/后续任务；R03 的 Ruff/HTTPX 与 R04 的 Codex 仍保留 Graphify 阻断，未伪造完成。
+  - 证据：`docs/baseline/implementation-comparison.md` 记录六个 fixture 结果、真实 HTTPX/Ruff/Codex 重试阻断、两次真实 Agent-gated 完成运行和“不宣称语义等价”的影响/后续任务；R03/R04 仍保留 Graphify 阻断，未伪造完成。
 
 ## Phase 4: Release Gate
 
