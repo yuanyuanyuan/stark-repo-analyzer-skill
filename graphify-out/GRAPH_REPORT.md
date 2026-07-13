@@ -1,16 +1,16 @@
 # Graph Report - stark-repo-analyzer-skill  (2026-07-13)
 
 ## Corpus Check
-- 566 files · ~151,911 words
+- 567 files · ~152,129 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2122 nodes · 2069 edges · 290 communities (202 shown, 88 thin omitted)
+- 2123 nodes · 2075 edges · 291 communities (202 shown, 89 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 34 edges (avg confidence: 0.74)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `dc0d7a9d`
+- Built from commit: `8426d1f8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -299,6 +299,7 @@
 - execution-log.md
 - graphify-code-only.md
 - input.md
+- 真实 UAT 回归测试
 
 ## God Nodes (most connected - your core abstractions)
 1. `Analysis Plan` - 43 edges
@@ -327,7 +328,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (290 total, 88 thin omitted)
+## Communities (291 total, 89 thin omitted)
 
 ### Community 0 - "参考输出基线"
 Cohesion: 0.06
@@ -749,10 +750,6 @@ Nodes (3): fail(), pass(), doctor-self-test.sh script
 Cohesion: 0.10
 Nodes (19): DOCTOR_EXTRACTION_MODE, DOCTOR_FAILURES, DOCTOR_GRAPH_EXTRACTED, DOCTOR_GRAPH_LINK_SOURCES, DOCTOR_GRAPH_LINKS, DOCTOR_GRAPH_NODE_SOURCES, DOCTOR_GRAPH_NODES, DOCTOR_GRAPH_UNLOCATED_NODES (+11 more)
 
-### Community 132 - "真实 UAT 回归测试"
-Cohesion: 0.29
-Nodes (5): Repository Agent Rules, 分档, 必备证据, 真实 UAT 回归测试, 禁止假通过
-
 ### Community 135 - "properties"
 Cohesion: 0.04
 Nodes (44): const, type, type, type, $id, type, enum, items (+36 more)
@@ -1113,25 +1110,29 @@ Nodes (4): 4. Graphify code-only, Ignore 与 corpus reconciliation, 初次建立
 Cohesion: 0.67
 Nodes (3): 3.1 语法层：`_OptionParser`, 3.2 语义层：`Parameter`, 3. 两层解析设计
 
+### Community 290 - "真实 UAT 回归测试"
+Cohesion: 0.40
+Nodes (5): 2026-07-13 实际回归：browser-use/video-use, 唯一允许的 Graphify 路径, 真实 UAT 回归测试, 范围与通过条件, 证据合同
+
 ## Knowledge Gaps
-- **1416 isolated node(s):** `DOCTOR_PHASE`, `DOCTOR_STATUS`, `DOCTOR_TARGET`, `DOCTOR_WORK_DIR`, `DOCTOR_GRAPHIFY_OK` (+1411 more)
+- **1417 isolated node(s):** `DOCTOR_PHASE`, `DOCTOR_STATUS`, `DOCTOR_TARGET`, `DOCTOR_WORK_DIR`, `DOCTOR_GRAPHIFY_OK` (+1412 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **88 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **89 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Analysis Plan` connect `Analysis Plan` to `3. 核心数据结构与边界`, `4. 核心流程`, `4. 核心数据结构`, `7. Public Export Surface：稳定地把内部能力变成 Click API`, `覆盖率`, `覆盖率`, `3. Platform Compatibility：把宿主不一致压缩到 I/O 边界`, `3. 两层解析设计`, `6. Exceptions：把解析失败转成一致的用户反馈`, `1. Shell Completion：把核心参数模型投影到 shell`, `2. Testing：在可恢复隔离中重演真实 CLI`, `2. 业务问题与设计思路`, `4. Terminal Presentation Helpers：在不可见控制序列下保持可读布局`, `5. Internal State and Sentinels：区分“未设置”和“特殊控制值”`, `ANALYSIS_REPORT.md`, `8. 关键设计权衡与洞察`, `10. 覆盖率明细`, `6. 深度模块分析`?**
   _High betweenness centrality (0.004) - this node is a cross-community bridge._
-- **Why does `Primary-source tool research for hybrid code intelligence` connect `1. Graphify CLI` to `README.md`?**
-  _High betweenness centrality (0.003) - this node is a cross-community bridge._
 - **Why does `Hybrid code intelligence rollout and evaluation plan` connect `Hybrid code intelligence rollout and evaluation plan` to `README.md`?**
+  _High betweenness centrality (0.003) - this node is a cross-community bridge._
+- **Why does `Primary-source tool research for hybrid code intelligence` connect `1. Graphify CLI` to `README.md`?**
   _High betweenness centrality (0.002) - this node is a cross-community bridge._
 - **Are the 4 inferred relationships involving `analyze()` (e.g. with `main()` and `.test_analyze_rejects_nonempty_workspace()`) actually correct?**
   _`analyze()` has 4 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 2 inferred relationships involving `CliContractTests` (e.g. with `RunFailure` and `ContractError`) actually correct?**
   _`CliContractTests` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `DOCTOR_PHASE`, `DOCTOR_STATUS`, `DOCTOR_TARGET` to the rest of the system?**
-  _1416 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1417 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `参考输出基线` be split into smaller, more focused modules?**
   _Cohesion score 0.05714285714285714 - nodes in this community are weakly interconnected._
