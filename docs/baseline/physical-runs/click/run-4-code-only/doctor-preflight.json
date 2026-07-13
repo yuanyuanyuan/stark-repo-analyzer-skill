@@ -1,0 +1,21 @@
+{
+  "failures": [],
+  "graphify": {
+    "backend": null,
+    "cli_available": true,
+    "extraction_mode": "code-only",
+    "health": null,
+    "model": null,
+    "semantic_extraction": "disabled",
+    "version": "graphify 0.9.13"
+  },
+  "phase": "preflight",
+  "schema_version": 1,
+  "status": {
+    "code": 0,
+    "name": "ready"
+  },
+  "target": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/click",
+  "warnings": [],
+  "work_dir": "/private/tmp/stark-click-code-only-pilot"
+}

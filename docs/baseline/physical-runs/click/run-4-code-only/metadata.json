@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "run_id": "click-code-only-pilot",
+  "started_at": "2026-07-13T05:23:19.546008+00:00",
+  "analysis_mode": "standard",
+  "source": {
+    "kind": "local-path",
+    "value": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/click",
+    "resolved_path": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/click",
+    "clone_source": null,
+    "source_commit": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+    "source_dirty": false,
+    "source_status_before": {
+      "head": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+      "porcelain": ""
+    },
+    "source_status_after_graphify": {
+      "head": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+      "porcelain": ""
+    },
+    "source_status_after": {
+      "head": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+      "porcelain": ""
+    }
+  },
+  "graphify": {
+    "preflight": {
+      "failures": [],
+      "graphify": {
+        "backend": null,
+        "cli_available": true,
+        "extraction_mode": "code-only",
+        "health": null,
+        "model": null,
+        "semantic_extraction": "disabled",
+        "version": "graphify 0.9.13"
+      },
+      "phase": "preflight",
+      "schema_version": 1,
+      "status": {
+        "code": 0,
+        "name": "ready"
+      },
+      "target": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/click",
+      "warnings": [],
+      "work_dir": "/private/tmp/stark-click-code-only-pilot"
+    },
+    "version": "graphify 0.9.13",
+    "extraction_mode": "code-only",
+    "semantic_extraction": "disabled",
+    "extract_command": "/tmp/stark-graphify-0.9.13/bin/graphify extract /Users/chuzu/projests/stark-repo-analyzer-reference-sources/click --code-only --no-cluster --out /private/tmp/stark-click-code-only-pilot",
+    "extract_attempts": [
+      {
+        "command": "/tmp/stark-graphify-0.9.13/bin/graphify extract /Users/chuzu/projests/stark-repo-analyzer-reference-sources/click --code-only --no-cluster --out /private/tmp/stark-click-code-only-pilot",
+        "exit_code": 0,
+        "elapsed_seconds": 3.23,
+        "transient_failure": false,
+        "stdout_class": "non-empty",
+        "stderr_class": "non-empty"
+      }
+    ],
+    "target_graphify_out_unchanged": true,
+    "raw_artifacts": [
+      "graphify-out/raw-code-only-graph.json",
+      "graphify-out/raw-code-only-GRAPH_REPORT.md"
+    ],
+    "normalized_artifacts": [
+      "graphify-out/graph.json",
+      "graphify-out/GRAPH_REPORT.md"
+    ],
+    "raw_graph": {
+      "nodes": 1910,
+      "edges": 3916
+    },
+    "normalized_graph": {
+      "nodes": 1907,
+      "edges": 3916
+    },
+    "cluster_only": {
+      "command": "/tmp/stark-graphify-0.9.13/bin/graphify cluster-only /private/tmp/stark-click-code-only-pilot --no-label --no-viz",
+      "exit_code": 0,
+      "elapsed_seconds": 0.74,
+      "no_label": true,
+      "no_viz": true,
+      "stdout_class": "non-empty",
+      "stderr_class": "empty"
+    },
+    "artifact_paths": [
+      "graphify-out/graph.json",
+      "graphify-out/GRAPH_REPORT.md",
+      "graphify-out/raw-code-only-graph.json",
+      "graphify-out/raw-code-only-GRAPH_REPORT.md"
+    ],
+    "post_graph": {
+      "failures": [],
+      "graphify": {
+        "backend": null,
+        "cli_available": false,
+        "extraction_mode": "code-only",
+        "health": {
+          "edge_source_references": 3916,
+          "edges": 3916,
+          "extracted_edges": 3033,
+          "node_source_references": 1813,
+          "nodes": 1907,
+          "unlocated_symbol_nodes": 94
+        },
+        "model": null,
+        "semantic_extraction": "disabled",
+        "version": null
+      },
+      "phase": "post-graph",
+      "schema_version": 1,
+      "status": {
+        "code": 0,
+        "name": "ready"
+      },
+      "target": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/click",
+      "warnings": [],
+      "work_dir": "/private/tmp/stark-click-code-only-pilot"
+    }
+  },
+  "tools": {
+    "python": "3.13.9"
+  },
+  "outcome": "complete",
+  "limitations": [
+    "Agent module drafts and final source adjudication remain required.",
+    "External research, tests and runtime behavior are not inferred from static reading."
+  ],
+  "ended_at": "2026-07-13T05:36:34.797787+00:00",
+  "finalized": {
+    "module_drafts": [
+      "drafts/06-module-core-command-model.md",
+      "drafts/06-module-parameter-resolution.md",
+      "drafts/06-module-secondary.md",
+      "drafts/06-module-terminal-experience.md"
+    ],
+    "cross_validation": "drafts/07-cross-validation.md",
+    "insights": "drafts/08-insights.md",
+    "coverage": "drafts/08-coverage.md"
+  },
+  "output_manifest": "manifest.json"
+}

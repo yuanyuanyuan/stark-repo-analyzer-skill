@@ -15,7 +15,7 @@ The original analysis responsibilities remain Agent-owned: external research, bu
 | Reference artifacts and doctor | PASS | `acceptance/run-contract-check.sh`, `acceptance/doctor-self-test.sh` |
 | Physical baseline integrity | PASS | `acceptance/physical-baseline-check.sh` |
 | Real accepted runs | PASS | Click, Codex plugin, HTTPX, Claude Code and Codex v3 workspaces finalized with complete manifests |
-| Real blocked runs | EXPLICIT BLOCKED | Ruff has no accepted graph/report pair and retains a complete failure record; dependent release tasks remain blocked |
+| Real blocked runs | EXPLICIT BLOCKED | Ruff semantic extraction remains blocked, while its separate code-only run is complete; HTTPX/Claude Code/Codex physical Graphify isolation remains blocked and their P4 comparisons remain pending |
 
 Accepted real run workspaces:
 
@@ -35,7 +35,8 @@ The cross-project result comparison is maintained in `docs/baseline/implementati
 - Empty graphs, missing source locations, incomplete module manifests and invalid output boundaries are rejected.
 - Claude Code’s bounded module draft reports `6,172/6,752` core lines read (`91.4%`) and explicitly excludes the unread majority of `src/`.
 - Ruff is not represented by fixtures or partial graphs; its Graphify blocker remains visible. Codex v3 is represented by a complete accepted graph/report pair and six Agent-owned business-module drafts; the older physical baseline failure remains separately documented.
+- Physical baseline report depth is not treated as semantic parity: bounded snapshots may be shorter than earlier `reference-runs` reports when external research, subagent orchestration or project validation was unavailable.
 
 ## Residual Scope
 
-P5 dynamic behavior is intentionally not claimed: the analyzed projects were not built, tested, network-exercised or run interactively. Ruff requires a later isolated Graphify run that produces a complete graph/report pair before its implementation workflow can be extended. R03 remains marked `[!]`; its dependent R04-R05/G01-G03 release chain remains explicitly blocked even though Codex v3 has independent complete evidence. This does not change the V1 failure boundary.
+P5 dynamic behavior is explicitly outside V1 scope: the analyzed projects were not built, tested, network-exercised or run interactively, and this release makes no claim about their runtime behavior. Ruff semantic extraction remains a documented residual risk; its code-only continuation is explicitly separate and does not establish semantic parity. R03 remains marked `[!]`. HTTPX, Claude Code and Codex now have physical run-2 evidence, but P4 comparison and target-output isolation are still pending. R04-R05/G01-G03 retain these residual risks.

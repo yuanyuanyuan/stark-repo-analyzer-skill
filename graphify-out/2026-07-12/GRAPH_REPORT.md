@@ -1,16 +1,16 @@
 # Graph Report - stark-repo-analyzer-skill  (2026-07-12)
 
 ## Corpus Check
-- 180 files · ~36,156 words
+- 390 files · ~105,505 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 991 nodes · 899 edges · 131 communities (104 shown, 27 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 7 edges (avg confidence: 0.76)
+- 1188 nodes · 1192 edges · 147 communities (113 shown, 34 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 36 edges (avg confidence: 0.77)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d4a5711a`
+- Built from commit: `029d348a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -146,18 +146,34 @@
 - [[_COMMUNITY_doctor-self-test.sh|doctor-self-test.sh]]
 - [[_COMMUNITY_analysis-run-input|analysis-run-input.md]]
 - [[_COMMUNITY_stark-repo-analyzer|stark-repo-analyzer]]
+- [[_COMMUNITY_doctor.sh|doctor.sh]]
+- [[_COMMUNITY_真实 UAT 回归测试|真实 UAT 回归测试]]
+- [[_COMMUNITY_physical-repeatability-check.sh|physical-repeatability-check.sh]]
+- [[_COMMUNITY___init__.py|__init__.py]]
+- [[_COMMUNITY_properties|properties]]
+- [[_COMMUNITY_properties|properties]]
+- [[_COMMUNITY_模块分析指南|模块分析指南]]
+- [[_COMMUNITY_Reference And Implementation Comparison|Reference And Implementation Comparison]]
+- [[_COMMUNITY_implementation-fixture-check.sh|implementation-fixture-check.sh]]
+- [[_COMMUNITY_Path|Path]]
+- [[_COMMUNITY_run-contract-check.sh|run-contract-check.sh]]
+- [[_COMMUNITY_skill-structure-check.sh|skill-structure-check.sh]]
+- [[_COMMUNITY_Graphify Sidecar Failure Record|Graphify Sidecar Failure Record]]
+- [[_COMMUNITY_Path|Path]]
+- [[_COMMUNITY_Graphify Sidecar Failure Record|Graphify Sidecar Failure Record]]
+- [[_COMMUNITY_Graphify Sidecar Failure Record|Graphify Sidecar Failure Record]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `analyze()` - 14 edges
-2. `Stark Repo Analyzer` - 12 edges
-3. `Stark Repo Analyzer` - 12 edges
-4. `Claude Code 源码架构基线` - 12 edges
-5. `Click：可组合命令行运行时的架构基线` - 12 edges
-6. `Ruff 架构分析基线` - 12 edges
-7. `OpenAI Codex 架构分析基线` - 11 edges
-8. `HTTPX 架构分析基线` - 11 edges
-9. `分析工作流` - 10 edges
-10. `分析哲学与思维框架` - 9 edges
+1. `analyze()` - 20 edges
+2. `CliContractTests` - 16 edges
+3. `prepare_agent_handoff()` - 15 edges
+4. `resume()` - 15 edges
+5. `Repo Analyzer` - 12 edges
+6. `Repo Analyzer` - 12 edges
+7. `Claude Code 源码架构基线` - 12 edges
+8. `Click：可组合命令行运行时的架构基线` - 12 edges
+9. `Ruff 架构分析基线` - 12 edges
+10. `RunFailure` - 11 edges
 
 ## Surprising Connections (you probably didn't know these)
 - None detected - all connections are within the same source files.
@@ -165,7 +181,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (131 total, 27 thin omitted)
+## Communities (147 total, 34 thin omitted)
 
 ### Community 0 - "参考输出基线"
 Cohesion: 0.06
@@ -548,24 +564,24 @@ Cohesion: 0.50
 Nodes (3): 总体, 覆盖率汇总, 限制
 
 ### Community 120 - "分析哲学与思维框架"
-Cohesion: 0.05
-Nodes (35): 亮点的层次, 从项目特征中发现值得深挖的点, 全局关联, 分析哲学与思维框架, 反事实推理, 发现方法, 叙事连贯, 如何与业界对比 (+27 more)
+Cohesion: 0.08
+Nodes (23): 亮点的层次, 从项目特征中发现值得深挖的点, 全局关联, 分析哲学与思维框架, 反事实推理, 发现方法, 叙事连贯, 如何与业界对比 (+15 more)
 
 ### Community 121 - "cli.py"
-Cohesion: 0.16
-Nodes (22): CompletedProcess, Namespace, Path, analyze(), collect_context(), doctor(), feature_questions(), fuse_report() (+14 more)
+Cohesion: 0.09
+Nodes (48): CompletedProcess, Namespace, Path, RuntimeError, _adaptive_questions(), analyze(), cleanup_created_target_graphify(), collect_context() (+40 more)
 
 ### Community 122 - "Stark Repo Analyzer"
 Cohesion: 0.07
 Nodes (26): Analysis Modes, Contributing, Features, File Structure, How It Works, License, Optional Dependencies, Quick Install (+18 more)
 
 ### Community 123 - "分析工作流"
-Cohesion: 0.09
+Cohesion: 0.08
 Nodes (23): 1. 业务视角优先, 2. 抽象层次把控：不贴代码，讲设计, 3. 全局关联, 4. 启发性写作, 5. 深度洞察：Why > What（强制）, Git 项目深度分析技能, When NOT to Use, When to Use (+15 more)
 
 ### Community 124 - "doctor.sh"
-Cohesion: 0.15
-Nodes (13): DOCTOR_BACKEND, DOCTOR_FAILURES, DOCTOR_GRAPHIFY_OK, DOCTOR_MODEL, DOCTOR_PHASE, DOCTOR_STATUS, DOCTOR_TARGET, DOCTOR_VERSION (+5 more)
+Cohesion: 0.10
+Nodes (19): DOCTOR_BACKEND, DOCTOR_FAILURES, DOCTOR_GRAPH_EXTRACTED, DOCTOR_GRAPH_LINK_SOURCES, DOCTOR_GRAPH_LINKS, DOCTOR_GRAPH_NODE_SOURCES, DOCTOR_GRAPH_NODES, DOCTOR_GRAPH_UNLOCATED_NODES (+11 more)
 
 ### Community 125 - "package.json"
 Cohesion: 0.22
@@ -583,25 +599,61 @@ Nodes (4): Bootstrap and Doctor, Consuming the Map, Graphify Integration Guide, 
 Cohesion: 0.83
 Nodes (3): fail(), pass(), doctor-self-test.sh script
 
+### Community 131 - "doctor.sh"
+Cohesion: 0.10
+Nodes (19): DOCTOR_BACKEND, DOCTOR_FAILURES, DOCTOR_GRAPH_EXTRACTED, DOCTOR_GRAPH_LINK_SOURCES, DOCTOR_GRAPH_LINKS, DOCTOR_GRAPH_NODE_SOURCES, DOCTOR_GRAPH_NODES, DOCTOR_GRAPH_UNLOCATED_NODES (+11 more)
+
+### Community 132 - "真实 UAT 回归测试"
+Cohesion: 0.29
+Nodes (5): Repository Agent Rules, 分档, 必备证据, 真实 UAT 回归测试, 禁止假通过
+
+### Community 135 - "properties"
+Cohesion: 0.04
+Nodes (44): const, type, type, type, $id, type, enum, items (+36 more)
+
+### Community 136 - "properties"
+Cohesion: 0.06
+Nodes (31): const, minimum, type, items, type, type, $id, properties (+23 more)
+
+### Community 137 - "模块分析指南"
+Cohesion: 0.15
+Nodes (12): Graphify 证据边界, Subagent 协作规范, Subagent 并行分析, 全局视角要求, 分析深度, 核心方法, 核心模块 Subagent Prompt 模板, 模块分析完整性四要素 (+4 more)
+
+### Community 138 - "Reference And Implementation Comparison"
+Cohesion: 0.33
+Nodes (5): Accepted Differences, Follow-Up Tasks, Real Agent-Gated Runs, Reference And Implementation Comparison, Reimplementation Control-Plane Runs
+
+### Community 140 - "Path"
+Cohesion: 0.24
+Nodes (16): Any, ContractError, _coverage_marker(), Path, Run-contract helpers shared by the CLI and acceptance tests.  The skill is agent, Return an auditable artifact summary or raise ``ContractError``., Write a stable manifest without embedding transient report prose., Raised when a run cannot satisfy the V1 output contract. (+8 more)
+
+### Community 141 - "run-contract-check.sh"
+Cohesion: 0.83
+Nodes (3): fail(), pass(), run-contract-check.sh script
+
+### Community 142 - "skill-structure-check.sh"
+Cohesion: 0.83
+Nodes (3): fail(), pass(), skill-structure-check.sh script
+
 ## Knowledge Gaps
-- **673 isolated node(s):** `Related Articles`, `Quick Install`, `Features`, `Trigger Keywords`, `Analysis Modes` (+668 more)
+- **752 isolated node(s):** `Reimplementation Control-Plane Runs`, `Real Agent-Gated Runs`, `Accepted Differences`, `Follow-Up Tasks`, `Control-plane retry` (+747 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **27 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Git 项目深度分析技能` connect `分析工作流` to `分析哲学与思维框架`?**
-  _High betweenness centrality (0.002) - this node is a cross-community bridge._
-- **Are the 3 inferred relationships involving `Path` (e.g. with `.test_local_input_records_commit_shape_without_cloning()` and `.test_questions_change_with_project_features()`) actually correct?**
-  _`Path` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `Related Articles`, `Quick Install`, `Features` to the rest of the system?**
-  _677 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Are the 15 inferred relationships involving `Path` (e.g. with `.test_analyze_rejects_nonempty_workspace()` and `.test_analyze_writes_agent_handoff_contract()`) actually correct?**
+  _`Path` has 15 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 4 inferred relationships involving `analyze()` (e.g. with `main()` and `.test_analyze_rejects_nonempty_workspace()`) actually correct?**
+  _`analyze()` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 2 inferred relationships involving `resume()` (e.g. with `main()` and `.test_resume_accepts_preexisting_graph_artifacts_without_new_metadata_keys()`) actually correct?**
+  _`resume()` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `Reimplementation Control-Plane Runs`, `Real Agent-Gated Runs`, `Accepted Differences` to the rest of the system?**
+  _769 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `参考输出基线` be split into smaller, more focused modules?**
   _Cohesion score 0.05714285714285714 - nodes in this community are weakly interconnected._
 - **Should `codex-plugin-cc 架构基线报告` be split into smaller, more focused modules?**
   _Cohesion score 0.10526315789473684 - nodes in this community are weakly interconnected._
 - **Should `Click：可组合命令行运行时的架构基线` be split into smaller, more focused modules?**
   _Cohesion score 0.125 - nodes in this community are weakly interconnected._
-- **Should `Claude Code 源码架构基线` be split into smaller, more focused modules?**
-  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._

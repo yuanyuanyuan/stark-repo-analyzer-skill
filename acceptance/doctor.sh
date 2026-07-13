@@ -15,6 +15,8 @@ EXIT_READY=0
 EXIT_BOOTSTRAP=10
 EXIT_CONFIGURATION=20
 EXIT_BLOCKED=30
+GRAPHIFY_MIN_VERSION="0.9.13"
+GRAPHIFY_CLI="${GRAPHIFY_CLI:-graphify}"
 
 usage() {
   printf '%s\n' "Usage: $0 preflight|post-graph --target <repo> --work-dir <dir> [--json]" >&2
@@ -74,8 +76,8 @@ warnings=""
 python_ok=false
 graphify_ok=false
 version=""
-backend=""
-model=""
+extraction_mode="code-only"
+semantic_extraction="disabled"
 graph_nodes=""
 graph_links=""
 node_sources=""
@@ -114,44 +116,31 @@ if [ -d "$target" ] && [ -d "$work_dir" ]; then
 fi
 
 if [ "$phase" = "preflight" ]; then
-  if [ -n "$PYTHON_BIN" ] && "$PYTHON_BIN" -c 'import graphify' >/dev/null 2>&1; then
-    python_ok=true
-  else
-    record_failure "$EXIT_BOOTSTRAP" "Graphify Python import is unavailable"
-  fi
-
-  if command -v graphify >/dev/null 2>&1; then
+  if command -v "$GRAPHIFY_CLI" >/dev/null 2>&1; then
     graphify_ok=true
-    version=$(graphify --version 2>/dev/null | sed -n '1p' | tr -d '\r')
+    version=$("$GRAPHIFY_CLI" --version 2>/dev/null | sed -n '1p' | tr -d '\r')
     [ -n "$version" ] || record_failure "$EXIT_BOOTSTRAP" "Graphify version probe failed"
-    if ! graphify extract --help >/dev/null 2>&1; then
+    if ! "$GRAPHIFY_CLI" --help 2>/dev/null | grep -q -- '--code-only'; then
+      record_failure "$EXIT_BOOTSTRAP" "Graphify code-only extraction capability is unavailable"
+    fi
+    if [ -n "$PYTHON_BIN" ] && ! "$PYTHON_BIN" - "$version" "$GRAPHIFY_MIN_VERSION" <<'PY'
+import re
+import sys
+
+def version(value):
+    match = re.search(r"(\d+)\.(\d+)\.(\d+)", value)
+    return tuple(int(part) for part in match.groups()) if match else (0, 0, 0)
+
+raise SystemExit(0 if version(sys.argv[1]) >= version(sys.argv[2]) else 1)
+PY
+    then
+      record_failure "$EXIT_BOOTSTRAP" "Graphify version ${version:-unknown} is older than ${GRAPHIFY_MIN_VERSION}"
+    fi
+    if ! "$GRAPHIFY_CLI" extract --help >/dev/null 2>&1; then
       record_failure "$EXIT_BOOTSTRAP" "Graphify headless extract capability is unavailable"
     fi
   else
     record_failure "$EXIT_BOOTSTRAP" "Graphify CLI is unavailable"
-  fi
-
-  if [ "$python_ok" = true ]; then
-    # Delegate provider priority to Graphify; only public identifiers are returned.
-    resolver=$("$PYTHON_BIN" - <<'PY'
-import sys
-try:
-    from graphify.llm import _default_model_for_backend, detect_backend
-    selected = detect_backend()
-    model = _default_model_for_backend(selected) if selected else ""
-    print(f"{selected or ''}\t{model}")
-except Exception as exc:
-    print(f"ERROR\t{type(exc).__name__}")
-    sys.exit(1)
-PY
-    )
-    resolver_status=$?
-    if [ "$resolver_status" -eq 0 ] && [[ "$resolver" != ERROR$'\t'* ]]; then
-      IFS=$'\t' read -r backend model <<< "$resolver"
-      [ -n "$backend" ] || record_failure "$EXIT_CONFIGURATION" "Graphify found no usable LLM backend"
-    else
-      record_failure "$EXIT_CONFIGURATION" "Graphify LLM auto-detection failed"
-    fi
   fi
 fi
 
@@ -159,8 +148,8 @@ if [ "$phase" = "post-graph" ]; then
   graph_dir="$work_dir/graphify-out"
   graph_json="$graph_dir/graph.json"
   graph_report="$graph_dir/GRAPH_REPORT.md"
-  raw_graph_json="$graph_dir/raw-deep-graph.json"
-  raw_graph_report="$graph_dir/raw-GRAPH_REPORT.md"
+  raw_graph_json="$graph_dir/raw-code-only-graph.json"
+  raw_graph_report="$graph_dir/raw-code-only-GRAPH_REPORT.md"
   graph_nodes=""
   graph_links=""
   node_sources=""
@@ -171,10 +160,10 @@ if [ "$phase" = "post-graph" ]; then
   [ -r "$graph_json" ] || record_failure "$EXIT_BLOCKED" "graphify-out/graph.json is unreadable"
   [ -f "$graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/GRAPH_REPORT.md is missing"
   [ -r "$graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/GRAPH_REPORT.md is unreadable"
-  [ -f "$raw_graph_json" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-deep-graph.json is missing"
-  [ -r "$raw_graph_json" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-deep-graph.json is unreadable"
-  [ -f "$raw_graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-GRAPH_REPORT.md is missing"
-  [ -r "$raw_graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-GRAPH_REPORT.md is unreadable"
+  [ -f "$raw_graph_json" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-code-only-graph.json is missing"
+  [ -r "$raw_graph_json" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-code-only-graph.json is unreadable"
+  [ -f "$raw_graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-code-only-GRAPH_REPORT.md is missing"
+  [ -r "$raw_graph_report" ] || record_failure "$EXIT_BLOCKED" "graphify-out/raw-code-only-GRAPH_REPORT.md is unreadable"
 
   if [ -f "$graph_json" ] && [ -f "$graph_report" ]; then
     if [ -n "$PYTHON_BIN" ]; then
@@ -332,8 +321,8 @@ export DOCTOR_TARGET="$target"
 export DOCTOR_WORK_DIR="$work_dir"
 export DOCTOR_GRAPHIFY_OK="$graphify_ok"
 export DOCTOR_VERSION="$version"
-export DOCTOR_BACKEND="$backend"
-export DOCTOR_MODEL="$model"
+export DOCTOR_EXTRACTION_MODE="$extraction_mode"
+export DOCTOR_SEMANTIC_EXTRACTION="$semantic_extraction"
 export DOCTOR_GRAPH_NODES="$graph_nodes"
 export DOCTOR_GRAPH_LINKS="$graph_links"
 export DOCTOR_GRAPH_NODE_SOURCES="$node_sources"
@@ -365,8 +354,10 @@ result = {
     "graphify": {
         "cli_available": os.environ["DOCTOR_GRAPHIFY_OK"] == "true",
         "version": os.environ["DOCTOR_VERSION"] or None,
-        "backend": os.environ["DOCTOR_BACKEND"] or None,
-        "model": os.environ["DOCTOR_MODEL"] or None,
+        "extraction_mode": os.environ["DOCTOR_EXTRACTION_MODE"],
+        "semantic_extraction": os.environ["DOCTOR_SEMANTIC_EXTRACTION"],
+        "backend": None,
+        "model": None,
         "health": {
             "nodes": int(os.environ.get("DOCTOR_GRAPH_NODES") or 0),
             "edges": int(os.environ.get("DOCTOR_GRAPH_LINKS") or 0),
@@ -396,7 +387,7 @@ if [ "$json_output" = false ]; then
   esac
   printf 'doctor %s: %s\n' "$phase" "$name"
   [ -n "$version" ] && printf 'Graphify: %s\n' "$version"
-  [ -n "$backend" ] && printf 'LLM: %s (%s)\n' "$backend" "$model"
+  printf 'Graphify mode: %s; semantic extraction: %s\n' "$extraction_mode" "$semantic_extraction"
   while IFS= read -r failure; do
     [ -n "$failure" ] && printf 'FAIL: %s\n' "$failure"
   done <<< "$failures"

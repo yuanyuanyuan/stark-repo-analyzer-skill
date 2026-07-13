@@ -64,4 +64,7 @@ temp/
 *.temp
 # Local reference source corpus is reproducible from the baseline manifest.
 参考仓库源代码/
+
+# Graphify JSON graphs and caches are large, generated local evidence.
+**/graphify-out/**/*.json
 graphify-out/cache

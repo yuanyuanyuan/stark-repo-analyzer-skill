@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "active": true,
+  "runId": "meta-2026-07-12T12-04-56-353Z",
+  "triggeredBy": "natural_language_durable_work",
+  "currentStage": "Critical",
+  "currentStageKey": "critical",
+  "stageIndex": 1,
+  "stageTotal": 8,
+  "percent": 12,
+  "completed": [],
+  "next": "Fetch",
+  "blockedOn": null,
+  "authorityMode": "hook_observed_advisory",
+  "driverMode": "hook_observed",
+  "hookGateMode": "advisory",
+  "publicReadyAuthority": false,
+  "publicReadyBoundary": {
+    "status": "not_public_ready_authority",
+    "reason": "Run status reports current runtime progress only. Public-ready requires summary, verification, real invocation coverage, and Warden gates."
+  },
+  "deactivatedAt": null,
+  "deactivationReason": null,
+  "continuationBoundary": {
+    "status": "active_run",
+    "mode": "not_applicable",
+    "reason": null
+  },
+  "startedAt": "2026-07-12T12:04:56.353Z",
+  "updatedAt": "2026-07-12T12:04:56.377Z",
+  "lastUserVisibleNotice": null,
+  "surfaceMode": "public",
+  "resolvedOutputLanguage": "en",
+  "languageResolution": {
+    "language": "en",
+    "source": "latest_user_input"
+  },
+  "publicSurface": {
+    "primaryDisplay": "conversation_notice",
+    "nativeEnhancementAllowed": true,
+    "popupRequired": false,
+    "hiddenInternalFields": [
+      "Preflight",
+      "nativeChoiceSurface",
+      "conversation_fallback",
+      "packet_id",
+      "protocol_trace"
+    ]
+  },
+  "publicLabels": null,
+  "stagePurpose": null,
+  "stagePurposeKey": "critical"
+}
