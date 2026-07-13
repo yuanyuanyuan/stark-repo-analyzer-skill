@@ -1,0 +1,60 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "input": {
+    "maxFileSize": 5242880
+  },
+  "output": {
+    "filePath": "repomix-hotspot.xml",
+    "style": "xml",
+    "filePathStyle": "target-relative",
+    "parsableStyle": true,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "compress": true,
+    "patterns": [
+      {
+        "pattern": "**/*.{lock,map,min.js,min.css}",
+        "directoryStructureOnly": true
+      },
+      {
+        "pattern": "**/{package.json,pyproject.toml,Cargo.toml,go.mod}",
+        "compress": false
+      }
+    ],
+    "topFilesLength": 20,
+    "showLineNumbers": false,
+    "truncateBase64": true,
+    "copyToClipboard": false,
+    "includeEmptyDirectories": false,
+    "includeFullDirectoryStructure": false,
+    "tokenCountTree": true,
+    "tokenBudget": 50000,
+    "git": {
+      "sortByChanges": false,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "include": [],
+  "ignore": {
+    "useGitignore": true,
+    "useDotIgnore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      ".git/**",
+      ".graphify/**",
+      "graphify-out/**",
+      ".serena/**",
+      "repomix-output.*"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}

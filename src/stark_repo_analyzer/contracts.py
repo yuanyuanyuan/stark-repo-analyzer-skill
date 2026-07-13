@@ -134,8 +134,8 @@ def validate_run_contract(work_dir: Path, *, complete: bool = False) -> dict[str
     graph_files = (work_dir / "graphify-out" / "graph.json", work_dir / "graphify-out" / "GRAPH_REPORT.md")
     missing.extend(str(path.relative_to(work_dir)) for path in graph_files if not path.is_file())
     raw_graph_files = (
-        work_dir / "graphify-out" / "raw-deep-graph.json",
-        work_dir / "graphify-out" / "raw-GRAPH_REPORT.md",
+        work_dir / "graphify-out" / "raw-code-only-graph.json",
+        work_dir / "graphify-out" / "raw-code-only-GRAPH_REPORT.md",
     )
     missing.extend(str(path.relative_to(work_dir)) for path in raw_graph_files if not path.is_file())
     missing.extend(name for name in ("doctor-preflight.json", "doctor-post-graph.json") if not (work_dir / name).is_file())
@@ -148,6 +148,9 @@ def validate_run_contract(work_dir: Path, *, complete: bool = False) -> dict[str
         raise ContractError(f"metadata.json is invalid: {type(exc).__name__}") from exc
     if metadata.get("analysis_mode") != "standard":
         raise ContractError("V1 only supports standard analysis mode")
+    graphify_metadata = metadata.get("graphify", {})
+    if graphify_metadata.get("extraction_mode") != "code-only" or graphify_metadata.get("semantic_extraction") != "disabled":
+        raise ContractError("V1 Graphify evidence must be code-only with semantic extraction disabled")
     source = metadata.get("source", {})
     if not source.get("source_commit"):
         raise ContractError("metadata does not record source commit")

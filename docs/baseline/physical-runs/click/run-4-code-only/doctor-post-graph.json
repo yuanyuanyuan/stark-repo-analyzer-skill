@@ -1,0 +1,28 @@
+{
+  "failures": [],
+  "graphify": {
+    "backend": null,
+    "cli_available": false,
+    "extraction_mode": "code-only",
+    "health": {
+      "edge_source_references": 3916,
+      "edges": 3916,
+      "extracted_edges": 3033,
+      "node_source_references": 1813,
+      "nodes": 1907,
+      "unlocated_symbol_nodes": 94
+    },
+    "model": null,
+    "semantic_extraction": "disabled",
+    "version": null
+  },
+  "phase": "post-graph",
+  "schema_version": 1,
+  "status": {
+    "code": 0,
+    "name": "ready"
+  },
+  "target": "/Users/chuzu/projests/stark-repo-analyzer-reference-sources/click",
+  "warnings": [],
+  "work_dir": "/private/tmp/stark-click-code-only-pilot"
+}

@@ -1,0 +1,269 @@
+# Graph Report - normalized source evidence
+
+- Summary: 58040 nodes · 152791 edges.
+- Raw Graphify graph: 58118 nodes · 152791 edges.
+- Source-locatable evidence retained; dropped 78 nodes and 0 edges.
+- Raw report is retained in `raw-GRAPH_REPORT.md`; raw graph is retained in `raw-deep-graph.json`.
+
+# Graph Report - /tmp/stark-ruff-code-only-run-2  (2026-07-13)
+
+## Corpus Check
+- cluster-only mode — file stats not available
+
+## Summary
+- 58118 nodes · 123337 edges · 4611 communities (3816 shown, 795 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 4036 edges (avg confidence: 0.79)
+- Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `b5705d47`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
+
+## Community Hubs (Navigation)
+- Violation
+- Checker
+- Locator
+- AtomicNodeIndex
+- LinterSettings
+- Db
+- AnyRootNodeRef
+- V
+- PyFormatContext
+- Format
+- LintContext
+- TypeInferenceBuilder<'db, 'ast>
+- Expr
+- cursor_test
+- ParsedModuleRef
+- SemanticIndexBuilder<'db, 'ast>
+- mod.rs
+- ScopedMemberId
+- Decorator
+- completion.rs
+- IndexVec
+- Fix
+- Option
+- System
+- Diagnostic
+- test_path
+- Db
+- SourceCodeSnippet
+- Stmt
+- format_with
+- DisplayDiagnosticConfig
+- ExpressionNodeKey
+- typed_dict.rs
+- FileScopeId
+- FormatNodeRule
+- hover.rs
+- ScopedReachabilityConstraintId
+- PlaceAndQualifiers
+- lexer.rs
+- Session
+- Db
+- Db
+- Db
+- options.rs
+- mod.rs
+- BoundTypeVarInstance
+- types.rs
+- Db
+- Db
+- Self
+- render.rs
+- removal_in_3.rs
+- TestSystem
+- Context
+- AnyNodeRef
+- ConstraintSetBuilder
+- InferContext
+- Specialization
+- SearchPath
+- Parser<'src>
+- function.rs
+- walk_stmt
+- SemanticModel<'a>
+- setup_db
+- LineWidth
+- OneIndexed
+- Name
+- SystemPath
+- .fmt
+- OptionalParentheses
+- inlay_hints.rs
+- .build
+- rename.rs
+- memory_fs.rs
+- Venv
+- Db
+- completion
+- resolver.rs
+- Parser<'src>
+- args.rs
+- options.rs
+- VendoredFileSystem
+- ClonedRepository
+- resolve.rs
+- folding_range.rs
+- Db
+- indentation
+- ide_support.rs
+- matcher.rs
+- TokenKind
+- Parser<'src>
+- semantic_tokens.rs
+- docstring.rs
+- AlwaysFixableViolation
+- IgnoreNames
+- ClassBase
+- AnyStringFlags
+- parsed_module
+- Files
+- ConstraintSet
+- helpers.rs
+- string.rs
+- find_references.rs
+- Tokens
+- parenthesized
+- PathBuf
+- String
+- CacheKeyHasher
+- UnresolvedRuleSelector
+- Parser<'s, C, F>
+- NotebookIndex
+- check_docstring.rs
+- _S
+- noqa.rs
+- Type
+- BufferSnapshot
+- format.rs
+- fixes.rs
+- typing.rs
+- list.rs
+- ProjectDatabase
+- mod.rs
+- Db
+- check_ast
+- Iterator
+- Suppressions
+- Generator<'a>
+- Expression
+- Project
+- PyFormatOptions
+- SourceRow
+- pull_diagnostics.rs
+- LiteralValueType<'db>
+- reachability.rs
+- symbols.rs
+- Type
+- ty.rs
+- FormatRuleWithOptions
+- mod.rs
+- comparable.rs
+- CallableType
+- TypeWriter
+- fastapi_non_annotated_dependency.rs
+- mod.rs
+- DocumentQuery
+- SemanticModel<'db>
+- directives.rs
+- QualifiedName
+- FormatterSettings
+- equality.rs
+- properties
+- lib.rs
+- NoqaMapping
+- RangedValue<T>
+- NodeWithScopeKind
+- .new
+- cache.rs
+- NonAtomicType
+- linter.rs
+- Workspace
+- Db
+- .new
+- VendoredPath
+- format.rs
+- stmt_assign.rs
+- SemanticSyntaxCheckerVisitor
+- options.rs
+- OsSystem
+- FormatElement
+- ImportSelector
+- PyFormatContext<'a>
+- .builder
+- _parser.py
+- configuration.rs
+- conformance.py
+- typeshed.rs
+- CallHierarchyItem
+- GotoTarget
+- metadata.rs
+- Checker<'a>
+- attribute_write.rs
+- LSPSystem
+- map.rs
+- dataset.py
+- LineLength
+- Type
+- RecordVisitor
+- error.rs
+- PatternPredicateKind
+- assertion.rs
+- categorize.rs
+- blank_lines.rs
+- DecoratedComment
+- Option
+- format_dev.rs
+- sarif.rs
+- Self
+- Binding<'a>
+- FrozenMap<K, V>
+- Db
+- format.rs
+- LintMetadata
+- incoming_calls.rs
+- parser.rs
+- StringLike
+- suppression.rs
+- newlines.rs
+- Gitignore
+- Type
+- ClassType
+- SessionSnapshot
+- B006_B008.py
+- Analyze
+- parametrize.rs
+- .build
+- ScopedSymbolId
+- workspace_diagnostic.rs
+- array
+- SemanticSyntaxChecker
+- full.rs
+- ModuleDb
+- String
+- parse_expression
+- Pattern
+- lib.rs
+- Range
+- Option
+- Enum
+- module_glob.rs
+- Parsed
+- SectionContext<'a>
+- .fmt
+- .push_comment
+- ClauseHeader
+- inline.rs
+- structured.rs
+- RetriableRequestHandler
+- Any
+- WalkDirectoryBuilder
+- options.rs
+- suppressions
+- simple_tokenizer.rs
+- Session
+- Db
+- LintDiagnosticGuard
+- 

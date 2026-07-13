@@ -37,11 +37,14 @@ TRANSIENT_FAILURE = re.compile(
     r"(?:timeout|timed out|HTTP[ /](?:429|5[0-9][0-9])|status[=: ]+(?:429|5[0-9][0-9]))",
     re.IGNORECASE,
 )
-GRAPHIFY_EXTRACT_OPTIONS = (
-    "--max-concurrency", "8",
-    "--token-budget", "24000",
-    "--api-timeout", "120",
-)
+GRAPHIFY_MIN_VERSION = (0, 9, 13)
+GRAPHIFY_EXTRACT_OPTIONS = ("--code-only", "--no-cluster")
+
+
+def graphify_cli() -> str:
+    """Allow a pinned external CLI in tests and isolated baseline runs."""
+
+    return os.environ.get("GRAPHIFY_CLI", "graphify")
 
 
 class RunFailure(RuntimeError):
@@ -335,14 +338,12 @@ def graphify_extract(target: Path, work_dir: Path, log: list[str]) -> list[dict[
 
 def graphify_extract_command(target: Path, work_dir: Path) -> list[str]:
     return [
-        "graphify",
+        graphify_cli(),
         "extract",
         str(target),
-        "--mode",
-        "deep",
+        *GRAPHIFY_EXTRACT_OPTIONS,
         "--out",
         str(work_dir),
-        *GRAPHIFY_EXTRACT_OPTIONS,
     ]
 
 
@@ -393,10 +394,10 @@ def classify_stream(value: str) -> str:
 
 
 def graphify_postprocess(target: Path, work_dir: Path, log: list[str]) -> dict[str, object]:
-    """Generate the report, retain raw deep output, and normalize source evidence."""
+    """Generate the report, retain raw code-only output, and normalize evidence."""
 
     graph_dir = work_dir / "graphify-out"
-    cluster_command = ["graphify", "cluster-only", str(work_dir), "--no-label", "--no-viz"]
+    cluster_command = [graphify_cli(), "cluster-only", str(work_dir), "--no-label", "--no-viz"]
     cluster_env = os.environ.copy()
     cluster_env["GRAPHIFY_OUT"] = str(graph_dir.resolve())
     started = time.monotonic()
@@ -433,18 +434,21 @@ def normalize_graphify_artifacts(
     graph_dir = work_dir / "graphify-out"
     graph_path = graph_dir / "graph.json"
     report_path = graph_dir / "GRAPH_REPORT.md"
-    raw_graph_path = graph_dir / "raw-deep-graph.json"
-    raw_report_path = graph_dir / "raw-GRAPH_REPORT.md"
+    raw_graph_path = graph_dir / "raw-code-only-graph.json"
+    raw_report_path = graph_dir / "raw-code-only-GRAPH_REPORT.md"
+    legacy_raw_graph_path = graph_dir / "raw-deep-graph.json"
+    legacy_raw_report_path = graph_dir / "raw-GRAPH_REPORT.md"
     try:
         raw_pair_exists = raw_graph_path.is_file() and raw_report_path.is_file()
+        legacy_pair_exists = legacy_raw_graph_path.is_file() and legacy_raw_report_path.is_file()
         partial_raw_pair = raw_graph_path.exists() or raw_report_path.exists()
         if partial_raw_pair and not raw_pair_exists:
             raise RunFailure(
                 "Graphify raw artifact pair is incomplete",
                 failure_class="graphify-artifact",
             )
-        source_graph_path = raw_graph_path if raw_pair_exists else graph_path
-        source_report_path = raw_report_path if raw_pair_exists else report_path
+        source_graph_path = raw_graph_path if raw_pair_exists else (legacy_raw_graph_path if legacy_pair_exists else graph_path)
+        source_report_path = raw_report_path if raw_pair_exists else (legacy_raw_report_path if legacy_pair_exists else report_path)
         raw_graph = json.loads(source_graph_path.read_text(encoding="utf-8"))
         raw_report = source_report_path.read_text(encoding="utf-8")
     except (OSError, json.JSONDecodeError) as exc:
@@ -488,7 +492,7 @@ def normalize_graphify_artifacts(
             "source_locatable_edges": len(valid_links),
             "dropped_nodes": len(nodes) - len(valid_nodes) - len(symbol_nodes),
             "dropped_edges": len(links) - len(valid_links),
-            "raw_report": "raw-GRAPH_REPORT.md",
+            "raw_report": "raw-code-only-GRAPH_REPORT.md",
         },
     }
     if not normalized["nodes"] or not normalized["links"]:
@@ -503,7 +507,7 @@ def normalize_graphify_artifacts(
         f"- Summary: {len(normalized['nodes'])} nodes · {len(normalized['links'])} edges.\n"
         f"- Raw Graphify graph: {len(nodes)} nodes · {len(links)} edges.\n"
         f"- Source-locatable evidence retained; dropped {normalized['normalization']['dropped_nodes']} nodes and {normalized['normalization']['dropped_edges']} edges.\n"
-        "- Raw report is retained in `raw-GRAPH_REPORT.md`; raw graph is retained in `raw-deep-graph.json`.\n\n"
+        "- Raw report is retained in `raw-code-only-GRAPH_REPORT.md`; raw graph is retained in `raw-code-only-graph.json`.\n\n"
         + raw_report[:4000],
         encoding="utf-8",
     )
@@ -511,7 +515,7 @@ def normalize_graphify_artifacts(
         f"graphify normalized raw={len(nodes)}:{len(links)} normalized={len(normalized['nodes'])}:{len(normalized['links'])}"
     )
     result = {
-        "raw_artifacts": ["graphify-out/raw-deep-graph.json", "graphify-out/raw-GRAPH_REPORT.md"],
+        "raw_artifacts": ["graphify-out/raw-code-only-graph.json", "graphify-out/raw-code-only-GRAPH_REPORT.md"],
         "normalized_artifacts": ["graphify-out/graph.json", "graphify-out/GRAPH_REPORT.md"],
         "raw_graph": {"nodes": len(nodes), "edges": len(links)},
         "normalized_graph": {"nodes": len(normalized["nodes"]), "edges": len(normalized["links"])},
@@ -578,7 +582,7 @@ def write_module_plan(work_dir: Path, sizing: dict[str, object], questions: list
                 "candidate_scope": f"{group}/" if group != "root" else "repository root",
                 "type": "candidate-core-or-secondary",
                 "business_module_required": True,
-                "reason": "Directory is only a navigation candidate; Agent must derive the business boundary from data flow and responsibility.",
+                "reason": "Directory is only a navigation candidate; the final business boundary must be derived from data flow and responsibility.",
                 "output": f"drafts/06-module-{module_id}.md",
                 "questions": [item["id"] for item in questions],
                 "owner": "Agent",
@@ -591,7 +595,7 @@ def write_module_plan(work_dir: Path, sizing: dict[str, object], questions: list
     lines = [
         "# Module Analysis Plan",
         "",
-        "Graphify and size scans provide candidate paths only. The Agent must derive business modules from capabilities, data flow and responsibility before assigning module drafts.",
+        "Graphify and size scans provide candidate paths only. Derive business modules from capabilities, data flow and responsibility before assigning module drafts.",
         "",
         "## Narrative",
         "",
@@ -601,7 +605,7 @@ def write_module_plan(work_dir: Path, sizing: dict[str, object], questions: list
         "",
     ]
     lines.extend(f"{i}. `{module['id']}` — `{module['candidate_scope']}`; {module['reason']}" for i, module in enumerate(modules, start=1))
-    lines.extend(["", "## Agent Requirements", "", "- One independent Agent task per core business module.", "- All secondary modules may be assigned to one secondary task.", "- Every draft must include source paths/lines, Mermaid, Why > What trade-offs and a final coverage table.", ""])
+    lines.extend(["", "## Analysis Requirements", "", "- One independent task per core business module.", "- All secondary modules may be assigned to one secondary task.", "- Every draft must include source paths/lines, Mermaid, Why > What trade-offs and a final coverage table.", ""])
     (work_dir / "drafts" / "05-modules-plan.md").write_text("\n".join(lines), encoding="utf-8")
     (work_dir / "drafts" / "06-module-tasks.json").write_text(json.dumps(modules, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return modules
@@ -618,8 +622,9 @@ def write_input_snapshot(work_dir: Path, value: str, target: Path, metadata: dic
         f"  value: {value}",
         "analysis_mode: standard",
         "graphify:",
-        "  extraction_mode: deep",
-        "  backend: auto-detect",
+        "  extraction_mode: code-only",
+        "  semantic_extraction: disabled",
+        "  version: 0.9.13",
         "  output: <WORK_DIR>/graphify-out",
         f"workspace: {work_dir}",
         "```",
@@ -649,7 +654,7 @@ def write_plan(work_dir: Path, sizing: dict[str, object], context: dict[str, obj
         "",
         "## Required Sequence",
         "",
-        "Input -> Graphify/doctor -> sizing -> local research -> adaptive questions -> module plan -> Agent module drafts -> source adjudication -> coverage gate -> report fusion.",
+        "Input -> Graphify code-only/doctor -> sizing -> local research -> adaptive questions -> module plan -> Agent module drafts -> source adjudication -> coverage gate -> report fusion.",
         "",
         "## Research Boundary",
         "",
@@ -681,19 +686,19 @@ def fuse_initial_report(work_dir: Path, target: Path, metadata: dict[str, object
         "",
         "## 1. 场景与项目定位",
         "",
-        f"本次 V1 运行分析 `{target.name}`，固定源码 commit 为 `{source_commit}`。最终报告必须从具体使用场景出发，说明现有方案的不足，再解释源码如何解决问题。",
+        f"本次 V1 运行分析 `{target.name}`，固定源码 commit 为 `{source_commit}`。报告从具体使用场景出发，说明现有方案的不足，再解释源码如何解决问题。",
         "",
-        "当前阶段由 Agent 完成项目文档/外部研究、模块源码阅读和 Why > What 叙事；本文件是可审计的报告骨架，不把 Graphify 结构候选误写成结论。",
+        "报告融合项目文档、模块源码阅读和 Why > What 叙事；Graphify 结构只作为导航证据，不直接充当架构结论。",
         "",
         "## 2. 项目全景",
         "",
-        f"有效源码范围为 {sizing['files']:,} 个文件、{sizing['effective_lines']:,} 行；V1 分析档位为 `standard`。候选目录只用于组织 Agent 阅读，业务模块边界必须由数据流和职责确认。",
+        f"有效源码范围为 {sizing['files']:,} 个文件、{sizing['effective_lines']:,} 行；V1 分析档位为 `standard`。候选目录只用于导航，业务模块边界按数据流和职责确认。",
         "",
         "```mermaid",
         "flowchart LR",
         "Input[Local path or public repository] --> Normalize[Resolve source commit]",
         "Normalize --> Doctor[Doctor preflight]",
-        "Doctor --> Graph[Graphify deep structure evidence]",
+        "Doctor --> Graph[Graphify code-only structure evidence]",
         "Graph --> Read[Agent source reading]",
         "Read --> Validate[Cross-validation and coverage gate]",
         "Validate --> Report[Single final report]",
@@ -724,7 +729,7 @@ def fuse_initial_report(work_dir: Path, target: Path, metadata: dict[str, object
             "",
             f"- Source: `{metadata['source']['resolved_path']}`",
             f"- Commit: `{source_commit}`",
-            "- Graphify: `graphify-out/graph.json`, `graphify-out/GRAPH_REPORT.md`, and `drafts/01-graphify-map.md`",
+            "- Graphify code-only: `graphify-out/graph.json`, `graphify-out/GRAPH_REPORT.md`, and `drafts/01-graphify-map.md`",
             f"- Local context documents: {len(context['documents'])}; external research status: `{context['research_status']}`",
             "- Static reading coverage, test coverage and runtime verification must remain separate metrics.",
             "- Unread code, unavailable tools, bounded scope and unperformed research must be stated explicitly.",
@@ -835,9 +840,16 @@ def finalize(args: argparse.Namespace) -> int:
     assert validation is not None
 
     base = (work_dir / "ANALYSIS_REPORT.md").read_text(encoding="utf-8", errors="replace")
-    temporary_plan_marker = "\n## 4. Report Structure and Module Tasks"
-    if temporary_plan_marker in base:
-        base = base.split(temporary_plan_marker, 1)[0].rstrip()
+    # Finalization may be retried after a corrected draft. Strip any prior fused
+    # report sections so the operation remains idempotent.
+    temporary_plan_markers = (
+        "\n## 4. Report Structure and Module Tasks",
+        "\n## 4. 最终业务模块与叙事",
+    )
+    for temporary_plan_marker in temporary_plan_markers:
+        if temporary_plan_marker in base:
+            base = base.split(temporary_plan_marker, 1)[0].rstrip()
+            break
     modules = sorted((work_dir / "drafts").glob("06-module-*.md"))
     research = (work_dir / "drafts" / "03-research.md").read_text(encoding="utf-8", errors="replace")
     plan = (work_dir / "drafts" / "03-plan.md").read_text(encoding="utf-8", errors="replace")
@@ -940,8 +952,8 @@ def analyze(args: argparse.Namespace) -> int:
         graphify.update(
             {
                 "version": pre.get("graphify", {}).get("version"),
-                "backend": pre.get("graphify", {}).get("backend"),
-                "model": pre.get("graphify", {}).get("model"),
+                "extraction_mode": "code-only",
+                "semantic_extraction": "disabled",
                 "extract_command": shlex.join(graphify_extract_command(target, work_dir)),
             }
         )
@@ -1014,7 +1026,7 @@ def resume(args: argparse.Namespace) -> int:
         graphify = metadata.setdefault("graphify", {})
         graph_dir = work_dir / "graphify-out"
         graphify.setdefault("normalized_artifacts", ["graphify-out/graph.json", "graphify-out/GRAPH_REPORT.md"])
-        raw_artifacts = ["graphify-out/raw-deep-graph.json", "graphify-out/raw-GRAPH_REPORT.md"]
+        raw_artifacts = ["graphify-out/raw-code-only-graph.json", "graphify-out/raw-code-only-GRAPH_REPORT.md"]
         graphify["artifact_paths"] = graphify["normalized_artifacts"]
         if not (graph_dir / "graph.json").is_file() or not (graph_dir / "GRAPH_REPORT.md").is_file():
             graphify.update(graphify_postprocess(target, work_dir, log))

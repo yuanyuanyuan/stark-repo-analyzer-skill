@@ -2,7 +2,7 @@
 
 ## Final Delivery Goal
 
-保真移植一个可安装、可触发、可验证的 `stark-repo-analyzer-skill`。它以参考 `repo-analyzer` 的流程、设计和逻辑为行为基线，仅加入 Graphify 结构证据增强，同时保留明确的证据边界、覆盖率诚实记录和可复现的分析产物。
+保真移植一个可安装、可触发、可验证的 `stark-repo-analyzer-skill`。它以参考 `repo-analyzer` 的流程、设计和逻辑为行为基线，仅加入 Graphify `0.9.13+ code-only` 结构证据增强；当前 V1 不调用 Graphify semantic/LLM 模块，并保留明确的证据边界、覆盖率诚实记录和可复现的分析产物。
 
 ## Scope
 
@@ -11,15 +11,16 @@
 - 参考输出基线：`docs/baseline/reference-runs/`。
 - 目标项目工作树：当前仓库；不使用此前 Git 历史推断行为。
 - 主交付模式：`standard`。
-- 产品级 `deep`：不纳入 V1；V1 只交付 `standard` 分析档位。此项与强制的 Graphify `--mode deep` 深度提取不同。
+- 产品级 `deep`：不纳入 V1；V1 只交付 `standard` 分析档位。Graphify 也不再使用 `--mode deep`，只运行 `0.9.13+ --code-only --no-cluster`。
+- P5 动态行为验证：不纳入 V1 验收范围。V1 保留其与静态阅读覆盖率、测试覆盖率的区分，并将动态验证列为后续扩展，不以未执行目标项目构建、测试、网络或交互流程阻断交付。
 - Graphify：V1 的强制结构证据前置闸门；图谱缺失、为空或健康检查失败时，该次分析必须中止，不能降级。
-- LLM 引擎：每次分析必须由 Graphify 自动探测到可用后端；DeepSeek 只是候选，技能不得硬编码供应商、密钥或探测顺序。
+- LLM 引擎：不属于当前 V1 Graphify 路径。Graphify code-only 不探测、不读取、不记录 provider、模型或密钥；Why > What 和语义判断由源码阅读 Agent 完成。
 - Graphify 执行：自动化与回归使用 headless CLI；交互式 `/graphify` 只用于人工探索，不作为验收执行器。
 - Graphify 产物：目标仓库只读；图谱、缓存和报告只写入本次 `$WORK_DIR/graphify-out/`，后续查询显式指定该图谱路径。
-- Graphify 失败：暂时性 LLM 错误最多退避重试两次；配置、权限、空图和产物完整性错误立即中止，不能以重试或降级掩盖。
+- Graphify 失败：code-only 是本地确定性路径；配置、版本、权限、执行器、空图、产物完整性和源边界错误立即中止，不重试或降级伪造成功。
 - Graphify 健康：`graph.json` 与 `GRAPH_REPORT.md` 必须可解析且图谱非空、来源可定位；`click` 试点还必须有一条可定位的 `EXTRACTED` 边。
 - Graphify 证据：源码裁决冲突；`EXTRACTED` 需验证核心路径，`INFERRED` 是待验证项，`AMBIGUOUS` 仅为风险/疑问，所有冲突进入交叉验证草稿。
-- Graphify Bootstrap：Agent 可执行官方非敏感安装/升级与复检；API key、企业代理和私有 provider 配置由用户提供，未满足时明确引导后中止。
+- Graphify Bootstrap：Agent 可执行官方非敏感安装/升级与复检，必须满足 `graphify 0.9.13+` 和 `--code-only`；当前路径不需要 API key、企业代理或私有 provider。
 - doctor：V1 提供确定性预检脚本，按 `0/10/20/30` 区分 ready、Agent Bootstrap、用户配置和阻断状态；正式分析只在 doctor 返回 `0` 后开始。
 - 低侵入：所有程序化检测交给 doctor 的 preflight/post-graph 模式；参考 skill 不承担检测分支，Graphify map 仅作为附加导航上下文。
 
@@ -30,15 +31,15 @@
 1. 技能元数据、触发条件、输入类型和输出目录契约完整。
 2. 参考 skill 的阶段、Why > What、源码阅读、subagent、覆盖率、交叉验证和报告融合流程保持保真；Graphify 只作已定义的增强。
 3. `standard` 流程能够从项目输入走到最终报告和验证清单。
-4. 每次分析可由 Agent 完成 Graphify Bootstrap，经 doctor preflight/post-graph 验证后，在原流程中使用有效图谱作为附加导航上下文，并将图谱发现与核心源码阅读交叉验证。
+4. 每次分析可由 Agent 完成 Graphify code-only Bootstrap，经 doctor preflight/post-graph 验证后，在原流程中使用有效图谱作为附加导航上下文，并将图谱发现与核心源码阅读交叉验证。
 5. `doctor` 对 ready、可自动修复、需用户配置和阻断状态输出可机器判断的 JSON 与稳定退出码。
-6. 分析过程能记录源码 commit、工具、模型、运行时间、外部来源和失败原因。
+6. 分析过程能记录源码 commit、Graphify 版本与 code-only 命令、运行时间、外部来源和失败原因；不记录 provider/model，因为当前路径不调用它们。
 7. 报告包含项目定位、全景、模块分析、Why > What、Mermaid 图、源码证据和限制。
 8. 能对 6 个参考项目执行回归，至少保留参考基线定义的核心模块和分析主线。
 9. 静态阅读覆盖率、测试覆盖率和运行时验证明确区分。
 10. 失败、超时、外部工具不可用和超大项目 bounded scope 都会被显式记录。
 11. 所有自动验证器通过，且人工复核清单没有未处理的高风险项。
-12. 物理基线闸门 P0-P5 已评估；P2 真实调用和 P4 可重复运行必须通过，才能开始大规模重实现。
+12. 先完成一个小型项目的原版 reference baseline 与修改后 code-only baseline 对比，真实调用 repo-analyzer skill 要求的 subagents；pilot 通过后再对六个 reference-runs 执行完整 standard baseline 对比。P5 已评估并明确为 V1 范围外。
 
 ## Atomic Task Pass Criteria
 

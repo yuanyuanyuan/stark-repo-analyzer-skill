@@ -1,22 +1,20 @@
 # Graphify Integration Guide
 
-This is the only Graphify-specific addition to the reference `repo-analyzer` workflow.
+This is the only Graphify-specific addition to the reference `repo-analyzer` workflow. V1 uses static Graphify code-only evidence only.
 
 ## Bootstrap and Doctor
 
-The Agent may install or upgrade non-sensitive Graphify tooling and re-run the doctor. It must not create, read, print or bypass API keys, enterprise proxies or private provider configuration. A missing provider configuration is a user action and is reported as doctor code `20`.
+The Agent may install or upgrade the non-sensitive Graphify CLI. V1 requires Graphify `0.9.13` or newer with `--code-only`; it must not create, read, print or bypass API keys, enterprise proxies or private provider configuration because no LLM provider is needed.
 
 Run from the skill repository root:
 
 ```bash
 acceptance/doctor.sh preflight --target <target> --work-dir <WORK_DIR> --json
-graphify extract <target> --mode deep --out <WORK_DIR> --max-concurrency 8 --token-budget 24000 --api-timeout 120
+graphify extract <target> --code-only --no-cluster --out <WORK_DIR>
 acceptance/doctor.sh post-graph --target <target> --work-dir <WORK_DIR> --json
 ```
 
-The extract command deliberately omits `--backend`. Graphify's `detect_backend()` owns provider priority. Record only the selected backend and model name. Do not downgrade to AST-only output when the required Graphify health gate fails.
-
-The three tuning flags are official Graphify controls for bounded semantic extraction progress; they do not select a provider or change `--mode deep`. Record the complete command in run metadata.
+The extract command must not receive `--backend`, a model, provider configuration, or semantic extraction flags. Record `extraction_mode: code-only`, `semantic_extraction: disabled`, and the Graphify version; backend/model fields are null by design. Do not downgrade to a hand-written or fixture graph when the code-only health gate fails.
 
 ## Retry Boundary
 

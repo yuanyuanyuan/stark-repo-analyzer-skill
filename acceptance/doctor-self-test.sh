@@ -6,6 +6,22 @@ DOCTOR="$ROOT/acceptance/doctor.sh"
 TARGET="$ROOT"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
+FAKE_GRAPHIFY="$TMP/graphify"
+cat >"$FAKE_GRAPHIFY" <<'SH'
+#!/usr/bin/env bash
+if [ "${1:-}" = "--version" ]; then
+  printf '%s\n' 'graphify 0.9.13'
+elif [ "${1:-}" = "--help" ]; then
+  printf '%s\n' 'extract --code-only --no-cluster'
+elif [ "${1:-}" = "extract" ] && [ "${2:-}" = "--help" ]; then
+  printf '%s\n' 'extract --code-only --no-cluster'
+elif [ "${1:-}" = "extract" ]; then
+  exit 0
+else
+  exit 0
+fi
+SH
+chmod +x "$FAKE_GRAPHIFY"
 
 failures=0
 fail() {
@@ -21,10 +37,10 @@ cp "$ROOT/graphify-out/graph.json" "$ROOT/graphify-out/GRAPH_REPORT.md" \
   "$TMP/run-a/graphify-out/"
 cp "$ROOT/graphify-out/graph.json" "$ROOT/graphify-out/GRAPH_REPORT.md" \
   "$TMP/run-b/graphify-out/"
-cp "$TMP/run-a/graphify-out/graph.json" "$TMP/run-a/graphify-out/raw-deep-graph.json"
-cp "$TMP/run-a/graphify-out/GRAPH_REPORT.md" "$TMP/run-a/graphify-out/raw-GRAPH_REPORT.md"
-cp "$TMP/run-b/graphify-out/graph.json" "$TMP/run-b/graphify-out/raw-deep-graph.json"
-cp "$TMP/run-b/graphify-out/GRAPH_REPORT.md" "$TMP/run-b/graphify-out/raw-GRAPH_REPORT.md"
+cp "$TMP/run-a/graphify-out/graph.json" "$TMP/run-a/graphify-out/raw-code-only-graph.json"
+cp "$TMP/run-a/graphify-out/GRAPH_REPORT.md" "$TMP/run-a/graphify-out/raw-code-only-GRAPH_REPORT.md"
+cp "$TMP/run-b/graphify-out/graph.json" "$TMP/run-b/graphify-out/raw-code-only-graph.json"
+cp "$TMP/run-b/graphify-out/GRAPH_REPORT.md" "$TMP/run-b/graphify-out/raw-code-only-GRAPH_REPORT.md"
 
 set +e
 "$DOCTOR" post-graph --target "$TARGET" --work-dir "$TMP/run-a" --json >"$TMP/a.json"
@@ -70,16 +86,16 @@ set -e
 [ "$rc_empty" -eq 30 ] && pass "empty graph is rejected with blocked status" || fail "empty graph is rejected with blocked status"
 
 set +e
-"$DOCTOR" preflight --target "$TARGET" --work-dir "$TARGET" --json >/dev/null
+GRAPHIFY_CLI="$FAKE_GRAPHIFY" "$DOCTOR" preflight --target "$TARGET" --work-dir "$TARGET" --json >/dev/null
 rc_isolation=$?
 set -e
 [ "$rc_isolation" -eq 30 ] && pass "workdir inside target is rejected" || fail "workdir inside target is rejected"
 
 set +e
-DEEPSEEK_API_KEY="doctor-self-test-secret" "$DOCTOR" preflight --target "$TARGET" --work-dir "$TMP/run-b" --json >"$TMP/preflight.json"
+DEEPSEEK_API_KEY="doctor-self-test-secret" GRAPHIFY_CLI="$FAKE_GRAPHIFY" "$DOCTOR" preflight --target "$TARGET" --work-dir "$TMP/run-b" --json >"$TMP/preflight.json"
 rc_preflight=$?
 set -e
-[ "$rc_preflight" -eq 0 ] || fail "preflight resolves Graphify backend"
+[ "$rc_preflight" -eq 0 ] || fail "preflight accepts Graphify code-only capability"
 if grep -Fq "doctor-self-test-secret" "$TMP/preflight.json"; then
   fail "doctor output contains a secret value"
 else
