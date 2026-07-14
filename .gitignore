@@ -73,3 +73,6 @@ graphify-out/
 # Historical baseline runs are archived outside Git; keep only the locator.
 tests/baseline/*
 !tests/baseline/README.md
+
+# Local gstack/CSO artifacts
+.gstack/

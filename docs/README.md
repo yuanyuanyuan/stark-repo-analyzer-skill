@@ -8,7 +8,7 @@
 
 | 你要了解什么 | 必读入口 | 读到什么就可以开始行动 |
 |---|---|---|
-| 当前是否有实施主线 | [roadmap 索引](roadmap/README.md) → [exec plan 索引](exec-plans/README.md) | 当前无 `active` 文档；最近完成 [GitHub v1.1.0 发布](roadmap/github-v1.1.0-release-roadmap.md) 与代码地图导航|
+| 当前是否有实施主线 | [roadmap 索引](roadmap/README.md) → [exec plan 索引](exec-plans/README.md) | 当前 `active`：[GitHub v1.1.1 发布](roadmap/github-v1.1.1-release-roadmap.md)；最近完成 [GitHub v1.1.0 发布](roadmap/github-v1.1.0-release-roadmap.md) 与代码地图导航 |
 | 最近主线做了什么 | [已完成 roadmap](roadmap/graphify-simplification-roadmap.md) → [progress](exec-plans/graphify-simplification-progress.md) | 找到 `5/5` 完成口径、实际验证和未执行的发布验收 |
 | 产品必须怎样表现 | [spec 索引](spec/README.md) → 相关合同 | 找到输入、输出、失败语义和不变量 |
 | 为什么选择当前架构 | [ADR 索引](adr/README.md) → 相关当前决策 | 找到决策、原因、边界和取代关系 |
@@ -44,7 +44,7 @@ Agent 对上述目录的强制创建、维护和冲突处理动作见
 ## 读取顺序与关系
 
 1. 先读根 `AGENTS.md`：它会首先路由到 [`dev-rules/output-style/`](dev-rules/output-style/)，随后确定仓库级行为约束、控制面状态以及本次变更必须读取的验收规则。
-2. 从 roadmap 与 exec plan 目录索引确认是否存在 `active` 文档；当前无活动实施主线；GitHub v1.1.0 发布与代码地图导航等已是 `completed`。
+2. 从 roadmap 与 exec plan 目录索引确认是否存在 `active` 文档；当前活动主线为 GitHub v1.1.1 发布；GitHub v1.1.0 发布与代码地图导航等已是 `completed`。
 3. 只有存在活动控制面时才沿 roadmap、plan 和 progress 确认本轮任务；新的跨多轮工作必须先建立控制面，不能从已完成计划自行推断下一刀。
 4. 涉及产品行为时先读 `CONTEXT.md`、`spec/README.md` 和 `adr/README.md`，再只读取与当前变更相关的合同和 ADR。
 5. 涉及实现或验收声明时读 `dev-rules/`：它定义验证方法和哪些证据允许声明通过。

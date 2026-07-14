@@ -12,6 +12,7 @@
 | [`dual-agent-review/`](dual-agent-review/) | Worker → Judge（及 Orchestrator）审查协议、`awaiting-judge`/completed 状态机、校验脚本与 Codex hooks 护栏 |
 | [`real-uat-regression/`](real-uat-regression/) | 区分开发期聚焦 UAT 与发布级真实回归，覆盖模式、Graphify 选择、健康门和 subagent 同意边界 |
 | [`code-map/`](code-map/) | 本仓库代码地图真源、更新触发、无影响声明与提醒 hook 行为 |
+| [`pre-release-security-scan/`](pre-release-security-scan/) | 公开发版前强制密钥/敏感资料扫描（工作树 + 全 git 历史）；与真实回归 UAT 并列且互不替代 |
 | [`domain-language.md`](domain-language.md) | 领域语言和 ADR 使用约束 |
 | （后续）其它 dev 规则 | 新增时在本 README 登记一行，保持「一类规则一个子目录」 |
 
