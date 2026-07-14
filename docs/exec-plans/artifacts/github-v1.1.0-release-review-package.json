@@ -1,0 +1,65 @@
+{
+  "user_goal": "Publish GitHub source release v1.1.0 for maintainer collaboration improvements (code-map + default Judge) without claiming product UAT",
+  "acceptance_items": [
+    "VERSION and adapter metadata are 1.1.0",
+    "Git tag v1.1.0 and GitHub Release point at the release commit on main",
+    "Release notes do not claim marketplace or G5 UAT pass",
+    "Unit tests and release/control-plane validators pass"
+  ],
+  "startup_baseline": {
+    "summary": "git status --short at package build time",
+    "captured_at": "2026-07-14T09:40:40.893207+00:00",
+    "git_status_short": " M docs/exec-plans/github-v1.1.0-release-plan.md\n M docs/exec-plans/github-v1.1.0-release-progress.md\n"
+  },
+  "owned_files": [
+    "VERSION",
+    "package.json",
+    "CHANGELOG.md",
+    ".claude-plugin/plugin.json",
+    ".claude-plugin/marketplace.json",
+    ".codex-plugin/plugin.json",
+    "docs/roadmap/github-v1.1.0-release-roadmap.md",
+    "docs/exec-plans/github-v1.1.0-release-plan.md",
+    "docs/exec-plans/github-v1.1.0-release-progress.md",
+    "docs/roadmap/README.md",
+    "docs/exec-plans/README.md",
+    "docs/README.md"
+  ],
+  "excluded_user_changes": [],
+  "worker_verification": {
+    "commands_run": [
+      "python -m pytest tests/unit -q",
+      "python tools/release/validate-release-metadata.py",
+      "python tools/release/validate-control-plane.py --mode bootstrap",
+      "git push origin main && git push origin v1.1.0 && gh release create v1.1.0"
+    ],
+    "results": [
+      "42 passed",
+      "PASS version=1.1.0",
+      "PASS",
+      "Release published at https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/releases/tag/v1.1.0; tag=4b0d98a"
+    ],
+    "not_run": [
+      "Real external marketplace install",
+      "G5 real regression UAT"
+    ],
+    "deviations": "None material; release follows user commit→push→publish instruction"
+  },
+  "blocking_criteria": [
+    "违反用户明确目标、验收项或审查包范围",
+    "可复现功能错误、数据/安全风险、控制面状态错误",
+    "任务要求但缺失的验证证据",
+    "审查包缺字段或边界无法确认"
+  ],
+  "plan": "docs/exec-plans/github-v1.1.0-release-plan.md",
+  "progress": "docs/exec-plans/github-v1.1.0-release-progress.md",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "medium",
+  "non_blocking_hints": [
+    "风格偏好",
+    "可选重构",
+    "范围外发现",
+    "不影响当前验收的历史问题"
+  ],
+  "generated_at": "2026-07-14T09:40:40.893688+00:00"
+}

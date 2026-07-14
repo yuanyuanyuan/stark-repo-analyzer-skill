@@ -1,13 +1,13 @@
 # GitHub v1.1.0 发布路线图
 
-状态：`active`
+状态：`completed`
 
 执行计划：[github-v1.1.0-release-plan.md](../exec-plans/github-v1.1.0-release-plan.md)
 
 | 固定字段 | 内容 |
 |---|---|
 | 文档角色 | 定义 `v1.1.0` 源码 Release 的目标、边界与完成口径 |
-| 当前状态 | `active` |
+| 当前状态 | `completed`；GitHub `v1.1.0` 源码 Release 已公开 |
 | 当前结论/入口 | 在 `main` 已含 code-map 与默认 Judge 的基础上发布 `v1.1.0` |
 | 何时读取 | 修改发布元数据、打标签或创建 GitHub Release 时 |
 | 何时更新 | 发布边界或版本号变化时 |

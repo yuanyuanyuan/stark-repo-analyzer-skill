@@ -1,6 +1,6 @@
 # GitHub v1.1.0 发布执行计划
 
-状态：`active`
+状态：`completed`
 
 - 质量门：完整门
 - 独立Judge：必须
@@ -10,7 +10,7 @@
 | 固定字段 | 内容 |
 |---|---|
 | 文档角色 | `v1.1.0` 发布顺序与验证 |
-| 当前状态 | `active` |
+| 当前状态 | `completed`；`v1.1.0` Release 已公开，独立 Judge pass |
 | 何时读取 | 执行本发布任一步前 |
 | 关联真源 | roadmap；VERSION；progress |
 
@@ -59,3 +59,7 @@
 - `python tools/release/validate-control-plane.py --mode bootstrap` 与收口 `audit`
 - `git diff --check`
 - `gh release view v1.1.0`
+
+## 收口说明
+
+独立 Judge `Verdict: pass`。S0–S3 完成；marketplace/G5 未执行已披露。
