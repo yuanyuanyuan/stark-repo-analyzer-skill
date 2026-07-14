@@ -1,6 +1,6 @@
 # Skill 原子交付架构执行计划
 
-状态：`proposed`
+状态：`completed`
 
 Roadmap：
 [`skill-distribution-architecture-roadmap.md`](../roadmap/skill-distribution-architecture-roadmap.md)
@@ -14,19 +14,27 @@ Roadmap：
 | 固定字段 | 当前内容 |
 |---|---|
 | 文档角色 | 定义 Skill 原子交付迁移的顺序、所有权、验证和删除门 |
-| 当前状态 | `proposed`；没有获得实现授权 |
-| 当前结论/入口 | 目标结构已确认；下一刀只能在 roadmap 与 plan 同时激活后开始 D1 |
+| 当前状态 | `completed`；独立 Judge `Verdict: pass`；未执行真实外部 marketplace 与 G5，已披露 |
+| 当前结论/入口 | 先读 progress 最新快照；未执行真实外部 marketplace 与 G5 回归 |
 | 何时读取 | 准备迁移 gate、plugin manifests、版本、测试或旧入口时 |
 | 何时更新 | 任务顺序、依赖、输出、验证或阻塞发生变化时 |
 | 关联真源 | 方向见 roadmap，原因见 ADR-0025，实际事实见 progress，当前产品行为见 spec |
+
+## 启动关
+
+- 质量门：完整门
+- 独立Judge：必须（已 pass）
+- 收口阶段：completed
+- CLOSE-J1：独立 Judge 只读审查并写入 progress（完成）
+- CLOSE-J2：validate-control-plane 通过后 completed（完成）
 
 ## 当前主线
 
 主目标：把 `skills/repo-analyzer/` 深化为自包含的 Skill 核心交付包，让 Claude Code 与 Codex adapter 共享同一实现和机器合同。
 
-当前阶段：`proposed / D0`。架构访谈与文档控制面已建立，但实现没有开始。
+当前阶段：`completed / D3`。Worker 实现、隔离 smoke 与独立 Judge 均已完成。
 
-下一刀：先执行 D0-3，对重叠路径建立 diff 快照和文件所有权清单；完成激活评审后再执行 D1-0，不提前移动或删除旧入口。
+下一刀：本 plan 无后续；发布前真实外部安装与 G5 真实回归 UAT 如需执行，另开 plan。
 
 ## 执行约束
 
@@ -47,19 +55,19 @@ Roadmap：
 |---|---|---|---|---|---|
 | D0-1 | 建立 proposed 控制面与领域词汇 | - | roadmap、plan、progress、ADR、`CONTEXT.md`、目录索引 | 链接、状态唯一性、`git diff --check` | 完成 |
 | D0-2 | 补齐激活前执行合同 | D0-1 | 唯一 `SKILL_ROOT`、D1 shim、核心包清单、测试矩阵、证据驱动删除门 | roadmap/plan/ADR 一致性检查 | 完成 |
-| D0-3 | 建立路径所有权与 diff 快照 | D0-2 | `skills/`、`src/`、`tests/`、`acceptance/`、manifest 的已有改动清单和本 initiative 所有权 | 无需干净工作树；每个重叠文件都有保留/合并策略 | 未开始 |
-| D1-0 | 冻结核心包文件级合同 | D0-3、控制面激活 | `tools/release/core-package-files.txt`，逐项列出 `SKILL.md`、gate、schema 和全部运行所需 references | 清单只覆盖核心包；无隐式目录或完整 checkout 依赖 | 未开始 |
-| D1-1 | 迁移 gate 并建立 thin shim | D1-0 | 新 `scripts/graphify_gate.py`、旧 `src/.../graphify_gate.py` thin shim、`tests/test_graphify_gate.py` import 更新 | 改 import 后现有 gate unit 全部通过；新旧入口同输入返回同 code/关键 status 字段 | 未开始 |
-| D1-2 | 切换机器合同唯一真源 | D1-1 | 有意将 `docs/spec/graphify-gate-status-schema.json` 移动并改名为 `skills/repo-analyzer/references/contracts/graphify-gate-status.schema.json`；spec 改为 link-only；同步 `tests/test_graphify_gate.py`、`acceptance/skill-contract-check.sh` 与核心包清单 | `run_gate` 真实产生的 `0/10/30` 三类终态通过 bundled schema；旧文件名和第二份 schema 正文均不存在 | 未开始 |
-| D1-3 | 更新 Skill 调用与 contract check | D1-1、D1-2 | bundled script 调用；Agent/宿主从当前 `SKILL.md` 绝对路径解析 `SKILL_ROOT`；无法解析时在子进程前失败；更新 Python/Graphify 分支并移除 console/`PYTHONPATH` 文案依赖 | contract check 不再锁死旧路径；正向用例验证构造绝对 gate 命令，负向用例验证不构造命令、不启动子进程且不尝试任何 fallback | 未开始 |
-| D2-0 | 固定 adapter 规范依据 | D1-3 | Claude/Codex 官方 manifest 文档、最小字段表和实际 validator/校验命令写入任务记录 | 每个字段和命令可追溯；不得凭记忆发明 schema | 未开始 |
-| D2-1 | 建立最小版本真源 | D2-0 | 根 `VERSION`、`CHANGELOG.md`、轻量版本一致性校验脚本 | Claude/Codex/marketplace 版本投影与 `VERSION` 一致 | 未开始 |
-| D2-2 | 接入 Codex plugin adapter | D2-1 | `.codex-plugin/plugin.json`、`.agents/plugins/marketplace.json` | 按 D2-0 固定的官方依据校验；临时安装发现 Skill | 未开始 |
-| D2-3 | 对齐 Claude、npx 与手动 adapter | D2-1 | `.claude-plugin/`、README、npx 与手动安装说明；记录 npx 对 `package.json` 的真实依赖 | 四种方式按核心包清单得到等价文件；明确 `package.json` 保留/删除证据 | 未开始 |
-| D3-1 | 重组验证目录与旧 acceptance | D2-2、D2-3 | `tests/unit/`、`tests/contract/`、`tests/install/`；逐项标明旧 acceptance 保留为 lint、改写为行为测试或删除 | 单一测试入口；正常文案改写不破坏核心行为验收 | 未开始 |
-| D3-2 | 执行发布前安装 UAT | D3-1 | Claude、Codex、npx、手动安装的隔离运行证据 | 每个 adapter 完成隔离安装→定位 Skill→解析根→启动 gate→schema 校验五步 | 未开始 |
-| D3-3 | 删除旧交付入口 | D3-2 | 删除 `src/`、顶层 `acceptance/`、console script 和 thin shim；`package.json` 按证据删除或收缩 | 引用扫描、测试、四 adapter smoke；删除 shim 时同步删除新旧入口对照测试 | 未开始 |
-| D3-4 | 同步公开合同与收口证据 | D3-3 | README 双语、spec、dev-rules、plan/progress 状态 | 链接、合同、测试；未执行真实回归时明确披露 | 未开始 |
+| D0-3 | 建立路径所有权与 diff 快照 | D0-2 | `skills/`、`src/`、`tests/`、`acceptance/`、manifest 的已有改动清单和本 initiative 所有权 | 无需干净工作树；每个重叠文件都有保留/合并策略 | 完成 |
+| D1-0 | 冻结核心包文件级合同 | D0-3、控制面激活 | `tools/release/core-package-files.txt`，逐项列出 `SKILL.md`、gate、schema 和全部运行所需 references | 清单只覆盖核心包；无隐式目录或完整 checkout 依赖 | 完成 |
+| D1-1 | 迁移 gate 并建立 thin shim | D1-0 | 新 `scripts/graphify_gate.py`、旧 `src/.../graphify_gate.py` thin shim、`tests/test_graphify_gate.py` import 更新 | 改 import 后现有 gate unit 全部通过；新旧入口同输入返回同 code/关键 status 字段 | 完成 |
+| D1-2 | 切换机器合同唯一真源 | D1-1 | 有意将 `docs/spec/graphify-gate-status-schema.json` 移动并改名为 `skills/repo-analyzer/references/contracts/graphify-gate-status.schema.json`；spec 改为 link-only；同步 `tests/test_graphify_gate.py`、`acceptance/skill-contract-check.sh` 与核心包清单 | `run_gate` 真实产生的 `0/10/30` 三类终态通过 bundled schema；旧文件名和第二份 schema 正文均不存在 | 完成 |
+| D1-3 | 更新 Skill 调用与 contract check | D1-1、D1-2 | bundled script 调用；Agent/宿主从当前 `SKILL.md` 绝对路径解析 `SKILL_ROOT`；无法解析时在子进程前失败；更新 Python/Graphify 分支并移除 console/`PYTHONPATH` 文案依赖 | contract check 不再锁死旧路径；正向用例验证构造绝对 gate 命令，负向用例验证不构造命令、不启动子进程且不尝试任何 fallback | 完成 |
+| D2-0 | 固定 adapter 规范依据 | D1-3 | Claude/Codex 官方 manifest 文档、最小字段表和实际 validator/校验命令写入任务记录 | 每个字段和命令可追溯；不得凭记忆发明 schema | 完成 |
+| D2-1 | 建立最小版本真源 | D2-0 | 根 `VERSION`、`CHANGELOG.md`、轻量版本一致性校验脚本 | Claude/Codex/marketplace 版本投影与 `VERSION` 一致 | 完成 |
+| D2-2 | 接入 Codex plugin adapter | D2-1 | `.codex-plugin/plugin.json`、`.agents/plugins/marketplace.json` | 按 D2-0 固定的官方依据校验；临时安装发现 Skill | 完成 |
+| D2-3 | 对齐 Claude、npx 与手动 adapter | D2-1 | `.claude-plugin/`、README、npx 与手动安装说明；记录 npx 对 `package.json` 的真实依赖 | 四种方式按核心包清单得到等价文件；明确 `package.json` 保留/删除证据 | 完成 |
+| D3-1 | 重组验证目录与旧 acceptance | D2-2、D2-3 | `tests/unit/`、`tests/contract/`、`tests/install/`；逐项标明旧 acceptance 保留为 lint、改写为行为测试或删除 | 单一测试入口；正常文案改写不破坏核心行为验收 | 完成 |
+| D3-2 | 执行发布前安装 UAT | D3-1 | Claude、Codex、npx、手动安装的隔离运行证据 | 每个 adapter 完成隔离安装→定位 Skill→解析根→启动 gate→schema 校验五步 | 完成 |
+| D3-3 | 删除旧交付入口 | D3-2 | 删除 `src/`、顶层 `acceptance/`、console script 和 thin shim；`package.json` 按证据删除或收缩 | 引用扫描、测试、四 adapter smoke；删除 shim 时同步删除新旧入口对照测试 | 完成 |
+| D3-4 | 同步公开合同与收口证据 | D3-3 | README 双语、spec、dev-rules、plan/progress 状态 | 链接、合同、测试；未执行真实回归时明确披露 | 完成 |
 
 ## 阶段验证矩阵
 

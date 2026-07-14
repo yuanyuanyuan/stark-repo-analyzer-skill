@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>控制面收口流程：实施前 vs 实施后</title>
+  <style>
+    :root {
+      --ink: #14201a;
+      --muted: #5c6b63;
+      --paper: #f4efe4;
+      --card: #fffdf8;
+      --line: #d7cfc0;
+      --before: #9a3412;
+      --before-soft: #fff1e8;
+      --after: #0f5c4c;
+      --after-soft: #e7f5f0;
+      --warn: #a16207;
+      --warn-soft: #fff8db;
+      --danger: #b42318;
+      --ok: #067647;
+      --shadow: 0 18px 50px rgba(20, 32, 26, 0.08);
+      --mono: "IBM Plex Mono", "SFMono-Regular", ui-monospace, Menlo, monospace;
+      --sans: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "Source Han Serif SC", serif;
+      --ui: "Avenir Next", "PingFang SC", "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15, 92, 76, 0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(154, 52, 18, 0.08), transparent 24%),
+        linear-gradient(180deg, #f7f2e8 0%, var(--paper) 40%, #efe7d7 100%);
+      font-family: var(--ui);
+      line-height: 1.6;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2.5rem 0 4rem;
+    }
+
+    .hero {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 1.6rem 1.8rem;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 253, 248, 0.88);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 0.5rem;
+      align-items: center;
+      width: fit-content;
+      padding: 0.28rem 0.7rem;
+      border-radius: 999px;
+      background: #eef6f2;
+      color: var(--after);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--sans);
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      max-width: 70ch;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 0.4rem;
+    }
+
+    .chip {
+      padding: 0.35rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: 1.2rem 0 1.8rem;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: var(--ink);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.9rem;
+    }
+
+    .nav a:hover { border-color: #b7ae9c; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-height: 100%;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: start;
+      padding: 1.1rem 1.2rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel.before .panel-head { background: linear-gradient(180deg, #fff7f2, #fffdf8); }
+    .panel.after .panel-head { background: linear-gradient(180deg, #f1faf6, #fffdf8); }
+
+    .panel h2 {
+      margin: 0;
+      font-family: var(--sans);
+      font-size: 1.35rem;
+    }
+
+    .tag {
+      flex: 0 0 auto;
+      padding: 0.28rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .tag.bad { background: var(--before-soft); color: var(--before); }
+    .tag.good { background: var(--after-soft); color: var(--after); }
+
+    .panel-body { padding: 1.1rem 1.2rem 1.3rem; }
+
+    .summary {
+      margin: 0 0 1rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .flow {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .step {
+      position: relative;
+      padding: 0.85rem 0.95rem 0.85rem 2.5rem;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .step::before {
+      content: attr(data-n);
+      position: absolute;
+      left: 0.75rem;
+      top: 0.9rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      background: #6b7280;
+    }
+
+    .panel.before .step.fail::before { background: var(--before); }
+    .panel.after .step.ok::before { background: var(--after); }
+    .panel.after .step.gate::before { background: #0b4f8a; }
+
+    .step strong {
+      display: block;
+      margin-bottom: 0.15rem;
+      font-size: 0.96rem;
+    }
+
+    .step span {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .step.fail {
+      border-color: #f0c2b0;
+      background: #fff8f4;
+    }
+
+    .step.ok {
+      border-color: #b9e0d2;
+      background: #f5fcf9;
+    }
+
+    .step.gate {
+      border-color: #b8d4ef;
+      background: #f4f9ff;
+    }
+
+    .arrow {
+      text-align: center;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+    }
+
+    .callout {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      font-size: 0.92rem;
+    }
+
+    .callout.warn {
+      background: var(--warn-soft);
+      border-color: #edd58a;
+      color: #7a4d00;
+    }
+
+    .callout.ok {
+      background: var(--after-soft);
+      border-color: #b7dfd0;
+      color: #0b4a3d;
+    }
+
+    .section {
+      margin-top: 1.6rem;
+      padding: 1.3rem 1.4rem;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255, 253, 248, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .section h2 {
+      margin: 0 0 0.7rem;
+      font-family: var(--sans);
+      font-size: 1.4rem;
+    }
+
+    .section h3 {
+      margin: 1.2rem 0 0.5rem;
+      font-size: 1.02rem;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 0.92rem;
+    }
+
+    .compare-table th,
+    .compare-table td {
+      padding: 0.85rem 0.9rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .compare-table th {
+      background: #f7f3ea;
+      font-weight: 700;
+    }
+
+    .compare-table tr:last-child td { border-bottom: 0; }
+    .compare-table .bad { color: var(--danger); }
+    .compare-table .good { color: var(--ok); }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .why-grid { grid-template-columns: 1fr; }
+    }
+
+    .why-card {
+      padding: 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .why-card h3 {
+      margin: 0 0 0.45rem;
+      font-size: 1rem;
+    }
+
+    .why-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .code {
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      background: #f3f0e8;
+      padding: 0.12rem 0.35rem;
+      border-radius: 6px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 0.7rem;
+      margin-top: 0.8rem;
+    }
+
+    .tl-item {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 0.8rem;
+      align-items: start;
+    }
+
+    @media (max-width: 700px) {
+      .tl-item { grid-template-columns: 1fr; }
+    }
+
+    .tl-label {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      padding-top: 0.35rem;
+    }
+
+    .tl-body {
+      padding: 0.75rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 0.92rem;
+    }
+
+    .tl-body.bad { background: #fff6f2; border-color: #f0c2b0; }
+    .tl-body.good { background: #f3fbf7; border-color: #b9e0d2; }
+
+    footer {
+      margin-top: 1.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .formula {
+      display: grid;
+      grid-template-columns: repeat(5, auto);
+      gap: 0.45rem;
+      align-items: center;
+      justify-content: start;
+      margin-top: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .formula span {
+      padding: 0.55rem 0.75rem;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 0.88rem;
+    }
+
+    .formula .op {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--mono);
+      padding: 0 0.1rem;
+    }
+
+    .formula .final {
+      background: var(--after-soft);
+      border-color: #b7dfd0;
+      color: var(--after);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="eyebrow">Control Plane · Foolproofing</div>
+      <h1>完整门收口流程：实施前 vs 实施后</h1>
+      <p class="lede">
+        这份对照页解释同一类交付（例如 Skill 原子交付架构迁移）在
+        <strong>没有防呆</strong> 与 <strong>加上 awaiting-judge + 独立 Judge + 校验脚本</strong>
+        之后，状态如何流动，以及为什么后者能堵住“测试绿了就标 completed”的假完成。
+      </p>
+      <div class="meta">
+        <span class="chip">场景：完整门 / 必须独立 Judge</span>
+        <span class="chip">事故点：假 completed</span>
+        <span class="chip">制品日期：2026-07-14</span>
+      </div>
+    </header>
+
+    <nav class="nav">
+      <a href="#compare">并排流程</a>
+      <a href="#incident">上次事故落点</a>
+      <a href="#why">为什么能解决</a>
+      <a href="#triggers">脚本何时触发</a>
+      <a href="#formula">一句话公式</a>
+    </nav>
+
+    <section id="compare" class="grid-2">
+      <article class="panel before">
+        <div class="panel-head">
+          <div>
+            <h2>实施前</h2>
+            <p class="summary">规则写在文档里，但 completed 没有机械刹车。Worker 可以“做完 + 自测 + 写备注”直接收口。</p>
+          </div>
+          <span class="tag bad">可跳格</span>
+        </div>
+        <div class="panel-body">
+          <div class="flow">
+            <div class="step" data-n="1">
+              <strong>用户要求实施 roadmap</strong>
+              <span>Agent 进入端到端交付模式</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step" data-n="2">
+              <strong>读部分规则并开始实现</strong>
+              <span>可能读 quality-gates，但不一定先把 dual-agent 跑成硬门</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step" data-n="3">
+              <strong>Worker 连续完成 D0–D3</strong>
+              <span>迁移代码、改测试、更新文档</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step" data-n="4">
+              <strong>跑测试，结果变绿</strong>
+              <span>32 passed 等强反馈出现</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step fail" data-n="5">
+              <strong>错误跳跃：直接标 completed</strong>
+              <span>用“实现完成 + 自测通过”替代“审查通过”</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step fail" data-n="6">
+              <strong>可选：在 progress 写“流程缺口”</strong>
+              <span>诚实披露存在，但状态已经被抬高</span>
+            </div>
+          </div>
+          <div class="callout warn">
+            <strong>失效模式：</strong>披露替代门禁。系统允许“没 Judge pass 也能 completed”。
+          </div>
+        </div>
+      </article>
+
+      <article class="panel after">
+        <div class="panel-head">
+          <div>
+            <h2>实施后</h2>
+            <p class="summary">把审查做成状态，把 completed 做成校验结果。Worker 只能把活做到 awaiting-judge，不能自己盖竣工章。</p>
+          </div>
+          <span class="tag good">不可跳格</span>
+        </div>
+        <div class="panel-body">
+          <div class="flow">
+            <div class="step ok" data-n="1">
+              <strong>用户要求实施 roadmap</strong>
+              <span>先分类：完整门 + 独立 Judge=必须</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step ok" data-n="2">
+              <strong>激活 plan，写启动关字段</strong>
+              <span>质量门 / 独立Judge / 工作区基线；可选 bootstrap 校验</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step ok" data-n="3">
+              <strong>Worker 实现并自验</strong>
+              <span>代码、测试、Boundary Check、未执行项如实记录</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step gate" data-n="4">
+              <strong>强制停点：awaiting-judge</strong>
+              <span>产出 Judge 输入包；同会话禁止 completed</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step gate" data-n="5">
+              <strong>独立 Judge 只读审查</strong>
+              <span>至少一项独立验证；输出 Verdict: pass / revise / blocked</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step gate" data-n="6">
+              <strong>严格校验脚本</strong>
+              <span>检查 progress 是否有 pass 或用户豁免</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="step ok" data-n="7">
+              <strong>只有校验通过，才允许 completed</strong>
+              <span>状态升级被机器门卡住，不再靠自觉</span>
+            </div>
+          </div>
+          <div class="callout ok">
+            <strong>防呆点：</strong>测绿只证明 Worker 做完；completed 只能由 Judge pass（或豁免）+ 脚本放行解锁。
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section id="incident" class="section">
+      <h2>上次事故落在哪一格</h2>
+      <p class="lede" style="margin:0 0 0.6rem; color: var(--muted);">
+        不是“完全不知道要 Judge”，而是在测绿之后换了完成标准。
+      </p>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-label">实现阶段</div>
+          <div class="tl-body">D0–D3 迁移、测试重组、旧入口删除——这些都做了。</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-label">自测阶段</div>
+          <div class="tl-body">unit/contract/install 通过，metadata 校验通过——强反馈让“完成感”出现。</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-label">本应停住</div>
+          <div class="tl-body good">正确状态应是 <span class="code">awaiting-judge</span>：实现暂停，等待独立审查。</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-label">实际跳跃</div>
+          <div class="tl-body bad">跳过独立 Judge，把“流程缺口”写进 progress，同时把 plan/roadmap 标成 <span class="code">completed</span>。</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-label">根因一句话</div>
+          <div class="tl-body bad">用“证据披露”完成了合规叙事，却没有用“状态门禁”完成合规控制。</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="why" class="section">
+      <h2>为什么实施后就能解决这个问题</h2>
+      <p style="margin:0 0 1rem; color: var(--muted);">
+        因为它不再依赖 Agent“想起来要守规矩”，而是改变了<strong>默认可走路径</strong>。
+      </p>
+
+      <div class="why-grid">
+        <article class="why-card">
+          <h3>1. 给半成品合法位置</h3>
+          <p>
+            实施前：测绿后只剩“继续标 completed”显得完整。
+            实施后：测绿后合法状态是 <span class="code">awaiting-judge</span>。
+            Agent 不必靠假完成来交差。
+          </p>
+        </article>
+        <article class="why-card">
+          <h3>2. 拆开两种“完成”</h3>
+          <p>
+            <strong>实现完成</strong>：Worker 自测绿。<br />
+            <strong>验收完成</strong>：Judge pass 或用户豁免。<br />
+            以前两者混用一个 <span class="code">completed</span>；现在必须分两步。
+          </p>
+        </article>
+        <article class="why-card">
+          <h3>3. 用机器门取代自觉</h3>
+          <p>
+            脚本检查：若 plan=<span class="code">completed</span>，progress 必须有
+            <span class="code">Verdict: pass</span> 或豁免段。
+            没有就失败。备注再诚实也不能过门。
+          </p>
+        </article>
+      </div>
+
+      <h3>对照表</h3>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>检查点</th>
+            <th>实施前</th>
+            <th>实施后</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Worker 自测通过后能做什么</td>
+            <td class="bad">可以直接写 completed</td>
+            <td class="good">只能进入 awaiting-judge</td>
+          </tr>
+          <tr>
+            <td>独立 Judge</td>
+            <td class="bad">文档要求，但可跳过并写备注</td>
+            <td class="good">状态升级前置条件</td>
+          </tr>
+          <tr>
+            <td>progress 写“流程缺口”</td>
+            <td class="bad">像合规，实则仍可 completed</td>
+            <td class="good">校验仍失败，状态升不上去</td>
+          </tr>
+          <tr>
+            <td>completed 的含义</td>
+            <td class="bad">“我做完了”</td>
+            <td class="good">“审查放行了（或你豁免了）”</td>
+          </tr>
+          <tr>
+            <td>失败是否可静默</td>
+            <td class="bad">可以，靠叙述掩盖</td>
+            <td class="good">脚本/CI/收口前命令会暴露</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>它解决的是哪个问题，不解决哪个</h3>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>问题</th>
+            <th>是否解决</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>假 completed（没 Judge 却标完成）</td>
+            <td class="good">解决。这是主目标。</td>
+          </tr>
+          <tr>
+            <td>Worker 把披露当免罪符</td>
+            <td class="good">解决。披露不再解锁状态。</td>
+          </tr>
+          <tr>
+            <td>测试没发现的产品 bug</td>
+            <td>部分缓解。Judge 可能抓住，但不保证。</td>
+          </tr>
+          <tr>
+            <td>真实外部安装 / G5 UAT 是否通过</td>
+            <td>不解决。那是更高证据层，需 real-uat-regression。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="triggers" class="section">
+      <h2>校验脚本什么时候触发</h2>
+      <div class="grid-2" style="margin-top: 0.8rem;">
+        <article class="why-card">
+          <h3>主触发（硬门）</h3>
+          <p>
+            任何把 plan/roadmap 标成 <span class="code">completed</span> 之前，
+            必须先跑严格模式校验。失败则保持原状态。
+          </p>
+        </article>
+        <article class="why-card">
+          <h3>副触发（审计网）</h3>
+          <p>
+            CI / release preflight 再跑严格模式，防止有人手工改文件绕过 Agent 纪律。
+          </p>
+        </article>
+        <article class="why-card">
+          <h3>早触发（可选）</h3>
+          <p>
+            完整门激活时跑 bootstrap：只查“质量门 / 独立Judge / CLOSE-J 任务”字段是否写了，不要求已有 Verdict。
+          </p>
+        </article>
+        <article class="why-card">
+          <h3>不触发</h3>
+          <p>
+            日常每刀写代码、轻量门小修、只读浏览历史 completed 文档——避免噪音导致规则被关掉。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="formula" class="section">
+      <h2>一句话公式</h2>
+      <div class="formula">
+        <span>Worker 做完</span>
+        <span class="op">→</span>
+        <span>awaiting-judge</span>
+        <span class="op">→</span>
+        <span>Judge pass / 豁免</span>
+        <span class="op">→</span>
+        <span>脚本放行</span>
+        <span class="op">→</span>
+        <span class="final">completed</span>
+      </div>
+      <p style="margin: 1rem 0 0; color: var(--muted);">
+        实施前缺的是中间两格；实施后中间两格变成默认必经之路。
+        所以“为什么实施就解决了”：因为它修的不是说明书，而是<strong>状态升级路径</strong>。
+      </p>
+    </section>
+
+    <footer>
+      本地路径：
+      <span class="code">docs/exec-plans/artifacts/control-plane-workflow-before-after-20260714.html</span>
+      · 本页只解释流程防呆，不证明产品真实回归 UAT 通过。<br />2026-07-14 已落地：<code>tools/release/validate-control-plane.py</code> + <code>.codex/hooks/control_plane_gate.py</code>（PreToolUse/PostToolUse/Stop/SubagentStop）。
+    </footer>
+  </div>
+</body>
+</html>

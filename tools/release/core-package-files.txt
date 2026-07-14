@@ -1,0 +1,9 @@
+# Skill core package file contract.
+# Every supported install adapter must deliver exactly these paths relative to the plugin/package root.
+# Lines starting with # are comments. Empty lines are ignored.
+skills/repo-analyzer/SKILL.md
+skills/repo-analyzer/scripts/graphify_gate.py
+skills/repo-analyzer/references/analysis-guide.md
+skills/repo-analyzer/references/graphify-integration-guide.md
+skills/repo-analyzer/references/module-analysis-guide.md
+skills/repo-analyzer/references/contracts/graphify-gate-status.schema.json

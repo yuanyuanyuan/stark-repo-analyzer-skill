@@ -15,9 +15,8 @@
 
 ## 当前验收边界
 
-- 当前单元测试位于 `tests/test_graphify_gate.py`，只使用 `tests/fixtures/graphify/` 的小型确定性 fixture。
-- 当前 Skill 静态合同由 `acceptance/skill-structure-check.sh` 和
-  `acceptance/skill-contract-check.sh` 验证。
+- 当前 gate 单元测试位于 `tests/unit/test_graphify_gate.py`，只使用 `tests/fixtures/graphify/` 的小型确定性 fixture。
+- 当前 Skill 合同与安装验收位于 `tests/contract/` 与 `tests/install/`；gate 单元测试位于 `tests/unit/`。
 - 开发期聚焦 UAT 与发布级真实回归的触发条件、证据合同和声明上限，以
   [`docs/dev-rules/real-uat-regression/README.md`](../../docs/dev-rules/real-uat-regression/README.md) 为准。
 

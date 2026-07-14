@@ -1,0 +1,38 @@
+{
+  "name": "repo-analyzer",
+  "version": "1.0.0",
+  "description": "Deep architectural analysis of open-source projects with professional reports",
+  "author": {
+    "name": "yuanyuanyuan"
+  },
+  "homepage": "https://github.com/yuanyuanyuan/stark-repo-analyzer-skill",
+  "repository": "https://github.com/yuanyuanyuan/stark-repo-analyzer-skill",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "architecture",
+    "analysis",
+    "code-review",
+    "open-source",
+    "graphify"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Repo Analyzer",
+    "shortDescription": "Deep architectural analysis for open-source repositories",
+    "longDescription": "Analyze open-source repositories and produce a source-backed architecture report with design insights, trade-offs, Mermaid diagrams, and optional Graphify structure navigation.",
+    "developerName": "yuanyuanyuan",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Instructions",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/yuanyuanyuan/stark-repo-analyzer-skill",
+    "defaultPrompt": [
+      "Analyze the architecture of this repository",
+      "Compare the design of two open-source projects",
+      "Produce a source-backed architecture report for this codebase"
+    ]
+  }
+}

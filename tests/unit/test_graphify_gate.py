@@ -9,28 +9,27 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
+from tests._gate_loader import SKILL_SCHEMA_PATH, load_skill_gate
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from stark_repo_analyzer.graphify_gate import (
-    NAVIGATION_MAP,
-    RAW_GRAPH,
-    RAW_REPORT,
-    RunFailure,
-    STATUS_FILENAME,
-    doctor,
-    main,
-    normalize_graphify_artifacts,
-    run_gate,
-    source_tree_signature,
-    write_graph_map,
-    graphify_extract,
-)
+gate = load_skill_gate()
+NAVIGATION_MAP = gate.NAVIGATION_MAP
+RAW_GRAPH = gate.RAW_GRAPH
+RAW_REPORT = gate.RAW_REPORT
+RunFailure = gate.RunFailure
+STATUS_FILENAME = gate.STATUS_FILENAME
+doctor = gate.doctor
+main = gate.main
+normalize_graphify_artifacts = gate.normalize_graphify_artifacts
+run_gate = gate.run_gate
+source_tree_signature = gate.source_tree_signature
+write_graph_map = gate.write_graph_map
+graphify_extract = gate.graphify_extract
 
 
 class GraphifyGateTests(unittest.TestCase):
     def setUp(self):
-        self.target = Path(__file__).resolve().parents[1]
+        self.target = Path(__file__).resolve().parents[2]
         self.fixtures = self.target / "tests" / "fixtures" / "graphify"
 
     def _copy_graph_fixture(self, name, work_dir):
@@ -48,8 +47,8 @@ class GraphifyGateTests(unittest.TestCase):
                 "graphify": {"version": None},
                 "failures": ["Graphify CLI is unavailable"],
             }
-            with patch("stark_repo_analyzer.graphify_gate.doctor", return_value=(10, preflight)), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_extract") as extract:
+            with patch("repo_analyzer_skill_graphify_gate.doctor", return_value=(10, preflight)), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract") as extract:
                 status = run_gate(self.target, work_dir)
 
             self.assertEqual(status["code"], 10)
@@ -65,8 +64,8 @@ class GraphifyGateTests(unittest.TestCase):
             subprocess.CompletedProcess([], 0, "extract --code-only\n", ""),
         ]
         with tempfile.TemporaryDirectory() as directory, \
-            patch("stark_repo_analyzer.graphify_gate.shutil.which", return_value="/usr/bin/graphify"), \
-            patch("stark_repo_analyzer.graphify_gate.run", side_effect=results):
+            patch("repo_analyzer_skill_graphify_gate.shutil.which", return_value="/usr/bin/graphify"), \
+            patch("repo_analyzer_skill_graphify_gate.run", side_effect=results):
             code, payload = doctor("preflight", self.target, Path(directory))
 
         self.assertEqual(code, 0)
@@ -87,7 +86,7 @@ class GraphifyGateTests(unittest.TestCase):
                 calls.append((command, kwargs))
                 return subprocess.CompletedProcess(command, 0, "", "")
 
-            with patch("stark_repo_analyzer.graphify_gate.run", side_effect=fake_run):
+            with patch("repo_analyzer_skill_graphify_gate.run", side_effect=fake_run):
                 attempts = graphify_extract(self.target, work_dir, [])
 
             self.assertEqual(attempts[0]["exit_code"], 0)
@@ -98,7 +97,7 @@ class GraphifyGateTests(unittest.TestCase):
 
     def test_graphify_extract_timeout_is_not_retried(self):
         with tempfile.TemporaryDirectory() as directory, patch(
-            "stark_repo_analyzer.graphify_gate.run",
+            "repo_analyzer_skill_graphify_gate.run",
             return_value=subprocess.CompletedProcess([], 124, "", "process timeout"),
         ) as execute:
             with self.assertRaises(RunFailure) as caught:
@@ -111,8 +110,8 @@ class GraphifyGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             work_dir = Path(directory) / "work"
             preflight = {"graphify": {}, "failures": ["work_dir must be outside target repository"]}
-            with patch("stark_repo_analyzer.graphify_gate.doctor", return_value=(20, preflight)), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_extract") as extract:
+            with patch("repo_analyzer_skill_graphify_gate.doctor", return_value=(20, preflight)), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract") as extract:
                 status = run_gate(self.target, work_dir)
 
             self.assertEqual(status["code"], 30)
@@ -123,7 +122,7 @@ class GraphifyGateTests(unittest.TestCase):
     def test_workspace_inside_target_is_rejected_before_creation(self):
         work_dir = self.target / ".graphify-gate-test-work"
         self.assertFalse(work_dir.exists())
-        with patch("stark_repo_analyzer.graphify_gate.doctor") as gate_doctor:
+        with patch("repo_analyzer_skill_graphify_gate.doctor") as gate_doctor:
             status = run_gate(self.target, work_dir)
 
         self.assertEqual(status["code"], 30)
@@ -163,10 +162,10 @@ class GraphifyGateTests(unittest.TestCase):
                 calls.append("navigation-map")
                 return NAVIGATION_MAP
 
-            with patch("stark_repo_analyzer.graphify_gate.doctor", side_effect=fake_doctor), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_extract", side_effect=fake_extract), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_postprocess", side_effect=fake_postprocess), \
-                patch("stark_repo_analyzer.graphify_gate.write_graph_map", side_effect=fake_map):
+            with patch("repo_analyzer_skill_graphify_gate.doctor", side_effect=fake_doctor), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract", side_effect=fake_extract), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_postprocess", side_effect=fake_postprocess), \
+                patch("repo_analyzer_skill_graphify_gate.write_graph_map", side_effect=fake_map):
                 status = run_gate(self.target, work_dir)
 
             self.assertEqual(calls, ["preflight", "extract", "postprocess", "post-graph", "navigation-map"])
@@ -186,9 +185,9 @@ class GraphifyGateTests(unittest.TestCase):
     def test_extract_failure_is_mapped_to_30(self):
         with tempfile.TemporaryDirectory() as directory:
             work_dir = Path(directory) / "work"
-            with patch("stark_repo_analyzer.graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
+            with patch("repo_analyzer_skill_graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
                 patch(
-                    "stark_repo_analyzer.graphify_gate.graphify_extract",
+                    "repo_analyzer_skill_graphify_gate.graphify_extract",
                     side_effect=RunFailure("extract failed", failure_class="graphify-execution"),
                 ):
                 status = run_gate(self.target, work_dir)
@@ -200,9 +199,9 @@ class GraphifyGateTests(unittest.TestCase):
     def test_postprocess_failure_is_mapped_to_30(self):
         with tempfile.TemporaryDirectory() as directory:
             work_dir = Path(directory) / "work"
-            with patch("stark_repo_analyzer.graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_extract", return_value=[]), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_postprocess", side_effect=ValueError("bad graph")):
+            with patch("repo_analyzer_skill_graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract", return_value=[]), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_postprocess", side_effect=ValueError("bad graph")):
                 status = run_gate(self.target, work_dir)
 
             self.assertEqual(status["code"], 30)
@@ -216,9 +215,9 @@ class GraphifyGateTests(unittest.TestCase):
                 (0, {"graphify": {"version": "graphify 0.9.13"}}),
                 (30, {"failures": ["graph has zero edges"]}),
             ]
-            with patch("stark_repo_analyzer.graphify_gate.doctor", side_effect=responses), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_extract", return_value=[]), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_postprocess", return_value={}):
+            with patch("repo_analyzer_skill_graphify_gate.doctor", side_effect=responses), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract", return_value=[]), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_postprocess", return_value={}):
                 status = run_gate(self.target, work_dir)
 
             self.assertEqual(status["code"], 30)
@@ -277,9 +276,9 @@ class GraphifyGateTests(unittest.TestCase):
                 return []
 
             completed = type("Result", (), {"returncode": 0, "stdout": "", "stderr": ""})()
-            with patch("stark_repo_analyzer.graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_extract", side_effect=fake_extract), \
-                patch("stark_repo_analyzer.graphify_gate.run", return_value=completed):
+            with patch("repo_analyzer_skill_graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract", side_effect=fake_extract), \
+                patch("repo_analyzer_skill_graphify_gate.run", return_value=completed):
                 status = run_gate(target, work_dir)
 
             self.assertEqual(status["code"], 30)
@@ -302,9 +301,9 @@ class GraphifyGateTests(unittest.TestCase):
                 (target_path / "source.py").write_text("value = 2\n", encoding="utf-8")
                 return []
 
-            with patch("stark_repo_analyzer.graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_extract", side_effect=mutate_source), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_postprocess") as postprocess:
+            with patch("repo_analyzer_skill_graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract", side_effect=mutate_source), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_postprocess") as postprocess:
                 status = run_gate(target, work_dir)
 
             self.assertEqual(status["code"], 30)
@@ -327,8 +326,8 @@ class GraphifyGateTests(unittest.TestCase):
                 (graph_dir / "graph.json").write_text("{}\n", encoding="utf-8")
                 return []
 
-            with patch("stark_repo_analyzer.graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
-                patch("stark_repo_analyzer.graphify_gate.graphify_extract", side_effect=write_inside_target):
+            with patch("repo_analyzer_skill_graphify_gate.doctor", return_value=(0, {"graphify": {}})), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract", side_effect=write_inside_target):
                 status = run_gate(target, work_dir)
 
             self.assertEqual(status["failure"]["class"], "source-boundary-violation")
@@ -348,15 +347,14 @@ class GraphifyGateTests(unittest.TestCase):
             "failure": {"class": "graphify-dependency", "message": "missing"},
         }
         stdout = io.StringIO()
-        with patch("stark_repo_analyzer.graphify_gate.run_gate", return_value=expected), redirect_stdout(stdout):
+        with patch("repo_analyzer_skill_graphify_gate.run_gate", return_value=expected), redirect_stdout(stdout):
             code = main(["--target", str(self.target), "--work-dir", "/tmp/work"])
 
         self.assertEqual(code, 10)
         self.assertEqual(json.loads(stdout.getvalue()), expected)
 
     def test_status_schema_declares_the_implementation_contract(self):
-        schema_path = Path(__file__).resolve().parents[1] / "docs" / "spec" / "graphify-gate-status-schema.json"
-        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        schema = json.loads(SKILL_SCHEMA_PATH.read_text(encoding="utf-8"))
         self.assertEqual(schema["properties"]["code"]["enum"], [0, 10, 30])
         self.assertEqual(schema["properties"]["outcome"]["enum"], ["ready", "dependency-unavailable", "blocked"])
         self.assertEqual(schema["properties"]["graphify"]["properties"]["extraction_mode"]["const"], "code-only")
@@ -364,6 +362,75 @@ class GraphifyGateTests(unittest.TestCase):
         self.assertEqual(set(schema["required"]), {
             "schema_version", "code", "outcome", "stage", "target", "work_dir", "graphify", "artifacts", "failure"
         })
+
+
+
+
+
+class RealStatusSchemaValidationTests(unittest.TestCase):
+    def setUp(self):
+        self.root = Path(__file__).resolve().parents[2]
+        self.schema = json.loads(SKILL_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+    def _validate(self, status):
+        required = set(self.schema["required"])
+        self.assertEqual(required - set(status), set())
+        self.assertIn(status["code"], self.schema["properties"]["code"]["enum"])
+        self.assertIn(status["outcome"], self.schema["properties"]["outcome"]["enum"])
+        self.assertIn(status["stage"], self.schema["properties"]["stage"]["enum"])
+        self.assertEqual(status["schema_version"], 1)
+        self.assertEqual(status["graphify"]["extraction_mode"], "code-only")
+        if status["code"] == 0:
+            self.assertEqual(status["outcome"], "ready")
+            self.assertIsNone(status["failure"])
+        elif status["code"] == 10:
+            self.assertEqual(status["outcome"], "dependency-unavailable")
+            self.assertIsNotNone(status["failure"])
+        elif status["code"] == 30:
+            self.assertEqual(status["outcome"], "blocked")
+            self.assertIsNotNone(status["failure"])
+
+    def test_run_gate_produces_schema_valid_code_10(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work_dir = Path(directory) / "work"
+            preflight = {"graphify": {"version": None}, "failures": ["Graphify CLI is unavailable"]}
+            with patch("repo_analyzer_skill_graphify_gate.doctor", return_value=(10, preflight)), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract"):
+                status = run_gate(self.root, work_dir)
+        self._validate(status)
+        self.assertEqual(status["code"], 10)
+
+    def test_run_gate_produces_schema_valid_code_30(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work_dir = Path(directory) / "work"
+            preflight = {"graphify": {}, "failures": ["work_dir must be outside target repository"]}
+            with patch("repo_analyzer_skill_graphify_gate.doctor", return_value=(20, preflight)), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract"):
+                status = run_gate(self.root, work_dir)
+        self._validate(status)
+        self.assertEqual(status["code"], 30)
+
+    def test_run_gate_produces_schema_valid_code_0(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work_dir = Path(directory) / "work"
+            preflight = {"graphify": {"version": "graphify 0.9.13", "backend": "x", "model": "y"}}
+
+            def fake_doctor(phase, target, output):
+                return (0, preflight if phase == "preflight" else {"graphify": {"health": {"nodes": 1}}})
+
+            with patch("repo_analyzer_skill_graphify_gate.doctor", side_effect=fake_doctor), \
+                patch("repo_analyzer_skill_graphify_gate.graphify_extract", return_value=[]), \
+                patch(
+                    "repo_analyzer_skill_graphify_gate.graphify_postprocess",
+                    return_value={
+                        "raw_artifacts": ["graphify-out/raw-code-only-graph.json"],
+                        "normalized_artifacts": ["graphify-out/graph.json"],
+                    },
+                ), \
+                patch("repo_analyzer_skill_graphify_gate.write_graph_map", return_value=NAVIGATION_MAP):
+                status = run_gate(self.root, work_dir)
+        self._validate(status)
+        self.assertEqual(status["code"], 0)
 
 
 if __name__ == "__main__":

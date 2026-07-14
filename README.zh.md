@@ -4,9 +4,13 @@
 
 正式读源码前，Agent 会检查本机是否存在兼容的 Graphify。可用时通过 code-only gate 生成并验证结构导航；缺失时只提供安装指引，由用户选择安装后复检或本次使用纯源码兼容流程。Graphify 只提供导航上下文，源码裁决冲突，所有产物都写在目标仓库之外。
 
-兼容 [Claude Code](https://claude.ai/claude-code)、[Codex](https://github.com/openai/codex)、[OpenClaw](https://github.com/anthropics/openclaw) 等所有支持 Skills 格式的 AI 编程 Agent。
+正式支持运行时：[Claude Code](https://claude.ai/claude-code) 与 [Codex](https://github.com/openai/codex)。四种安装 adapter 共用同一 Skill 核心交付包；其他 Skills 兼容宿主不在正式支持矩阵内。
 
 仓库维护性文档以中文为主；命令、标识符和专业术语保留其原始写法。
+
+## 来源与致谢
+
+本项目独立维护，参考并扩展了采用 MIT 许可证的 [yzddmr6/repo-analyzer](https://github.com/yzddmr6/repo-analyzer)，并加入可审计的 Graphify 导航增强。它不是上游镜像或官方关联项目，支持范围以本仓库为准。
 
 ## 相关文章
 
@@ -15,28 +19,49 @@
 
 ## 快速安装
 
-**npx（推荐）**
+四种安装 adapter 共用 `skills/repo-analyzer/` 这一份 Skill 核心交付包。
+
+**npx**
 
 ```bash
-npx skills add yzddmr6/repo-analyzer
+npx skills add yuanyuanyuan/stark-repo-analyzer-skill
 ```
 
-**Plugin Marketplace**
+**Claude Code 插件**
 
 ```
-/plugin marketplace add yzddmr6/repo-analyzer
-/plugin install repo-analyzer@repo-analyzer
+claude plugin marketplace add yuanyuanyuan/stark-repo-analyzer-skill
+claude plugin install repo-analyzer@repo-analyzer
 ```
 
-**手动安装（Git Clone）**
+**Codex 插件**
+
+使用仓库中的 `.codex-plugin/plugin.json` 与 `.agents/plugins/marketplace.json` 作为 Codex 安装入口：
+
+```bash
+codex plugin marketplace add yuanyuanyuan/stark-repo-analyzer-skill
+codex plugin add repo-analyzer@repo-analyzer
+```
+
+安装后从 `skills/` 发现 Skill。
+
+**手动安装**
 
 ```bash
 # macOS / Linux
-git clone https://github.com/yzddmr6/repo-analyzer.git ~/.claude/skills/repo-analyzer
+git clone https://github.com/yuanyuanyuan/stark-repo-analyzer-skill.git ~/.claude/skills/repo-analyzer
 
 # Windows
-git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\skills\repo-analyzer
+git clone https://github.com/yuanyuanyuan/stark-repo-analyzer-skill.git %USERPROFILE%\.claude\skills\repo-analyzer
 ```
+
+Skill 发现后的稳定 gate 调用：
+
+```bash
+python <SKILL_ROOT>/scripts/graphify_gate.py --target <TARGET> --work-dir <WORK_DIR>
+```
+
+`SKILL_ROOT` 是当前加载的 `SKILL.md` 所在目录。宿主无法解析该路径时，必须在启动 gate 前停止。
 
 ## 特性
 
@@ -123,18 +148,23 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 
 ```
 repo-analyzer/
-├── .claude-plugin/
-│   └── plugin.json                         # 插件元数据
-├── package.json                            # 包清单
-├── skills/
-│   └── repo-analyzer/
-│       ├── SKILL.md                        # 技能主定义
-│       └── references/
-│           ├── analysis-guide.md           # 分析哲学与评价框架
-│           └── module-analysis-guide.md    # 模块分析指南与 Subagent 模板
-├── README.md                               # 英文文档
-├── README.zh.md                            # 中文文档
-└── LICENSE                                 # MIT 许可证
+├── .claude-plugin/                         # Claude 插件与 marketplace adapter
+├── .codex-plugin/plugin.json               # Codex 插件 adapter
+├── .agents/plugins/marketplace.json        # Codex marketplace adapter
+├── skills/repo-analyzer/                   # Skill 核心交付包（唯一实现真源）
+│   ├── SKILL.md
+│   ├── scripts/graphify_gate.py
+│   └── references/
+│       ├── analysis-guide.md
+│       ├── graphify-integration-guide.md
+│       ├── module-analysis-guide.md
+│       └── contracts/graphify-gate-status.schema.json
+├── package.json                            # npx skills add 的最小 identity 文件
+├── VERSION
+├── CHANGELOG.md
+├── README.md
+├── README.zh.md
+└── LICENSE
 ```
 
 ## 贡献

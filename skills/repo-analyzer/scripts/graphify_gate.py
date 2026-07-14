@@ -761,7 +761,7 @@ def run_gate(target: Path | str, work_dir: Path | str) -> dict[str, object]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="stark-repo-analyzer-graphify-gate")
+    parser = argparse.ArgumentParser(prog="graphify_gate.py")
     parser.add_argument("--target", required=True, help="source repository kept read-only by the gate")
     parser.add_argument("--work-dir", required=True, help="writable directory outside the source repository")
     args = parser.parse_args(argv)

@@ -2,10 +2,10 @@
   "name": "repo-analyzer",
   "version": "1.0.0",
   "type": "module",
-  "description": "AI coding agent skill for deep architectural analysis of open-source projects",
+  "description": "Skill core package identity for npx skills add; product lives under skills/repo-analyzer/",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yzddmr6/repo-analyzer"
+    "url": "https://github.com/yuanyuanyuan/stark-repo-analyzer-skill"
   }
 }

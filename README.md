@@ -4,9 +4,13 @@ An AI coding-agent skill for deep architectural analysis of open-source reposito
 
 Before deep source reading, the Agent checks for a compatible Graphify installation. When available, a code-only gate builds and validates the navigation graph. When unavailable, the Agent provides installation guidance and waits for the user to choose between rechecking after installation and using the source-only compatibility workflow for this run. Graphify supplies navigation context; source code resolves conflicts, and all generated artifacts stay outside the target repository.
 
-Compatible with [Claude Code](https://claude.ai/claude-code), [Codex](https://github.com/openai/codex), [OpenClaw](https://github.com/anthropics/openclaw), and other AI coding agents that support the Skills format.
+Officially supported runtimes: [Claude Code](https://claude.ai/claude-code) and [Codex](https://github.com/openai/codex). Four install adapters share one Skill core package; other Skills-compatible hosts are outside the formal support matrix.
 
 For Chinese documentation, see [README.zh.md](README.zh.md).
+
+## Origin and attribution
+
+This independently maintained Skill reimplements and extends ideas from the MIT-licensed [yzddmr6/repo-analyzer](https://github.com/yzddmr6/repo-analyzer) reference project, including an auditable Graphify navigation enhancement. It is not an upstream mirror or officially affiliated project, and its support scope is defined by this repository.
 
 ## Related Articles
 
@@ -15,28 +19,49 @@ For Chinese documentation, see [README.zh.md](README.zh.md).
 
 ## Quick Install
 
-**npx (recommended)**
+Install adapters share one Skill core package under `skills/repo-analyzer/`.
+
+**npx**
 
 ```bash
-npx skills add yzddmr6/repo-analyzer
+npx skills add yuanyuanyuan/stark-repo-analyzer-skill
 ```
 
-**Plugin Marketplace**
+**Claude Code plugin**
 
 ```text
-/plugin marketplace add yzddmr6/repo-analyzer
-/plugin install repo-analyzer@repo-analyzer
+claude plugin marketplace add yuanyuanyuan/stark-repo-analyzer-skill
+claude plugin install repo-analyzer@repo-analyzer
 ```
 
-**Manual installation (Git clone)**
+**Codex plugin**
+
+Use the repository as a Codex plugin source:
+
+```bash
+codex plugin marketplace add yuanyuanyuan/stark-repo-analyzer-skill
+codex plugin add repo-analyzer@repo-analyzer
+```
+
+After installation, Codex discovers the Skill from `skills/`.
+
+**Manual installation**
 
 ```bash
 # macOS / Linux
-git clone https://github.com/yzddmr6/repo-analyzer.git ~/.claude/skills/repo-analyzer
+git clone https://github.com/yuanyuanyuan/stark-repo-analyzer-skill.git ~/.claude/skills/repo-analyzer
 
 # Windows
-git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\skills\repo-analyzer
+git clone https://github.com/yuanyuanyuan/stark-repo-analyzer-skill.git %USERPROFILE%\.claude\skills\repo-analyzer
 ```
+
+Gate command after Skill discovery:
+
+```bash
+python <SKILL_ROOT>/scripts/graphify_gate.py --target <TARGET> --work-dir <WORK_DIR>
+```
+
+`SKILL_ROOT` is the directory that contains the loaded `SKILL.md`. Hosts that cannot resolve that path must stop before starting the gate.
 
 ## Features
 
@@ -119,19 +144,23 @@ The following MCP servers are optional research enhancements:
 
 ```text
 repo-analyzer/
-|-- .claude-plugin/
-|   `-- plugin.json                         # Plugin metadata
-|-- package.json                            # Package manifest
-|-- skills/
-|   `-- repo-analyzer/
-|       |-- SKILL.md                        # Main skill definition
-|       `-- references/
-|           |-- analysis-guide.md           # Analysis philosophy and evaluation framework
-|           |-- graphify-integration-guide.md # Graphify gate and evidence boundaries
-|           `-- module-analysis-guide.md    # Module analysis and subagent templates
-|-- README.md                               # English documentation
-|-- README.zh.md                            # Chinese documentation
-`-- LICENSE                                 # MIT License
+|-- .claude-plugin/                         # Claude plugin + marketplace adapter
+|-- .codex-plugin/plugin.json               # Codex plugin adapter
+|-- .agents/plugins/marketplace.json        # Codex marketplace adapter
+|-- skills/repo-analyzer/                   # Skill core package (single delivery source)
+|   |-- SKILL.md
+|   |-- scripts/graphify_gate.py
+|   `-- references/
+|       |-- analysis-guide.md
+|       |-- graphify-integration-guide.md
+|       |-- module-analysis-guide.md
+|       `-- contracts/graphify-gate-status.schema.json
+|-- package.json                            # Minimal identity for npx skills add
+|-- VERSION
+|-- CHANGELOG.md
+|-- README.md
+|-- README.zh.md
+`-- LICENSE
 ```
 
 ## Contributing

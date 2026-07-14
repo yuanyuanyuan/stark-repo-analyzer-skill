@@ -3,10 +3,10 @@
   "description": "Deep architectural analysis of open-source projects with professional reports",
   "version": "1.0.0",
   "author": {
-    "name": "yzddmr6"
+    "name": "yuanyuanyuan"
   },
-  "homepage": "https://github.com/yzddmr6/repo-analyzer",
-  "repository": "https://github.com/yzddmr6/repo-analyzer",
+  "homepage": "https://github.com/yuanyuanyuan/stark-repo-analyzer-skill",
+  "repository": "https://github.com/yuanyuanyuan/stark-repo-analyzer-skill",
   "license": "MIT",
   "keywords": [
     "skills",

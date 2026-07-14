@@ -1,6 +1,6 @@
 # Skill 原子交付架构路线图
 
-状态：`proposed`
+状态：`completed`
 
 执行计划：
 [`skill-distribution-architecture-plan.md`](../exec-plans/skill-distribution-architecture-plan.md)
@@ -11,8 +11,8 @@
 | 固定字段 | 当前内容 |
 |---|---|
 | 文档角色 | 定义 repo-analyzer 从多套安装 interface 收敛到单一 Skill 核心交付包的目标、边界和阶段 |
-| 当前状态 | `proposed`；只授权设计评审，不授权代码迁移或删除旧入口 |
-| 当前结论/入口 | 先读本路线图，再读关联 plan；当前产品行为仍以现有 spec 与实现为准 |
+| 当前状态 | `completed`；Skill 核心交付与 adapter 迁移已落地；真实外部 marketplace/G5 不在完成口径内 |
+| 当前结论/入口 | 实现真源为 `skills/repo-analyzer/`；安装 adapter 见 Claude/Codex/npx/手动；gate 调用以 `SKILL_ROOT` 规则为准 |
 | 何时读取 | 修改 Skill 目录、Claude/Codex plugin、gate 交付方式、版本或安装验收前 |
 | 何时更新 | 支持运行时、交付包内容、迁移阶段或退出条件发生变化时 |
 | 关联真源 | 术语见 `CONTEXT.md`，架构理由见 ADR-0025，产品行为见 `docs/spec/`，验收等级见 `docs/dev-rules/real-uat-regression/` |
@@ -101,8 +101,15 @@ repo-analyzer/
 
 维护者确认开始实现后，才把本 roadmap 与关联 plan 同时改为 `active`。激活前必须对 `skills/`、`src/`、`tests/`、`acceptance/` 和 plugin manifest 路径建立 diff 快照与文件所有权清单，确认 D1 不覆盖用户已有改动；不要求工作树干净、提交或 reset。激活同一刀必须更新目录索引，并在 progress 写明第一阶段、所有权范围和下一刀；在此之前不得依据本文件执行迁移。
 
-当前 README 仍承诺 OpenClaw 与更宽泛的 Skills 运行时，而目标支持范围只有 Claude Code 与 Codex。这是激活后的显式产品合同风险；D3-4 必须同步两份 README、Skill 与相关验收，迁移中不得从旧 README 反向扩大范围。
+README 已收缩到 Claude Code 与 Codex 正式支持范围；OpenClaw 与“所有 Skills 运行时”承诺已移除。
+
+## 收口说明（尚未 completed）
+
+- 阶段 D0-D3 的必需实现与仓库内验证已完成。
+- 已执行：unit/contract/install、核心包清单校验、release metadata 校验、四种 adapter 的隔离五步 smoke。
+- 未执行：Claude/Codex/npx 在真实宿主 marketplace 中的外部安装，以及 analyzer 真实回归 UAT（G5）。这些不能由隔离 smoke 提升证据等级。
+- 完成度分母：roadmap 阶段 4/4；plan P0 必需任务 14/14。真实外部 marketplace 与 G5 不计入本 initiative 完成分母。
 
 ## 主线总结
 
-目标不是把仓库简单“搬整齐”，而是让一个 deep Skill 交付 module 服务多个真实安装 adapter。当前只完成设计确认；实现、迁移和验收仍未开始。
+一个 deep Skill 核心交付包现在服务 Claude、Codex、npx 与手动四类安装 adapter。后续发布宣称前仍需按 real-uat-regression 执行外部安装与真实回归。

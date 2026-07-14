@@ -6,7 +6,62 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/chuzu/anaconda3/bin/graphify hook-check"
+            "command": "/Users/chuzu/anaconda3/bin/graphify hook-check",
+            "statusMessage": "Graphify hook-check"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/control_plane_gate.py\"",
+            "timeout": 30,
+            "statusMessage": "Control-plane completed gate (Bash)"
+          }
+        ]
+      },
+      {
+        "matcher": "apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/control_plane_gate.py\"",
+            "timeout": 30,
+            "statusMessage": "Control-plane completed gate (edit)"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/control_plane_gate.py\"",
+            "timeout": 30,
+            "statusMessage": "Control-plane audit and Judge dispatch"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/control_plane_gate.py\"",
+            "timeout": 30,
+            "statusMessage": "Control-plane audit and Judge dispatch on stop"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/control_plane_gate.py\"",
+            "timeout": 30,
+            "statusMessage": "Control-plane audit and Judge dispatch on subagent stop"
           }
         ]
       }

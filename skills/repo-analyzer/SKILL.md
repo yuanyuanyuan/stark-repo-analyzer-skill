@@ -13,7 +13,7 @@ description: Analyze an open-source Git repository and produce a source-backed a
 
 先检查 Graphify `0.9.13+` 是否可用：
 
-- 可用时，只通过仓库提供的单一 Graphify gate 执行 code-only 建图、原始证据保留、来源规范化、健康验证和导航 map 生成。不要在 Skill 中复制底层 doctor、`extract` 或 `cluster-only` 编排。
+- 可用时，只通过当前 Skill 核心交付包中的 bundled Graphify gate 执行 code-only 建图、原始证据保留、来源规范化、健康验证和导航 map 生成。不要在 Skill 中复制底层 doctor、`extract` 或 `cluster-only` 编排。
 - 缺失或不兼容时，只展示官方安装/升级指引，并暂停让用户选择“安装后复检”或“本次使用无 Graphify 的原版兼容流程”。不得代替用户安装，也不得自动进入兼容流程。
 - gate 返回依赖不可用时仍按上一条等待用户选择；Graphify 已开始执行后出现空图、无效工件、来源越界或健康失败，必须停止，不能切换到兼容流程。
 
@@ -25,18 +25,21 @@ Graphify 始终使用 code-only；不得使用 semantic extraction、LLM provide
 
 ## Graphify Gate 调用
 
-优先调用仓库安装的单一命令，不得绕过它直接编排 doctor、`extract` 或 `cluster-only`：
+只能通过当前已加载 Skill 核心交付包中的 bundled gate 调用，不得绕过它直接编排 doctor、`extract` 或 `cluster-only`，也不得猜测 plugin 根、当前工作目录、完整仓库根或 `src/`。
+
+解析 `SKILL_ROOT` 的责任方是调用 gate 的 Agent/宿主，不是 gate 脚本本身：
+
+1. 取得当前实际加载的 `SKILL.md` 绝对路径；
+2. 取其父目录作为 `SKILL_ROOT`；
+3. 构造并执行下面的绝对路径命令。
+
+如果宿主无法提供当前 Skill 来源路径，必须在启动子进程前给出可操作错误并停止；不得依次尝试任何 fallback。
 
 ```bash
-stark-repo-analyzer-graphify-gate --target <TARGET> --work-dir <WORK_DIR>
+python <SKILL_ROOT>/scripts/graphify_gate.py --target <TARGET> --work-dir <WORK_DIR>
 ```
 
-如果 console script 未安装，但当前 Skill 来自包含 `src/stark_repo_analyzer/graphify_gate.py` 的完整仓库 checkout，则从该 Skill 的仓库根目录执行等价模块入口：
-
-```bash
-PYTHONPATH=<SKILL_REPOSITORY_ROOT>/src python -m stark_repo_analyzer.graphify_gate \
-  --target <TARGET> --work-dir <WORK_DIR>
-```
+Python `3.10+` 与 Graphify CLI 都是外部依赖。Skill 只负责检测、解释和用户选择，不打包解释器，也不自动安装依赖。
 
 只按进程返回码和 `<WORK_DIR>/graphify-gate-status.json` 分支：
 

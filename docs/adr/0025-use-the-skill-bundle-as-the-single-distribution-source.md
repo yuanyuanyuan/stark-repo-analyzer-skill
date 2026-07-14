@@ -38,8 +38,8 @@ Claude 与 Codex 是两个真实 adapter，值得保留各自 schema；它们应
 - `pyproject.toml` 可以继续承载开发工具配置，但不再声明可发布产品或版本。
 - tests 将通过 gate interface、status schema 和实际安装结果验证产品；固定中文句子匹配只保留少量 lint 角色。
 - D1 必须先冻结核心包文件清单，并用 thin shim 证明新旧入口同输入具有相同 code 和关键 status 字段；不能把“旧入口暂留兼容”只写成计划口号。
-- 该决策描述已接受的目标架构，不表示代码已经迁移。实现前必须激活关联 roadmap 与 plan，行为合同只能在实现同一刀同步更新。
+- 关联 roadmap/plan 已完成迁移：Skill 核心交付包、Codex/Claude adapter、`SKILL_ROOT` 调用规则与 schema 单真源已落地。真实外部 marketplace 安装与 G5 真实回归仍属发布前工作，不由本 ADR 单独证明。
 
 ## 取代关系
 
-本 ADR 不取代 ADR-0016 至 ADR-0024 的 Graphify、控制面、兼容流程或验收决定；它细化 ADR-0017 所保留 Graphify gate 的交付 seam，不改变该 gate 的控制面职责。当前实现仍受既有 spec 约束，直到 proposed roadmap 被激活并完成迁移。
+本 ADR 不取代 ADR-0016 至 ADR-0024 的 Graphify、控制面、兼容流程或验收决定；它细化 ADR-0017 所保留 Graphify gate 的交付 seam，不改变该 gate 的控制面职责。
