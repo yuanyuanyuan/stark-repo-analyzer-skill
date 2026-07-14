@@ -78,6 +78,22 @@
 - 阻塞：维护者需先在 GitHub 恢复 `yuanyuanyuan/stark-repo-analyzer-skill` 的可用状态，并确认仓库应为 Public。
 - 下一刀：恢复后先只读确认仓库状态，再推送 `e6fc262`，设置 Public，创建并核对 `v1.0.0` Release。
 
+## 记录 · 2026-07-14（R4 恢复）
+
+### 实际事实
+
+- 维护者确认目标仓库已恢复为 Public。
+- 只读复核 `gh repo view`：`yuanyuanyuan/stark-repo-analyzer-skill` 为 `PUBLIC`、未归档，默认分支为 `main`。
+- 只读复核远端 `main`：仍指向 `c89fefa`，未包含本地发布候选；可安全续推。
+
+### Deviations
+
+无。
+
+### 下一刀
+
+- 提交本次恢复记录，推送本地发布提交，创建并核对 `v1.0.0` Release。
+
 ## 记录 · 2026-07-14
 
 ### 实际事实
