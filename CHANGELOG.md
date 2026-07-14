@@ -2,6 +2,12 @@
 
 All notable release changes for repo-analyzer are recorded here. The product version true source is the root `VERSION` file.
 
+## 1.1.2
+
+- Corrective source release after v1.1.1: root `.gitleaks.toml` allowlists confirmed large baseline/UAT graph dumps so the exact full-history gitleaks command can finish; pre-release security scan evidence is completed **before** this tag.
+- Clarifies that `--max-target-megabytes` must not substitute for full-history secret coverage.
+- Analyzer user-facing Graphify gate and report contract are unchanged.
+
 ## 1.1.1
 
 - Maintainer release gate: `docs/dev-rules/pre-release-security-scan/` requires worktree + full git history secret scans before tags / GitHub Releases.

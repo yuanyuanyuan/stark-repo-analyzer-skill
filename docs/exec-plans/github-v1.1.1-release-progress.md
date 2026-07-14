@@ -8,9 +8,9 @@
 
 | 字段 | 内容 |
 |---|---|
-| 阶段 | Judge `revise` 后修复中；待复审 |
-| 已完成 | S0–S2 发布；已补 `.gitleaks.toml` 与完整全历史扫描 PASS |
-| 下一刀 | 独立 Judge 复审 → audit → completed |
+| 阶段 | v1.1.2 纠正发布中；先扫后 tag |
+| 已完成 | 1.1.2 元数据；pre-tag gitleaks PASS；pytest/validators PASS |
+| 下一刀 | commit/push/tag/Release v1.1.2 → Judge |
 
 ## 记录
 
@@ -137,3 +137,57 @@
 
 - 提交 allowlist 配置与 progress 修订 → 独立 Judge 复审。
 
+### 2026-07-14 — 独立 Judge（复审）
+
+### Judge Review
+- Verdict: revise
+- 刚性约束违规：
+  - 发布前全历史扫描的有效证据在 Release 发布后才完成：Release 发布于 `2026-07-14T10:20:13Z`，`.gitleaks.toml` 所在修复提交 `1beb27c` 为 `2026-07-14T18:25:33+08:00`。
+  - 验收要求的提交一致性不成立：`origin/main` 为 `1beb27c`，而 `v1.1.1^{}` 为 `8110153`。
+- 问题（按严重级别）：
+  - P1：`v1.1.1` 公开 Release 已在完整全历史扫描通过前发布；当前扫描 PASS 不能追溯满足“pre-release”门。
+  - P1：`origin/main`、`v1.1.1`、Release 未同时指向 `8110153`；Release 的 `targetCommitish` 为 `main`，远端 `main` 已前移。
+- 缺失验证：
+  - 无法提供“发布 `v1.1.1` 前、针对其发布提交”的完整全历史 gitleaks PASS 证据。
+  - 无法提供当前验收项要求的 `origin/main == v1.1.1 == 8110153` 证据；独立远端核验已证明相反结果。
+- 建议复查范围：
+  - 仅处理公开 Release 的纠正方案与版本/标签/主分支对齐策略；完成后重新核验发布时序和远端引用。
+- 独立执行的验证及结果：
+  - `gitleaks dir --no-banner --redact .`：PASS，`no leaks found`。
+  - `gitleaks git --no-banner --redact --log-opts="--all" .`：PASS，77 commits，`no leaks found`。
+  - `python -m pytest tests/unit -q -p no:cacheprovider --basetemp /tmp/judge-pytest`：PASS，42 passed。
+  - `validate-release-metadata.py`、`validate-control-plane.py --mode bootstrap/audit`、`git diff --check`：均 PASS。
+  - `gh release view v1.1.1`：非 draft；Release notes 未声称 marketplace 或 G5 UAT。
+  - `git ls-remote` / `git rev-parse`：`origin/main=1beb27c`，`v1.1.1^{}=8110153`；`.gitleaks.toml` 不存在于 `8110153`。
+- 实际模型 / 推理等级：`gpt-5.6-terra` / `medium`
+
+### 2026-07-14 — 纠正策略：发布 v1.1.2
+
+**实际完成（计划）**
+
+- 不重写已公开的 `v1.1.1` 历史标签语义为“已在发布前提前完成扫描”；在 notes 中保留边界。
+- 以当前 tip 升 `1.1.2`：含 `.gitleaks.toml`、规则澄清与完整安全扫描证据。
+- **先**跑工作树+全历史原命令 gitleaks PASS，**再**提交、推送、tag `v1.1.2`、创建 Release，使 `main`/`v1.1.2`/Release 同提交。
+- `v1.1.1` plan 在 `v1.1.2` 纠正发布 + Judge pass 后 `completed`，progress 披露 `v1.1.1` 时序缺口。
+
+### 2026-07-14 — v1.1.2 纠正发布（先扫）
+
+**发布前安全扫描（打 tag 前）**
+
+- 时间：2026-07-14 18:27 CST
+- gitleaks `8.30.1`
+- `gitleaks dir --no-banner --redact .` → exit 0；no leaks found
+- `gitleaks git --no-banner --redact --log-opts="--all" .` → exit 0；77 commits；no leaks found（`.gitleaks.toml` 夹具 allowlist）
+- 跟踪面：无密钥类跟踪文件；`.gitignore` 覆盖 `.env`
+- 最终 verdict：`PASS`（发生在 commit/tag/Release **之前**）
+
+**其它验证**
+
+- pytest unit：42 passed
+- validate-release-metadata：PASS version=1.1.2
+- validate-control-plane bootstrap：PASS
+
+**说明**
+
+- `v1.1.1` 保留为已公开历史标签（指向 `8110153`）；时序缺口已在 Judge 与 progress 披露。
+- 纠正可安装版本为 `v1.1.2`，含完整扫描配置与先扫后 tag 证据。

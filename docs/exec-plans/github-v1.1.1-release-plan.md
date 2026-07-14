@@ -18,7 +18,7 @@
 
 ### 目标
 
-发布 `v1.1.1` 源码 Release，覆盖发布前安全扫描 dev-rule 与路由，且本发布先通过安全扫描。
+发布含 pre-release security scan 的源码 Release；因 `v1.1.1` 时序缺口，以 **`v1.1.2` 纠正发布** 作为完成口径（先扫后 tag；main/tag/Release 同提交）。
 
 ### 非目标
 
