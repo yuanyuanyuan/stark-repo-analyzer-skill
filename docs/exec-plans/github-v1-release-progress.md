@@ -51,6 +51,33 @@
 - 建议复查范围：完成 R4 后，核对远端 `main`、`v1.0.0`、Release 是否指向同一提交，Release Notes 是否保留上述未验证项；随后执行 control-plane `audit` 收口。
 - 独立执行的验证及结果：`python -m unittest discover -s tests -v`（32 passed）；`python tools/release/validate-release-metadata.py`（PASS，`1.0.0`）；`python tools/release/validate-control-plane.py --mode bootstrap`（PASS）；`git diff --check` 与 `git diff --cached --check`（通过）；本机 `codex plugin`、`claude plugin` 子命令帮助确认 README 所列安装语法存在。
 
+## 记录 · 2026-07-14（R4 受阻）
+
+### 实际改动
+
+- 创建本地发布候选提交：`e6fc262 release: prepare v1.0.0 GitHub distribution`。
+
+### Worker 验证
+
+- 提交前 `git diff --cached --check`：通过。
+- `gh auth status`：当前账户 `yuanyuanyuan` 已登录，token 包含 `repo` 权限。
+- `gh repo view`：执行前目标仓库显示为 `PRIVATE`。
+- `git push origin main`：失败，GitHub 返回 `remote: Your repository is disabled` 与 HTTP `403`。
+
+### Deviations
+
+- 未能按授权将仓库改为 Public、推送候选、创建 `v1.0.0` 标签或 GitHub Release。原因：GitHub 已禁用目标仓库，后续命令由失败链短路，未执行。影响：当前仅有本地提交，不存在远端发布证据。
+
+### Boundary Check
+
+- 本地 commit 不是 GitHub Release，也不证明用户可安装。
+- 未执行真实外部 marketplace 安装与 G5 真实回归 UAT；此前披露保持有效。
+
+### 阻塞与下一刀
+
+- 阻塞：维护者需先在 GitHub 恢复 `yuanyuanyuan/stark-repo-analyzer-skill` 的可用状态，并确认仓库应为 Public。
+- 下一刀：恢复后先只读确认仓库状态，再推送 `e6fc262`，设置 Public，创建并核对 `v1.0.0` Release。
+
 ## 记录 · 2026-07-14
 
 ### 实际事实
