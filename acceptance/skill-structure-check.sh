@@ -33,6 +33,10 @@ else
 fi
 
 printf '\nSkill structure check: '
-if [ "$failures" -eq 0 ]; then printf 'PASS\n'; exit 0; fi
+if [ "$failures" -eq 0 ]; then
+  printf 'PASS\n'
+  "$ROOT/acceptance/skill-contract-check.sh"
+  exit $?
+fi
 printf 'FAIL (%s)\n' "$failures"
 exit 1

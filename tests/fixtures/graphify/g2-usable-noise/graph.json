@@ -1,0 +1,44 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "nodes": [
+    {
+      "id": "alpha",
+      "label": "alpha",
+      "community": 1,
+      "source_file": "g2-target/src/module.py",
+      "source_location": "L1-L2"
+    },
+    {
+      "id": "beta",
+      "label": "beta",
+      "community": 1,
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "outside",
+      "label": "outside",
+      "source_file": "../outside.py",
+      "source_location": "L1"
+    }
+  ],
+  "links": [
+    {
+      "source": "alpha",
+      "target": "beta",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "g2-target/src/module.py",
+      "source_location": "L2"
+    },
+    {
+      "source": "outside",
+      "target": "alpha",
+      "relation": "unknown",
+      "confidence": "AMBIGUOUS",
+      "source_file": "../outside.py",
+      "source_location": "L1"
+    }
+  ]
+}

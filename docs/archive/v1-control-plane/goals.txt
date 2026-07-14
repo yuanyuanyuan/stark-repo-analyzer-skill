@@ -1,0 +1,111 @@
+# stark-repo-analyzer-skill: Assembly Line Goals
+
+> **Status: superseded.** The active direction is
+> [`docs/roadmap/graphify-simplification-roadmap.md`](../../roadmap/graphify-simplification-roadmap.md).
+> This file is retained as historical V1 scope and evidence context; it no
+> longer authorizes current implementation or acceptance claims.
+
+## Final Delivery Goal
+
+保真移植一个可安装、可触发、可验证的 `stark-repo-analyzer-skill`。它以参考 `repo-analyzer` 的流程、设计和逻辑为行为基线，仅加入 Graphify `0.9.13+ code-only` 结构证据增强；当前 V1 不调用 Graphify semantic/LLM 模块，并保留明确的证据边界、覆盖率诚实记录和可复现的分析产物。
+
+## Scope
+
+- 参考实现（现存位置）：`vendor/repo-analyzer-reference/skills/repo-analyzer/`。
+- 参考源码语料：`/Users/chuzu/projests/stark-repo-analyzer-reference-sources/`。
+- 参考输出基线：`docs/baseline/reference-runs/`。
+- 目标项目工作树：当前仓库；不使用此前 Git 历史推断行为。
+- 主交付模式：`standard`。
+- 产品级 `deep`：不纳入 V1；V1 只交付 `standard` 分析档位。Graphify 也不再使用 `--mode deep`，只运行 `0.9.13+ --code-only --no-cluster`。
+- P5 动态行为验证：不纳入 V1 验收范围。V1 保留其与静态阅读覆盖率、测试覆盖率的区分，并将动态验证列为后续扩展，不以未执行目标项目构建、测试、网络或交互流程阻断交付。
+- Graphify：V1 的强制结构证据前置闸门；图谱缺失、为空或健康检查失败时，该次分析必须中止，不能降级。
+- LLM 引擎：不属于当前 V1 Graphify 路径。Graphify code-only 不探测、不读取、不记录 provider、模型或密钥；Why > What 和语义判断由源码阅读 Agent 完成。
+- Graphify 执行：自动化与回归使用 headless CLI；交互式 `/graphify` 只用于人工探索，不作为验收执行器。
+- Graphify 产物：目标仓库只读；图谱、缓存和报告只写入本次 `$WORK_DIR/graphify-out/`，后续查询显式指定该图谱路径。
+- Graphify 失败：code-only 是本地确定性路径；配置、版本、权限、执行器、空图、产物完整性和源边界错误立即中止，不重试或降级伪造成功。
+- Graphify 健康：`graph.json` 与 `GRAPH_REPORT.md` 必须可解析且图谱非空、来源可定位；`click` 试点还必须有一条可定位的 `EXTRACTED` 边。
+- Graphify 证据：源码裁决冲突；`EXTRACTED` 需验证核心路径，`INFERRED` 是待验证项，`AMBIGUOUS` 仅为风险/疑问，所有冲突进入交叉验证草稿。
+- Graphify Bootstrap：Agent 可执行官方非敏感安装/升级与复检，必须满足 `graphify 0.9.13+` 和 `--code-only`；当前路径不需要 API key、企业代理或私有 provider。
+- doctor：V1 提供确定性预检脚本，按 `0/10/20/30` 区分 ready、Agent Bootstrap、用户配置和阻断状态；正式分析只在 doctor 返回 `0` 后开始。
+- 低侵入：所有程序化检测交给 doctor 的 preflight/post-graph 模式；参考 skill 不承担检测分支，Graphify map 仅作为附加导航上下文。
+
+## Overall Pass Criteria
+
+项目只有在以下条件全部满足时才算完成：
+
+1. 技能元数据、触发条件、输入类型和输出目录契约完整。
+2. 参考 skill 的阶段、Why > What、源码阅读、subagent、覆盖率、交叉验证和报告融合流程保持保真；Graphify 只作已定义的增强。
+3. `standard` 流程能够从项目输入走到最终报告和验证清单。
+4. 每次分析可由 Agent 完成 Graphify code-only Bootstrap，经 doctor preflight/post-graph 验证后，在原流程中使用有效图谱作为附加导航上下文，并将图谱发现与核心源码阅读交叉验证。
+5. `doctor` 对 ready、可自动修复、需用户配置和阻断状态输出可机器判断的 JSON 与稳定退出码。
+6. 分析过程能记录源码 commit、Graphify 版本与 code-only 命令、运行时间、外部来源和失败原因；不记录 provider/model，因为当前路径不调用它们。
+7. 报告包含项目定位、全景、模块分析、Why > What、Mermaid 图、源码证据和限制。
+8. 能对 6 个参考项目执行回归，至少保留参考基线定义的核心模块和分析主线。
+9. 静态阅读覆盖率、测试覆盖率和运行时验证明确区分。
+10. 失败、超时、外部工具不可用和超大项目 bounded scope 都会被显式记录。
+11. 所有自动验证器通过，且人工复核清单没有未处理的高风险项。
+12. 先完成一个小型项目的原版 reference baseline 与修改后 code-only baseline 对比，真实调用 repo-analyzer skill 要求的 subagents；pilot 通过后再对六个 reference-runs 执行完整 standard baseline 对比。P5 已评估并明确为 V1 范围外。
+
+## Atomic Task Pass Criteria
+
+每个任务必须同时提供：
+
+- 固定输入和上下文路径；
+- 单一责任和明确输出文件；
+- 可执行的验证命令或检查项；
+- 失败边界和重试/人工介入条件；
+- 不修改任务所有权之外的文件。
+
+没有验证证据的“完成”只算 `待验证`，不算 `完成`。
+
+## Required Reference Regression Set
+
+- `click`: command/context/parameter/terminal 主线。
+- `httpx`: message model/stream lifecycle/transport/config 主线。
+- `ruff`: CLI/config/lint/formatter 与大型未覆盖模块边界。
+- `codex-plugin-cc`: Job/Broker/App Server/hooks 生命周期。
+- `claude-code`: query/tool/task/context/extension 主线。
+- `codex`: session/turn/protocol/execution safety/TUI/extension 主线。
+
+固定版本和报告见 `docs/baseline/source-corpus-manifest.json` 与 `docs/baseline/reference-run-manifest.json`。
+
+## Allowed Tools and Boundaries
+
+允许：
+
+- 在当前项目内读取和修改项目文件；
+- 读取固定的本地参考源码语料；
+- 使用 `rg`、`find`、`sed`、`nl`、`wc`、`git`、JSON 校验和项目测试工具；
+- 按需使用 agent-reach 获取公开 GitHub/官方文档信息，并保存来源；
+- 使用并行 agent 处理互不重叠的任务，并限制每个 agent 的写入目录。
+
+禁止：
+
+- 使用此前 Git 历史替代当前工作树证据；
+- 修改参考源码语料；
+- 修改其他 agent 的所有权文件；
+- 伪造外部调研、覆盖率、测试或运行时验证结果；
+- 未经确认执行真实生产 Codex/Claude 会话、上传本地敏感文件或访问生产环境；
+- 用大规模并行掩盖未经验证的输出。
+
+## Human Intervention Rules
+
+需要人工确认的情况：
+
+- 参考规范和当前项目规则冲突；
+- 需要决定是否实现 `deep`；
+- 任务改变公开输入/输出契约；
+- 验证器无法判断语义正确性；
+- 任务涉及外部副作用、敏感数据或生产资源；
+- 同一失败原因连续重试两次仍未解决。
+- 物理基线无法证明真实调用入口或重复运行一致性。
+
+## Completion Evidence
+
+最终交付必须能指向：
+
+- 规格和决策文档；
+- 实现文件；
+- 自动验证命令及输出；
+- 6 项回归结果；
+- 未完成事项和残余风险。

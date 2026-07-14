@@ -269,3 +269,7 @@ network/provider activity (expected: none on default structure path)
 source-tree cleanliness before/after
 failure classification and retry count
 ```
+
+## 主线总结
+
+默认配置必须做到三点：固定工具版本、禁止默认结构路径出网、所有写入留在 `$WORK_DIR`。Graphify 与 Git manifest 必须对账，Repomix 只能接收非空明确文件集，Serena 只允许已审计 OSS LSP，Joern 只进入显式 deep-dataflow；每次运行都要留下可复算的命令、版本、摘要和边界检查。

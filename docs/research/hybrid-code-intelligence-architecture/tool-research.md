@@ -1,32 +1,30 @@
-# Primary-source tool research for hybrid code intelligence
+# 混合代码智能工具的一手资料调研
 
-Access date: **2026-07-13**
+调研日期：**2026-07-13**
 
-This note records confirmed capabilities and boundaries relevant to a hybrid architecture that may combine repository enumeration, syntax-level indexing, graph construction, and context packaging. It is based on official repositories, official documentation, the official PyPI package page, and read-only inspection of the locally installed Graphify CLI. No Graphify extraction was run.
+本文回答一个核心问题：Graphify、Tree-sitter 和 Repomix 各自应该负责哪一层，才能避免重复造轮子。直觉上，可以把三者分别看成“仓库结构导航”“语法显微镜”和“上下文打包器”；类比的边界是，三者都不能单独给出可靠的业务结论，最终事实仍要回到固定版本的源码裁决。
 
-> Follow-up correction: after this primary-source pass, a separate read-only experiment ran Graphify `0.9.13 --code-only` on the fixed Click repository. It completed extraction in about 3.0 seconds with 0.0 seconds of semantic extraction. The final proposal therefore recommends Graphify code-only as the first always-on static graph adapter, while keeping caller-owned Tree-sitter queries as an extension/future replacement rather than building a second complete graph engine immediately. See [experiments.md](experiments.md) and [architecture.md](architecture.md). The source research below is retained as originally scoped.
+本版本是可维护的中文决策入口。迁移前的逐条英文记录保留在
+[`docs/archive/research-source/hybrid-code-intelligence-architecture/tool-research.en.md`](../../archive/research-source/hybrid-code-intelligence-architecture/tool-research.en.md)，用于核对更细的命令、API 和来源映射。该英文底稿不是活动合同。
 
-## Executive findings
+## 一、结论先行
 
-1. **Graphify is an opinionated repository-to-knowledge-graph product, not a general Tree-sitter API.** Its public CLI owns discovery, AST extraction, semantic extraction, graph construction, clustering, querying, reports, and watch/update workflows. The locally installed command is the official `graphifyy` package, version `0.9.8`; the official repository inspected on 2026-07-13 was at tag `v0.9.13`, so current upstream behavior must not be assumed to exist identically in the installed build.[L1][G1][G2]
-2. **Graphify has exclusion controls but no confirmed positive file-list extraction contract.** `extract` takes one path (defaulting to `.` when options come first), supports repeated `--exclude` patterns in source, and respects `.gitignore` plus `.graphifyignore`. There is no `--include` option in the current CLI parser. Although `.graphifyinclude` parsing helpers exist, the inspected current `detect()` implementation loads those patterns but does not use them during enumeration; therefore functional include/allowlist scoping is not confirmed.[G3][G4]
-3. **Tree-sitter is the correct primitive for fine-grained, incremental syntax intelligence.** It supports editing an old tree, reparsing with the old tree, computing changed ranges, parsing selected ranges of mixed-language documents, and executing structural queries over byte/point ranges. These are per-document syntax APIs; repository discovery, persistence, dependency resolution, and cross-file semantics remain application responsibilities.[T1][T2][T3]
-4. **Current py-tree-sitter favors prebuilt language wheels.** The official example installs `tree-sitter` plus a language package such as `tree-sitter-python`, then constructs `Language(tspython.language())`. The current binding exposes parsers, trees, queries, query cursors, included ranges, callbacks, and incremental parsing. It does not document the older `Language.build_library(...)` workflow in its current README/API.[P1][P2]
-5. **Repomix is the strongest of the three for deterministic repository/file selection and LLM context packaging.** It supports include globs, ignore globs/files, stdin file lists, remote repositories, multiple output formats, token budgets, security scanning, and optional Tree-sitter compression. Its compression is lossy structure extraction, not a dependency graph or symbol index.[R1][R2][R3]
+1. **Graphify 适合做默认静态结构图，不适合定义源码全集。** 它的 CLI 负责文件发现、AST 提取、建图、聚类和查询，但公开 `extract` 接口没有经过确认的精确正向文件列表能力。
+2. **Tree-sitter 适合解决精确语法和增量解析问题。** 它能给出 byte/point 范围、增量 reparse 和结构查询，但仓库枚举、跨文件解析、持久化和业务语义都要由上层负责。
+3. **Repomix 适合把确定的文件集合打包成受 token 预算约束的 Agent 上下文。** 它支持明确选择、ignore、安全扫描和压缩，但压缩是有损的，不能作为最终源码证据。
+4. **第一阶段不建设第二套完整 Tree-sitter 跨文件图。** Git 定义 `SourceUniverse`，Graphify `0.9.13 --code-only` 提供默认静态图；只有出现已记录的精度缺口时，才调用 Tree-sitter 或其他 precision resolver。
 
-## 1. Graphify CLI
+后续只读实验已经在固定 Click 仓库上运行 Graphify `0.9.13 --code-only`：约 3.0 秒完成提取，semantic extraction 为 0.0 秒。实验细节见 [experiments.md](experiments.md)，架构决策见 [architecture.md](architecture.md)。
 
-### Identity and version provenance
+## 二、Graphify CLI
 
-- Local executable: `/Users/chuzu/anaconda3/bin/graphify`.[L1]
-- Local package metadata: official PyPI distribution `graphifyy`, version `0.9.8`; console script `graphify` imports `graphify.__main__:main`.[L1]
-- The official package explicitly warns that the PyPI package name is `graphifyy` (double `y`) while the CLI command is `graphify`; similarly named PyPI packages are not affiliated.[G1]
-- The official source repository identified by GitHub search and package branding is `Graphify-Labs/graphify`. Its current `pyproject.toml` declares package `graphifyy`, console script `graphify`, Tree-sitter dependencies, and version `0.9.13` at the inspected commit/tag.[G2]
-- Limitation: local metadata still names `https://github.com/safishamsi/graphify` as the homepage, while current branding/source is `Graphify-Labs/graphify`. The package page and repository content establish continuity, but the redirect/history was not independently audited.
+### 身份与版本
 
-### `extract`
+- 本机调研时的可执行文件为 `/Users/chuzu/anaconda3/bin/graphify`，PyPI distribution 是 `graphifyy 0.9.8`。[L1]
+- 上游检查的是 `Graphify-Labs/graphify` 的 `v0.9.13`；本机 `0.9.8` 与上游 `0.9.13` 不能假定行为完全一致。[G1][G2]
+- PyPI 包名是双 `y` 的 `graphifyy`，命令仍是 `graphify`；其他相似包名不应视为同一项目。[G1]
 
-Confirmed current upstream contract:[G3]
+### `extract` 的已确认边界
 
 ```text
 graphify extract <path>
@@ -38,280 +36,135 @@ graphify extract <path>
   --max-concurrency N
   --api-timeout S
   --out DIR
-  --google-workspace
   --no-cluster
   --code-only
-  --postgres DSN
-  --cargo
-  --global
-  --as TAG
-  --exclude PATTERN        # accepted by the parser; repeatable
+  --exclude PATTERN
 ```
 
-- The headless pipeline is described in source as detect -> local AST extraction for code -> semantic extraction for documents/media -> merge -> build -> cluster -> outputs.[G3]
-- Code parsing is local Tree-sitter work. Official product documentation says code mapping needs no LLM and does not leave the machine; non-code semantic passes can call a configured backend.[G1]
-- `--mode deep` increases semantic/inferred-edge extraction. It should not be conflated with AST extraction depth.
-- `--max-workers` controls AST extraction subprocesses; `--token-budget`, `--max-concurrency`, and `--api-timeout` tune semantic calls.[G3]
-- `--out DIR` separates the target path from the output root. `GRAPHIFY_OUT` is also an output-directory override in source, but it is an environment-level integration detail rather than an `extract` file-selection option.[G3]
-- `--code-only` skips document/paper/image semantic inputs in current upstream. It is present in current source help but was absent from the local `0.9.8` top-level help observed on 2026-07-13; treat it as version-sensitive.[L1][G3]
-- `--exclude` is accepted by both the current upstream parser and the installed `0.9.8` parser source, although it is omitted from their printed top-level help/usage strings. It appends root-anchored gitignore-style rules after ignore-file rules, so it has highest precedence among Graphify exclusions.[G3][G4]
+- `--code-only` 跳过文档、论文和图片的 semantic 输入；它在 `0.9.13` 上游存在，但本机 `0.9.8` 顶层帮助中未出现，因此必须做版本检查。[L1][G3]
+- `--mode deep` 增强的是 semantic/inferred-edge 提取，不能解释成 AST 分析深度。
+- 目录或子目录输入、`.gitignore`、`.graphifyignore` 和重复 `--exclude` 已确认可用。[G3][G4]
+- 没有确认公开的 `--include` 或任意文件列表合同。`.graphifyinclude` 的 helper 虽然存在，但被检查的 `detect()` 没有在枚举中实际使用，因此不能依赖它做 allowlist。[G3][G4]
+- 内部 Python extractor 接受 `list[Path]` 不等于公开 CLI 合同；直接依赖它会把集成绑定到非公开实现。
 
-#### File/include scoping conclusion
+### 其他命令
 
-- **Directory/subdirectory scope: confirmed.** `extract <path>` can target a repository or a subfolder; the official README itself recommends running on a subfolder for a large corpus.[G1][G3]
-- **Negative file scoping: confirmed.** `.gitignore` and `.graphifyignore` are merged, and repeated `--exclude` patterns are applied after them.[G4]
-- **Positive `--include` scope: not found.** No `--include` argument exists in the current CLI parser or top-level command help.[G3]
-- **`.graphifyinclude`: not operationally confirmed.** Current source defines and loads `.graphifyinclude` patterns, describing them as a way to opt hidden files/directories into traversal, but the inspected `detect()` function does not consult the loaded `include_patterns` while walking or classifying files.[G4] This is not evidence of a general allowlist and may be incomplete/dead implementation.
-- **Explicit list of arbitrary files: not confirmed for `graphify extract`.** The internal Python extractor accepts a list of `Path` objects, and update/watch can re-extract changed files, but the public `extract` CLI accepts one path and performs its own detection. Depending on internal Python APIs would couple an integration to non-public implementation.
+- `update` 可以在不调用 LLM 的情况下重建代码图，处理变更/删除文件并带 shrink guard；它不是通用 semantic refresh。[G3][G5]
+- `watch` 在安装 `watchdog` 后监听路径，并按文件级增量重建；这不证明 Graphify 会跨按键保留 Tree-sitter parse tree。[G2][G5]
+- `query` 在已有 `graph.json` 上执行 BFS/DFS 图遍历并受 token budget 限制；它不是源码按需解析或形式化语义查询。[G3][G6]
+- `tree` 把已有图导出为 D3 HTML，可用于观察路径和边；它不是源码枚举或 Tree-sitter AST dump。[G3][G7]
+- `benchmark` 使用估算词数和固定问题计算上下文压缩比；它不是延迟、检索质量或答案准确率基准。[G3][G8]
 
-### `update`
+**边界结论：** Graphify 可以承担广域跨文件导航，但 `SourceUniverse` 必须由 Git manifest 定义。所有重要关系都要验证来源位置，再回到源码裁决。
 
-- `graphify update <path>` rebuilds code-derived graph data without an LLM. It accepts `--force` (or `GRAPHIFY_FORCE=1`) to allow graph shrinkage and `--no-cluster` to emit the raw extraction without clustering.[G3][G5]
-- On an explicit changed-path set, the internal rebuild path extracts only changed files that still exist, evicts stale nodes for changed/deleted paths, and preserves semantic nodes/edges from the prior full run where appropriate.[G5]
-- Without a changed-path set it enumerates the detected code corpus and performs a full AST rebuild.[G5]
-- It can include document files for which Graphify has an AST extractor (for example Markdown-family inputs), but it is not a general semantic refresh: semantic nodes from a prior full run are preserved, and changed non-code inputs can mark semantic re-extraction as pending.[G5]
-- A shrink guard can refuse to overwrite an existing graph with fewer nodes unless the loss is attributable to explicitly rebuilt/deleted sources or `--force` is used.[G5]
+## 三、Tree-sitter 与 py-tree-sitter
 
-### `watch`
+Tree-sitter 是 parser generator 和增量解析库。它生成 concrete syntax tree，也就是保留语法细节的解析树；named-node API 可以给出接近 AST 的视图，但不会自动生成仓库级符号图。[T1]
 
-- `graphify watch <path>` requires the optional `watchdog` dependency and watches supported code/document/paper/image extensions.[G2][G5]
-- The watch implementation debounces filesystem changes, queues pending paths, serializes rebuilds with a per-output advisory lock on supported Unix platforms, and reuses the update/rebuild path.[G5]
-- Changed code files are incrementally re-extracted at the file level. This is Graphify-level incremental graph maintenance, not proof that Graphify retains and edits Tree-sitter parse trees between keystrokes.
-- Limitations: watch scope is a path, not a supplied file manifest; platform behavior differs where `fcntl` is unavailable; non-code semantic changes are not equivalent to a paid/full semantic extraction.
+### 增量解析
 
-### `query`
+官方流程是：
 
-Confirmed CLI options:[G3][G6]
+1. 用 byte 和 point 范围对旧树执行 `ts_tree_edit` / `Tree.edit`。
+2. 把编辑后的旧树传给 `ts_parser_parse` / `Parser.parse`，解析新源码。
+3. 使用 changed-range API 比较新旧树。[T2][P1]
 
-```text
-graphify query "<question>"
-  --dfs
-  --context C       # repeatable edge-context filter
-  --budget N        # default 2000 tokens
-  --graph PATH
-```
+未变化结构可以复用，但 Tree-sitter 只报告语法变化范围。如何把变化映射为稳定 symbol、跨文件依赖、缓存失效或数据库 transaction，仍是应用层责任。单个 tree instance 也不是线程安全的，并发使用前需要复制或重新获取节点。[T2]
 
-- The default is breadth-first traversal; `--dfs` chooses depth-first traversal. The CLI uses a fixed traversal depth of 2.[G6]
-- Query terms seed matching graph nodes, optional/derived context filters restrict edge families, and output is truncated to an approximate token budget.[G6]
-- The query engine operates on an existing `graph.json`; it does not parse source files on demand.
-- Query output is a scoped textual subgraph. It is useful as retrieval context, but relevance is based on Graphify's node scoring and graph topology rather than a formal semantic-query language.
+### 范围与 Query
 
-### `tree`
+- `included_ranges` 可以限制同一文档中的 byte/point 区间，适合嵌套语言；它不是仓库 include glob。[T2][P2]
+- Query 使用 S-expression pattern，支持 field、capture、alternation、predicate 和 byte/point 范围。[T3][T4]
+- `TSQuery` 可在线程间共享，`TSQueryCursor` 带执行状态，不应在线程间共享。[T3]
+- py-tree-sitter `0.26.0` 支持 ABI 13 到 15；当前推荐通过各语言的预编译 wheel 加载 grammar。[P1][P2]
+- 当前文档没有推荐旧的 `Language.build_library(...)` 流程；依赖旧 API 的设计必须锁版本或增加独立 build step。[P2]
 
-Confirmed current options:[G3][G7]
+**边界结论：** Tree-sitter 擅长来源精确的语法事实和增量失效，不负责仓库 crawling、ignore、持久化、跨文件 name resolution、community、秘密扫描或 LLM context packaging。
 
-```text
-graphify tree
-  --graph PATH
-  --output HTML
-  --root PATH
-  --max-children N      # default 200
-  --top-k-edges N       # default 12
-  --label NAME
-```
+## 四、Repomix
 
-- The command emits a standalone D3 v7 collapsible-tree HTML view derived from `graph.json` and source paths.[G7]
-- `--root` controls filesystem hierarchy interpretation; `--max-children` bounds fan-out; `--top-k-edges` bounds the per-symbol edge inspector.[G7]
-- Limitation: this is a visualization/export of an existing graph, not repository enumeration or a Tree-sitter syntax tree dump.
+Repomix `1.16.1` 可以把仓库或明确文件集打包为 AI-friendly 输出，并计算 token、应用 ignore、运行 Secretlint、选择性压缩。[R1]
 
-### `benchmark`
+### 文件选择与配置
 
-- `graphify benchmark [graph.json]` measures estimated context reduction versus a naive whole-corpus baseline.[G3][G8]
-- If `.graphify_detect.json` supplies `total_words`, it is used; otherwise corpus words are estimated as `node_count * 50`. Tokens are estimated from words, and query cost is measured over a fixed sample-question list.[G8]
-- The reported ratio is therefore a tool-specific heuristic, not a latency benchmark, parser throughput benchmark, retrieval-quality benchmark, or model-evaluated answer-accuracy result.
-- Unknown: whether this heuristic is suitable as an acceptance metric for the proposed architecture. It should be independently validated against real questions and actual serialized context sizes.
+- `--include` 和 `--ignore` 接受 glob；`--stdin` 每行读取一个路径，适合由 `git ls-files` 或 `rg --files` 提供精确集合。[R1][R2]
+- 配置支持 TypeScript、JavaScript、JSON5、JSONC 和 JSON；CLI option 覆盖配置文件。[R3]
+- `output.tokenBudget` 超限时仍会生成输出，但进程返回非零，调用方必须按失败处理。[R3][R4]
+- file processor 可以执行任意命令，只能在受信任的本地配置中启用；远程仓库配置默认不可信。[R2][R3]
 
-### Graphify architectural boundary
+### 安全与压缩
 
-Graphify can supply a ready-made graph and retrieval layer, especially for broad cross-file navigation. It cannot be the source-universe authority because its public extraction interface lacks an exact positive file list, and it does not replace custom byte-range queries or edit-level parse-tree caching. The follow-up code-only experiment showed that these gaps do not justify building a second complete Tree-sitter cross-file graph in phase one: use Git for corpus identity, Graphify code-only for the default static graph, and direct Tree-sitter only for named precision/coverage gaps.
+- Secretlint 默认开启；发现敏感信息的文件会被报告并从 pack 排除，但这不能证明输出绝对不含秘密，分享前仍需人工或策略复核。[R5]
+- `--compress` 使用 `web-tree-sitter` 和 bundled Wasm grammar 保留签名、类型、结构和 import/export，删除实现细节。[R6][R7]
+- 不支持的语言或解析失败会回退到完整内容，可能意外增加 token，因此必须设置硬预算。[R7][R8]
+- 压缩是 best-effort、有损的结构摘要，不能证明调用关系，也不能提供稳定的最终行号证据。
 
-## 2. Tree-sitter core and py-tree-sitter
+**边界结论：** Repomix 适合确定性语料组装和受限上下文导出，不提供增量语法数据库、跨文件 symbol resolution 或 Graphify 风格图遍历。
 
-### Core model and parsing API
+## 五、职责对比
 
-- Tree-sitter describes itself as a parser generator and incremental parsing library that produces concrete syntax trees and can efficiently update them as source changes.[T1]
-- The core C objects are `TSLanguage`, `TSParser`, `TSTree`, and `TSNode`. A language defines a grammar; a stateful parser produces a tree; nodes expose byte and row/column ranges, parent/child/sibling relationships, named-node views, and grammar field names.[T1]
-- Input can be a string or a callback over a custom text structure such as a rope/piece table. The core callback receives byte offset and point and can return UTF-8/UTF-16 chunks (or use a custom decoder).[T1]
-- Tree-sitter builds concrete syntax trees. Named-node APIs can provide an AST-like view, but Tree-sitter does not itself construct a repository-wide symbol/dependency graph.[T1]
-
-### Incremental parsing
-
-The official sequence is:[T2][P1]
-
-1. Apply an edit to the old tree with start/old-end/new-end bytes and points (`ts_tree_edit` / Python `Tree.edit`).
-2. Parse the new source while passing the edited old tree (`ts_parser_parse(..., old_tree, ...)` / Python `Parser.parse(new_source, old_tree)`).
-3. Compare old and new trees with changed-range APIs (`ts_tree_get_changed_ranges` in core; Python `Tree.changed_ranges(new_tree)`).
-
-Confirmed properties and limits:
-
-- Reparse can reuse unchanged structure and is faster than parsing from scratch.[T2][P1]
-- Nodes retained outside an edited tree need their cached positions edited too, or callers should reacquire nodes from the new tree.[T2]
-- Trees are cheap to copy through reference counting, but one individual tree instance is not thread-safe; copy before using a tree concurrently.[T2]
-- Tree-sitter reports syntactic changed ranges. Mapping those ranges to durable symbols, dependencies, invalidation sets, or database transactions is application logic.
-
-### Included ranges and mixed-language documents
-
-- Core `ts_parser_set_included_ranges` and Python `Parser.included_ranges` restrict a parser to specified byte/point ranges of a document.[T2][P2]
-- This supports layered parsing of embedded languages (for example an ERB document parsed as ERB plus selected HTML and Ruby ranges).[T2]
-- The application must discover the ranges and coordinate the languages. Tree-sitter explicitly does not mediate language interactions.[T2]
-- Included ranges are within a source document; they are not repository include globs.
-
-### Query language
-
-- Queries are S-expression patterns over node types. They support fields, negated fields, anonymous tokens, wildcards, `ERROR`/`MISSING` nodes, supertypes, captures, repetitions (`+`, `*`, `?`), sibling groups, alternations, anchors, predicates, and directives.[T3][T4]
-- Standard predicates include equality and regex matching families such as `#eq?`, `#not-eq?`, `#match?`, `#not-match?`, and membership predicates; directives can attach metadata such as `#set!` and transform captured text such as `#strip!`/`#select-adjacent!`.[T4]
-- Core `TSQuery` values are immutable and shareable between threads; `TSQueryCursor` carries execution state, is reusable, and should not be shared between threads.[T3]
-- Query cursors can restrict execution by byte or point range. Intersecting-range methods may return a match that only partly overlaps the range; containing-range variants require captured nodes to be fully inside it.[T3]
-
-### py-tree-sitter API
-
-- Official documentation accessed on 2026-07-13 identifies py-tree-sitter `0.26.0`, supporting language ABI versions 13 through 15.[P2]
-- Installation: `pip install tree-sitter`; official language packages such as `tree-sitter-python` provide precompiled wheels. Loading is currently shown as `Language(tspython.language())`, followed by `Parser(PY_LANGUAGE)`.[P1]
-- `Parser.parse` accepts a bytes-like source or a read callback, an optional old tree, UTF-8/UTF-16 encoding choices, and for callback input a progress callback.[P1][P2]
-- `QueryCursor.captures()` returns captures grouped by capture name; `matches()` preserves match grouping and is more useful when captures within one pattern relate to each other.[P1]
-- Current `QueryCursor` APIs include match limits, byte/point ranges, containing ranges, maximum start depth, custom predicate callbacks, and progress callbacks.[P2]
-- `TreeCursor` is the efficient traversal primitive for large trees; a cursor can descend only within the subtree where it started.[P1]
-
-### Supported build/load approaches
-
-- **Core library:** build with `make` to obtain static/dynamic libraries, or compile `lib/src/lib.c` directly into a host project with the documented include directories.[T1]
-- **Generated grammar in a native host:** compile the grammar's generated `src/parser.c` (and external scanner when present) into the application or a shared library.[T1]
-- **Tree-sitter CLI:** `tree-sitter build [PATH]` emits a platform shared library by default; `--wasm` emits a Wasm module; `--output` controls the destination.[T5]
-- **Python preferred path:** install per-language binary wheels and construct `Language` from the language package's exported pointer/capsule.[P1]
-- **Custom Python grammar:** official grammar scaffolding includes Python binding files and `setup.py`, allowing a grammar repository to publish/install its own language wheel.[T6]
-- Limitation/unknown: the current py-tree-sitter README and API do not present `Language.build_library`, so designs based on that older convenience API need version pinning or a separate build step. ABI compatibility must also be checked: current bindings are backward-compatible only within their stated minimum/maximum language ABI range.[P2]
-
-### Tree-sitter architectural boundary
-
-Tree-sitter is an excellent local engine for source-accurate syntax facts and incremental invalidation. It does not provide repository crawling, ignore semantics, durable storage, cross-file name resolution, community detection, prose/media semantics, security scanning, or LLM-ready packaging. A hybrid system must own those layers or delegate them to Graphify/Repomix.
-
-## 3. Repomix (`yamadashy/repomix`)
-
-### Identity and purpose
-
-- The official repository describes Repomix as a tool that packs a repository into one AI-friendly output with token counting, configurable selection, Git-aware ignores, Secretlint security checks, and optional Tree-sitter compression.[R1]
-- The inspected repository package version was `1.16.1` at commit `0f2e7954f8f2973405391728b27b6c12fcfdf165` on 2026-07-13.
-- Basic local usage is `repomix [path]`; remote repositories can be passed with `--remote` (or supported shorthand), and branch/tag/commit can be selected with `--remote-branch`.[R1][R2]
-
-### Explicit file selection
-
-- `--include "src/**/*.ts,**/*.md"` selects comma-separated fast-glob patterns; config uses an `include` string array.[R1][R2][R3]
-- `--ignore "**/*.log,tmp/"` adds comma-separated exclusions; config uses `ignore.customPatterns`.[R1][R2][R3]
-- `--stdin` reads one file path per line, enabling an external selector such as `git ls-files`, `rg --files`, `find`, or `fzf` to define an exact file set.[R1][R2]
-- `--include-full-directory-structure` can retain the full filtered directory tree while including contents only for the selected files.[R2][R3]
-- Ignore inputs include built-in defaults, `.gitignore` and `.git/info/exclude`, `.ignore`, `.repomixignore`, and custom patterns. Controls exist to disable Git ignores, `.ignore`, or defaults.[R2][R3]
-- CLI options override configuration-file settings.[R3]
-
-### Configuration contract
-
-Repomix supports local/global TypeScript, JavaScript, JSON5, JSONC, and JSON configuration files, with a documented priority order. `repomix --init` creates a JSON config; `$schema: "https://repomix.com/schemas/latest/schema.json"` enables editor validation.[R3]
-
-Important `repomix.config.json` fields:[R3][R4]
-
-| Area | Confirmed options |
-|---|---|
-| Input | `input.maxFileSize` (default 50 MB); ordered `input.processors` with `pattern`, `command`, optional timeout/error policy |
-| Output format | `output.filePath`, `style` (`xml`, `markdown`, `json`, `plain`), path style, parsable escaping, stdout/clipboard via CLI |
-| Output content | file summary, directory structure, files on/off, header/instruction text, line numbers, base64 truncation, empty dirs, full directory structure |
-| Size control | split output, top-file count, token-count tree, `output.tokenBudget` (output is generated but exit is non-zero when over budget) |
-| Normalization | remove comments, remove empty lines, global compression |
-| Per-file level | ordered `output.patterns`: `{pattern, compress?, directoryStructureOnly?}`; first match wins; directory-only takes precedence |
-| Git context | sort by change frequency, include diffs, include logs, log count |
-| Selection | `include`, Git/dot/default ignore toggles, custom ignore patterns |
-| Security | `security.enableSecurityCheck` (default true) |
-| Tokenization | `tokenCount.encoding` (default `o200k_base`) |
-
-- File processors execute arbitrary commands and are intentionally limited to trusted local CLI runs; remote repository configuration is not trusted unless `--remote-trust-config` is supplied.[R2][R3]
-- Per-file output patterns can force full content, compressed content, or directory-structure-only output. This is detail-level selection after repository selection, not a symbol-level query.[R3][R4]
-
-### Security behavior
-
-- Security scanning is enabled by default and uses Secretlint to detect items such as API keys, access tokens, credentials, private keys, environment variables, database strings, and other common secrets.[R5]
-- Files with findings are reported and excluded from packed output. `--no-security-check` or `security.enableSecurityCheck: false` disables this behavior.[R5]
-- Binary contents are omitted, although paths can remain visible in the directory structure.[R3][R5]
-- Security limitations: ignore rules and Secretlint reduce risk but are not proof that output contains no sensitive data. Official guidance says to review output before sharing and use `.repomixignore` for sensitive paths.[R5]
-
-### Tree-sitter compression
-
-- `--compress` / `output.compress: true` is explicitly experimental and uses Tree-sitter to preserve signatures, interfaces/types, class structures/properties, imports/exports, and other structural elements while removing bodies and implementation details.[R1][R6]
-- Repomix uses `web-tree-sitter` with bundled Wasm grammars, chosen for cross-platform installation and reliability rather than native Node bindings. On unsupported languages or parse/runtime failure, current source falls back to uncompressed content.[R7]
-- Current source lists 16 compression language families: C, C#, C++, CSS, Dart, Go, Java, JavaScript, PHP, Python, Ruby, Rust, Solidity, Swift, TypeScript, and Vue, with explicit extension mappings.[R8]
-- Compression runs Tree-sitter queries and language-specific capture strategies; it is not a generic minifier and not a repository dependency analyzer.[R7][R8]
-- `output.patterns` permits compression for selected globs even when global compression is off, or full content for selected globs when global compression is on.[R3][R4]
-- Limitation: compression is deliberately lossy and best-effort. It should not be used as the authoritative source for exact implementations, call graphs, or line-stable evidence.
-
-### Repomix architectural boundary
-
-Repomix is well suited to deterministic corpus assembly and bounded LLM context export. It can complement an index by packaging exact file subsets or compressed high-level views. It does not maintain an incremental syntax database, resolve cross-file symbols, or expose Graphify-style graph traversal.
-
-## 4. Comparative implications for a hybrid architecture
-
-| Requirement | Graphify | Tree-sitter / py-tree-sitter | Repomix |
+| 能力 | Graphify | Tree-sitter / py-tree-sitter | Repomix |
 |---|---|---|---|
-| Repository enumeration | Built in; path + ignore/exclude rules | Not provided | Strong; paths, globs, stdin lists, ignores |
-| Exact positive file list | No confirmed public `extract` contract | Caller supplies bytes/files | Confirmed via `--stdin` and include globs |
-| Per-file syntax tree | Internal, product-owned | Core capability, caller-owned | Internal only for compression |
-| Incremental edits within a file | Not confirmed as retained parse-tree editing | First-class edit/reparse/changed-ranges API | No persistent incremental syntax index |
-| File-level incremental rebuild | Confirmed in update/watch internals | Caller implements | Watch repacks output; not a syntax DB |
-| Structural query language | Graph traversal over built graph | S-expression syntax queries + predicates/ranges | No public structural query interface |
-| Cross-file graph | Built in | Application responsibility | Not provided |
-| LLM-ready bounded context | Graph query token budget | Application responsibility | Core purpose; token budget/splitting/formats |
-| Security scan | Sensitive-file controls exist, exact guarantees not audited here | Not provided | Secretlint enabled by default |
-| Lossless source evidence | Graph nodes/edges need source adjudication | Yes at parse/node-range level | Full mode yes; compression mode no |
+| 仓库枚举 | 内置路径与 ignore/exclude | 不提供 | 路径、glob、stdin 和 ignore 较完整 |
+| 精确正向文件集 | 公开 `extract` 未确认 | 调用方直接提供 bytes/files | `--stdin` 已确认 |
+| 单文件语法树 | 内部拥有 | 核心能力，调用方拥有 | 仅压缩内部使用 |
+| 文件内增量编辑 | 未确认保留旧 parse tree | 原生 edit/reparse/changed ranges | 无持久增量语法索引 |
+| 跨文件图 | 内置 | 应用层负责 | 不提供 |
+| 受预算的 LLM 上下文 | query 有 token budget | 应用层负责 | 核心用途 |
+| 来源精确性 | 节点/边需源码裁决 | byte/node range 精确 | full 模式可用，compress 模式有损 |
 
-Practical division of responsibility supported by the confirmed contracts and the follow-up experiment:
+因此，推荐的责任划分是：
 
-1. Use a caller-owned Git repository manifest plus explicit ignore/dirty-worktree policy as the deterministic source boundary.
-2. Use Graphify `0.9.13 --code-only` as the first default static graph adapter, version-pin it, reconcile its effective corpus against the Git manifest, and validate source locations before treating relations as evidence.
-3. Use direct Tree-sitter/py-tree-sitter queries only for exact byte/point ranges, unsupported framework syntax, or a measured Graphify gap; defer a full caller-owned cross-file graph until A/B evidence justifies its implementation and grammar-maintenance cost.
-4. Use Repomix to serialize selected source/context for Agent work, with security checks on and compression enabled only for high-level orientation rather than adjudication.
+1. Git manifest 定义确定性的源码边界和 dirty-worktree 身份。
+2. Graphify `0.9.13 --code-only` 提供默认静态图，并与 manifest 对账。
+3. Tree-sitter 只补精确范围、特殊框架语法或已量化的 Graphify 缺口。
+4. Repomix 只打包已选上下文，安全检查保持开启，压缩只用于建立方向感。
 
-This division is an architectural inference from the tool contracts, not an official recommendation from any of the projects.
+这是基于工具合同得出的架构推论，不是三个上游项目的官方联合建议。
 
-## 5. Open questions and limitations
+## 六、未决问题与限制
 
-- Does the locally installed Graphify `0.9.8` produce byte-for-byte compatible graph schema and query behavior with current `0.9.13`? Not established. The source-research phase did not run extraction; the later experiment ran only `0.9.13 --code-only` and did not establish cross-version compatibility.
-- Is `.graphifyinclude` intended to become an allowlist, only a hidden-path opt-in, or is its currently unused state a regression? Official current source is internally inconsistent; do not depend on it without an upstream clarification/test.
-- Is hidden `--exclude` considered stable public API despite being accepted in source but omitted from printed help? Not established.
-- Graphify's internal Python `extract(list[Path])` could enable explicit file extraction, but it is not the public `graphify extract` CLI contract and its stability is unknown.
-- Tree-sitter grammar quality and node/query schemas vary by language and grammar version. A production index needs pinned grammar versions, ABI checks, per-language query tests, and error/recovery handling.
-- Incremental parsing does not automatically imply incremental cross-file resolution. The application must define invalidation rules for imports, inheritance, generated code, conditional compilation, and ambiguous names.
-- Repomix's documented compression language set can change with bundled Wasm packages. Unsupported/failing files fall back to full content, which can unexpectedly increase token volume unless a token budget is enforced.
-- Secret scanning cannot guarantee absence of confidential material; generated output still requires review and policy controls.
-- None of the three tools alone establishes retrieval accuracy. A real evaluation should measure source recall, relation precision, freshness after edits/deletes, context tokens, latency, and answer correctness on representative repository questions.
+- 尚未证明 Graphify `0.9.8` 与 `0.9.13` 的图 schema 和 query 行为兼容。
+- `.graphifyinclude` 的设计意图和实际状态不一致，不能依赖；隐藏的 `--exclude` 是否属于稳定 API 也未确认。
+- Tree-sitter grammar 质量和 node/query schema 随语言和版本变化，生产系统必须锁 grammar、检查 ABI 并建立按语言 fixture。
+- 增量 parsing 不自动等于增量跨文件 resolution；import、inheritance、generated code 和条件编译仍需上层 invalidation 规则。
+- Repomix 压缩失败可能回退完整内容，Secretlint 也不能保证零泄漏。
+- 三个工具都不能单独证明检索质量；真实评估仍要测 source recall、relation precision、编辑后 freshness、token、latency 和代表性问题的答案正确性。
 
-## Sources
+## 七、来源索引
 
 ### Graphify
 
-- [L1] Read-only local inspection on 2026-07-13: `command -v graphify`, `graphify --version`, `graphify --help`, `pip show graphifyy`, the console-script header, and searches of the installed package source. This is machine-local evidence and has no external URL.
-- [G1] Graphify official PyPI package page, `graphifyy`: https://pypi.org/project/graphifyy/
-- [G2] Official repository and package metadata (`v0.9.13` inspected): https://github.com/Graphify-Labs/graphify and https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/pyproject.toml
-- [G3] Current CLI command parser/help: https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/cli.py and https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/__main__.py
-- [G4] Detection, ignore, exclude, and `.graphifyinclude` implementation: https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/detect.py
-- [G5] Update/watch rebuild implementation: https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/watch.py
-- [G6] Graph query implementation: https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/serve.py
-- [G7] Tree HTML implementation: https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/tree_html.py
-- [G8] Benchmark implementation: https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/benchmark.py
+- [L1] 2026-07-13 本机只读检查：`command -v graphify`、`graphify --version`、`graphify --help`、`pip show graphifyy` 和已安装源码；无外部 URL。
+- [G1] https://pypi.org/project/graphifyy/
+- [G2] https://github.com/Graphify-Labs/graphify
+- [G3] https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/cli.py
+- [G4] https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/detect.py
+- [G5] https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/watch.py
+- [G6] https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/serve.py
+- [G7] https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/tree_html.py
+- [G8] https://github.com/Graphify-Labs/graphify/blob/eec7a0183847cbdc8a87d92b233759a5204b89fe/graphify/benchmark.py
 
-### Tree-sitter and py-tree-sitter
+### Tree-sitter 与 py-tree-sitter
 
-- [T1] Tree-sitter introduction and basic parsing: https://tree-sitter.github.io/tree-sitter/ and https://tree-sitter.github.io/tree-sitter/using-parsers/1-getting-started.html and https://tree-sitter.github.io/tree-sitter/using-parsers/2-basic-parsing.html
-- [T2] Editing, included ranges, and concurrency: https://tree-sitter.github.io/tree-sitter/using-parsers/3-advanced-parsing.html
-- [T3] Query API and range restrictions: https://tree-sitter.github.io/tree-sitter/using-parsers/queries/4-api.html
-- [T4] Query syntax, operators, predicates, and directives: https://tree-sitter.github.io/tree-sitter/using-parsers/queries/1-syntax.html and https://tree-sitter.github.io/tree-sitter/using-parsers/queries/2-operators.html and https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html
-- [T5] Tree-sitter CLI build documentation: https://tree-sitter.github.io/tree-sitter/cli/build.html
-- [T6] Generated parser/binding layout: https://tree-sitter.github.io/tree-sitter/cli/init.html
-- [P1] py-tree-sitter official README and examples: https://github.com/tree-sitter/py-tree-sitter/blob/4fb9f66172ac6d4239b0d8c79092aacc57d93bbe/README.md
-- [P2] py-tree-sitter `0.26.0` API documentation: https://tree-sitter.github.io/py-tree-sitter/
+- [T1] https://tree-sitter.github.io/tree-sitter/using-parsers/2-basic-parsing.html
+- [T2] https://tree-sitter.github.io/tree-sitter/using-parsers/3-advanced-parsing.html
+- [T3] https://tree-sitter.github.io/tree-sitter/using-parsers/queries/4-api.html
+- [T4] https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html
+- [P1] https://github.com/tree-sitter/py-tree-sitter/blob/4fb9f66172ac6d4239b0d8c79092aacc57d93bbe/README.md
+- [P2] https://tree-sitter.github.io/py-tree-sitter/
 
 ### Repomix
 
-- [R1] Official repository README: https://github.com/yamadashy/repomix/blob/0f2e7954f8f2973405391728b27b6c12fcfdf165/README.md
-- [R2] Official CLI options: https://repomix.com/guide/command-line-options
-- [R3] Official configuration guide: https://repomix.com/guide/configuration
-- [R4] Configuration schema source: https://github.com/yamadashy/repomix/blob/0f2e7954f8f2973405391728b27b6c12fcfdf165/src/config/configSchema.ts and https://repomix.com/schemas/latest/schema.json
-- [R5] Official security guide: https://repomix.com/guide/security
-- [R6] Official code-compression guide: https://repomix.com/guide/code-compress
-- [R7] Tree-sitter compression implementation/fallback: https://github.com/yamadashy/repomix/blob/0f2e7954f8f2973405391728b27b6c12fcfdf165/src/core/treeSitter/parseFile.ts and https://github.com/yamadashy/repomix/blob/0f2e7954f8f2973405391728b27b6c12fcfdf165/src/core/treeSitter/loadLanguage.ts
-- [R8] Compression language registry: https://github.com/yamadashy/repomix/blob/0f2e7954f8f2973405391728b27b6c12fcfdf165/src/core/treeSitter/languageConfig.ts
+- [R1] https://github.com/yamadashy/repomix/blob/0f2e7954f8f2973405391728b27b6c12fcfdf165/README.md
+- [R2] https://repomix.com/guide/command-line-options
+- [R3] https://repomix.com/guide/configuration
+- [R4] https://repomix.com/schemas/latest/schema.json
+- [R5] https://repomix.com/guide/security
+- [R6] https://repomix.com/guide/code-compress
+- [R7] https://github.com/yamadashy/repomix/blob/0f2e7954f8f2973405391728b27b6c12fcfdf165/src/core/treeSitter/parseFile.ts
+- [R8] https://github.com/yamadashy/repomix/blob/0f2e7954f8f2973405391728b27b6c12fcfdf165/src/core/treeSitter/languageConfig.ts
+
+## 主线总结
+
+Git 决定“哪些源码属于本次分析”，Graphify code-only 决定“结构上可能如何连接”，Tree-sitter 解决少量精确语法缺口，Repomix 把选定内容装进受控上下文。最终结论不能直接相信任何工具输出，必须回到固定 commit 的源码范围验证。

@@ -2,7 +2,7 @@
 
 日期：**2026-07-13**
 
-这些实验用于验证工具行为和修正架构假设。它们不是 analyzer skill 的标准执行、没有完成当前 `dev-rules/real-uat-regression/README.md` 要求的 V1 Agent 分析链，因此**不得称为真实 UAT 通过**。
+这些实验用于验证工具行为和修正架构假设。它们不是 analyzer skill 的标准执行、没有完成当前 `docs/dev-rules/real-uat-regression/README.md` 要求的 V1 Agent 分析链，因此**不得称为真实 UAT 通过**。
 
 ## 1. Graphify 0.9.13 code-only
 
@@ -155,3 +155,7 @@ jq empty repomix-hotspot.config.example.json
 - Joern deep mode 的收益足以覆盖安装、索引和查询成本。
 
 这些问题必须按 [rollout-and-evaluation.md](rollout-and-evaluation.md) 的固定仓库 A/B 方案回答。
+
+## 主线总结
+
+现有实验只能证明 Graphify code-only 在 Click 上可本地秒级建图，以及 Repomix 能按明确文件列表受控打包；它还不能证明 V2 在大型仓库上的总成本、模块质量或默认 resolver 策略更优。下一步不是继续外推，而是按冻结矩阵做完整 A/B。

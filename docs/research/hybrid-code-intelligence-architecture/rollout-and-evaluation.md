@@ -1,365 +1,174 @@
-# Hybrid code intelligence rollout and evaluation plan
+# 混合代码智能的评估与 Rollout 计划
 
-Status: proposal only. This document defines evaluation and rollout policy; it does not authorize or describe an implementation change.
+状态：仅为研究提案。本文定义如何比较和逐步放量，不授权实现变更，也不构成真实 UAT。
 
-## 1. Decision to be tested
+rollout 指“经过分阶段证据门逐步扩大使用范围”，不是功能开发阶段。直觉上像先在试验场、影子环境和少量真实流量中逐级验证；类比的边界是，每一级都有冻结指标和自动回滚条件，不能凭主观感觉升级。
 
-The candidate V2 architecture uses Git `SourceUniverse` as the authoritative corpus, Graphify `0.9.13 --code-only` as an always-on local static graph, deterministic hotspot ranking, Repomix for bounded directional context, and direct source-range reads for final evidence. It uses the resulting graph and hotspots to propose responsibility/data-flow clusters and coordinate shared source ownership across agents. Serena with an approved OSS language server is an optional precision resolver; Joern is available only for an explicit deep-dataflow question and is not part of the standard path.
+迁移前的完整英文版本保留在
+[`docs/archive/research-source/hybrid-code-intelligence-architecture/rollout-and-evaluation.en.md`](../../archive/research-source/hybrid-code-intelligence-architecture/rollout-and-evaluation.en.md)，用于追溯逐项指标。
 
-The experiment must answer one narrow question:
+## 一、要验证的决策
 
-> Can V2 reduce analysis cost, elapsed time, and duplicate source reading without reducing module-boundary accuracy, cross-directory flow recall, source traceability, or repeatability relative to V1?
+候选 V2 使用 Git `SourceUniverse` 定义语料真源，Graphify `0.9.13 --code-only` 提供常驻本地静态图，确定性算法进行 hotspot 排序，Repomix 提供有界上下文，最终证据由 Agent 直接读取 source range。Serena + 已批准 OSS LSP 只做可选精度解析；Joern 只回答显式 deep-dataflow 问题。
 
-Directory structure is inventory evidence, not a module boundary. A V2 result that merely turns top-level directories into agent tasks fails the experiment even when it is cheaper.
+实验只回答一个问题：
 
-## 2. Non-negotiable V1 preservation
+> 与 V1 相比，V2 能否降低分析成本、耗时和重复源码阅读，同时不降低模块边界准确性、跨目录流程召回、来源可追溯性和可重复性？
 
-V1 remains the released and default path until every V2 gate in this document passes.
+目录结构只是 inventory evidence，不能直接成为模块边界。即使更便宜，只把顶层目录改成 Agent 任务也算实验失败。
 
-- V1 keeps its current `standard` semantics, required Graphify deep extraction, doctor preflight/post-graph gates, source adjudication, Agent-owned module analysis, coverage gate, finalization, and output contract.
-- V2 artifacts must use a separate workspace and must never overwrite, repair, or supply missing evidence to a V1 run.
-- V1 and V2 must analyze the same fixed source commit and must leave the target repository unchanged.
-- A V2 failure, timeout, uncertainty, or missing artifact falls back to a new, clean V1 run. It must not resume from a partially trusted V2 partition.
-- No V1 acceptance rule is weakened to make V2 comparable. In particular, a structurally complete directory cannot substitute for a completed Agent analysis.
+## 二、V1 保持不变
 
-The V2 experiment is not a migration. Its outputs are evaluation candidates until the canary promotion decision is recorded.
+在本文全部 V2 gate 通过前，V1 仍是发布和默认路径。V2 工件必须使用独立工作区，不能覆盖、修复或补充 V1 运行；两个路径分析同一固定 commit，并保持目标仓库不变。
 
-## 3. Terminology and evidence boundary
+V2 失败、超时、不确定或缺少工件时，要启动一次全新、干净的 V1，而不是从部分可信的 V2 partition 继续。不能为了让 V2 更容易胜出而降低 V1 验收口径。
 
-This work uses the terms **benchmark run**, **shadow run**, and **canary run**. It must not be described as a real UAT run or a real UAT pass.
+这里的 benchmark、shadow 和 canary 都是实验评估证据，不是“真实 UAT”。真实 UAT 仍必须完整遵守 [`docs/dev-rules/real-uat-regression/README.md`](../../dev-rules/real-uat-regression/README.md)；静态比较、中断运行、复制输出或只有目录形状都不能证明通过。
 
-Any future claim of "real UAT" remains governed by `dev-rules/real-uat-regression/README.md`. Such a claim requires the prescribed fixed inputs, source commit, Graphify version/backend/model, complete concrete commands, exit codes, timing, classified stdout/stderr, artifacts, metadata, real Agent/runtime evidence, doctor gates, and repeatability evidence. Static comparison, an interrupted run, copied output, or a directory that merely has the expected shape cannot establish a real UAT pass.
+## 三、对比路径
 
-The benchmark in this document may reuse the same six fixed repositories and evidence discipline, but reuse does not promote it to UAT. Benchmark results must be labeled as experimental evaluation evidence.
+### Path A：V1 对照组
 
-## 4. Compared paths
+不做修改地运行当前 V1 standard 流程，保留所有正常工件和失败分类。
 
-Only two algorithm paths are compared. Rollout stages are not additional algorithm paths.
+### Path B：V2 候选组
 
-### Path A: V1 control
+1. 固定并记录 source identity。
+2. 生成 Git `SourceUniverse` manifest，覆盖 tracked、untracked-not-ignored、dirty identity 和纳入/排除理由。
+3. 每次都在本地运行 Graphify `0.9.13 --code-only`，记录为 `graphify-code-only`，禁止 semantic/LLM backend。
+4. 与 `SourceUniverse` 对账：`outside_manifest` 阻塞；`missing_from_graph` 必须分类。
+5. 根据 manifest、静态图、entrypoint、公开 surface、跨目录 edge、history、unresolved relation 和问题相关性计算确定性 hotspot，并在 Agent 规划前冻结 raw feature 与 ranking。
+6. 用明确非空文件列表构建有界 Repomix pack；核心实现、争议 edge 和最终 citation 直接读取 source range。
+7. 在最终 Agent 分工前评估 optional precision；Serena 只允许批准的 OSS LSP，ctags/ast-grep 作为声明过的 fallback，无法解析时记录 unresolved。
+8. 生成业务/数据流模块和 shared-file ownership matrix，再执行模块分析、交叉验证、覆盖率和报告融合。
 
-Run the current V1 standard workflow without modification, including mandatory Graphify and both doctor gates. Preserve all normal V1 artifacts and failure classifications.
+Path B 必须同时保存 precision 前后的 graph/hotspot 与模块提案，否则无法测量 precision 的 false positive、false negative 和被丢弃的规划成本。Joern 不进入 standard A/B matrix。
 
-### Path B: V2 candidate
+## 四、固定语料与运行矩阵
 
-Run the proposed hybrid workflow in an isolated workspace:
+使用六个固定仓库和 commit：`click`、`httpx`、`ruff`、`codex-plugin-cc`、`claude-code`、`codex`。每个仓库对 Path A 和 Path B 各独立运行两次，总计：
 
-1. Fix and record source identity.
-2. Build an auditable Git `SourceUniverse` manifest covering tracked and untracked-but-not-ignored files, dirty identity, and explicit inclusion/exclusion reasons.
-3. Run Graphify `0.9.13 --code-only` locally for every Path B run. Record it as `graphify-code-only`, never as V1 `raw-deep` evidence, and do not configure or invoke a semantic/LLM backend.
-4. Reconcile Graphify's detected code corpus against `SourceUniverse`. Any `outside_manifest` path blocks the run; every `missing_from_graph` path must be classified as unsupported language, parse failure, or another declared limitation.
-5. Compute deterministic hotspot ranking from the manifest, static graph, entrypoints/public surfaces, cross-directory edges, history when available, unresolved relations, and question relevance. Freeze the raw feature values and ranking before Agent planning.
-6. Build bounded Repomix packs from explicit non-empty hotspot file lists and use direct source-range reads for core implementation, disputed edges, and final citations.
-7. Evaluate optional precision escalation before final Agent assignments. Serena may use only an approved OSS LSP backend; ctags or ast-grep may be used as declared fallbacks. Record unresolved relations instead of guessing.
-8. Propose business/data-flow modules and a shared-file ownership matrix, then run module agents, cross-validation, coverage accounting, and final fusion.
+```text
+6 repositories x 2 paths x 2 runs = 24 independent runs
+```
 
-Path B must record the graph/hotspot proposal before optional precision queries and the final proposal after them. Otherwise precision-escalation false negatives, false positives, and discarded planning work cannot be measured. Joern must not run in this standard A/B matrix; it is evaluated separately only when an explicit deep-dataflow question defines its own bounded corpus and budget.
+独立运行要求 fresh work directory，不复用 graph、module plan、draft、summary、prompt cache 或历史裁决；source commit、模式、brief、语言、model policy、工具版本和资源限制保持一致。每个仓库随机化路径顺序，分别记录 run ID、log、metadata 和 manifest。
 
-## 5. Fixed evaluation corpus and run matrix
+如果 Path A 被必需 gate 阻塞，要保留真实 blocked 结果，不能用 fixture 或 partial graph 替代。该仓库不能参与成对的完成质量比较，但 availability、time-to-block 和 failure class 仍是有效运维证据。
 
-Use the six standard fixed repositories and commits already named by the repository's real-UAT rule:
+任何影响 V2 `SourceUniverse` 策略、Graphify 版本/config、对账、hotspot 特征/权重、Repomix 策略、precision 规则、Agent ownership 或评分 rubric 的实质变化，都会使旧 Path B 结果失效，必须重跑完整 24-run matrix。
 
-- `click`
-- `httpx`
-- `ruff`
-- `codex-plugin-cc`
-- `claude-code`
-- `codex`
+## 五、Gold Set 与裁决
 
-For every repository, run Path A twice and Path B twice as independent runs. The minimum comparison matrix is therefore 6 repositories x 2 paths x 2 runs = **24 independent runs**.
+Gold set 是冻结的参考答案包，不是绝对真理。每个仓库在查看候选结果前冻结：参考模块计划/报告、关键端到端 flow、跨目录边界、合法 shared file、不能直接提升为业务模块的基础设施路径、高影响结论及源码位置、已知限制。
 
-Independence means:
+两名独立 reviewer 以匿名随机顺序评审 Path A/B。模块分类为 matched、justified split、justified merge、unsupported 或 omitted；flow edge 记录两端责任、传递合同/数据、源码证据和置信度。争议最终回到固定 commit 的源码裁决，没有来源可定位证据的 prose assertion 不能胜出。
 
-- a fresh work directory;
-- no reuse of generated graph, module plan, draft, summary, prompt cache, or previous adjudication;
-- the same fixed source commit, analysis mode, user brief, language, model policy, tool versions, and resource limits;
-- randomized path order per repository to reduce warm-cache and operator-order bias;
-- separate run IDs, logs, metadata, and manifests;
-- no manual correction during a run unless the correction policy was declared before the matrix started and is applied symmetrically.
+## 六、必需指标
 
-OS filesystem cache and provider-side cache cannot always be controlled. Record known cache state and run order, then treat unexplained differences as variance rather than deleting them.
+### 质量与准确性
 
-If Path A is blocked by its required Graphify gate, preserve the blocked result. Do not replace it with a fixture or partial graph. That repository remains unavailable for paired completion-quality comparison, while its availability, time-to-block, and failure classification remain valid operational evidence. Promotion cannot rely only on repositories where both paths happened to complete.
+- 业务模块 precision、recall、F1；关键 flow edge recall，跨目录 edge 单列。
+- `SourceUniverse` 与 Graphify 对账：expected file、graph file、已分类 `missing_from_graph` 和 `outside_manifest`。
+- gold entrypoint、shared file、cross-boundary edge 的 hotspot recall，以及重复运行的 rank correlation。
+- unsupported module、基础设施误判、shared-file 边界错误。
+- citation 有效性、claim-to-source traceability、交叉验证修正、未解决跨 Agent 冲突和关键遗漏。
+- 把静态阅读误写成 runtime/test 结论的次数。
 
-Any material change to V2's `SourceUniverse` policy, Graphify version or `--code-only` configuration, corpus reconciliation, hotspot features/weights, Repomix policy, precision-escalation rule, agent ownership protocol, or evaluation rubric invalidates earlier Path B results and requires the full 24-run matrix again.
+源码阅读覆盖率不是测试覆盖率，两者必须分别报告。
 
-## 6. Gold set and adjudication
+### 成本与时间
 
-Before viewing candidate results, freeze a versioned evaluation packet for each repository:
+- 按阶段/Agent 记录 model input/output token、tool call 和 Agent turn。
+- V1 Graphify semantic/deep 调用与 provider cost；V2 code-only 本地计算、图规模，并证明 provider cost 为零。
+- optional precision 与 deep-only Joern 成本单列，不能混进 standard。
+- Repomix bytes/token、compression ratio 和 over-budget retry。
+- 端到端 wall time、首个可用 module plan 时间、inventory、Graphify、对账、ranking、packing、source reading、cross-validation、finalization 和人工裁决时间。
 
-- accepted reference module plan and report;
-- named critical end-to-end flows;
-- known cross-directory or cross-package boundaries;
-- shared files that legitimately participate in more than one module;
-- infrastructure paths that must not be promoted as business modules without specific evidence;
-- high-impact conclusions and their source locations;
-- documented baseline limitations and blocked claims.
+### 重复阅读与协调
 
-The gold set is a comparison aid, not unquestionable truth. Two independent reviewers must adjudicate disagreements against the fixed source commit. Reviewers should receive anonymized Path A/Path B outputs in randomized order and must not know which architecture produced an output until scoring is locked.
+把每次源码阅读规范化为 `(commit, path, line interval, agent, phase)`，记录总请求行、唯一行、跨 Agent 重复率、shared file 重读、主 Agent 复读、ownership collision、未分配范围和冲突。重叠 range 必须先做 union，不能按 Agent 重复累加覆盖率。
 
-For each proposed module, reviewers classify it as matched, justified split, justified merge, unsupported, or omitted. For each flow edge, they classify source and destination responsibilities, contract/data transferred, source evidence, confidence, and whether the edge crosses a directory/package boundary.
+### Optional Precision 质量
 
-Disagreements are resolved by source adjudication and recorded. A prose assertion without source-locatable evidence cannot win adjudication.
+Graphify code-only 在 Path B 中常驻，不属于 escalation。Serena/OSS-LSP、ctags 或 ast-grep 只有在其经源码裁决的结果改变关键模块/流程、修正重要边界、消除同名 symbol 歧义，或解决影响所有权/叙事的动态注册等问题时，才算“materially needed”。
 
-## 7. Required metrics
+每次决策记录 TP/FP/TN/FN、reason code、当时可见证据、adapter/backend 和 threshold。不能用决策之后才出现的证据倒推合理性。Joern 在 standard 路径中的任何意外调用都是架构违规，不是 TP。
 
-All metrics are reported per run, per repository, and in aggregate. Aggregate medians must never hide a per-repository critical failure.
+### 可重复性与安全
 
-### 7.1 Quality and accuracy
+比较两次运行的 module membership、critical flow edge、Graphify 对账、hotspot rank、precision 决策、source coverage、成本/时间变异、目标树清洁度、越界写入和 failure class。模块名称、成员和关键 edge 是核心结果，不能像物理 normalization 那样排除。
 
-Record:
+## 七、晋级阈值
 
-- business-module precision, recall, and F1 against the adjudicated gold set;
-- critical flow-edge recall, with cross-directory edges reported separately;
-- `SourceUniverse`/Graphify corpus reconciliation: expected code files, graph source files, classified `missing_from_graph`, and blocking `outside_manifest` paths;
-- hotspot recall for gold critical entrypoints, shared files, and cross-boundary edges, plus rank correlation across repeats;
-- unsupported module rate, including infrastructure-as-business false positives;
-- shared-file boundary accuracy: whether every shared file has consistent producer/consumer responsibilities across agent drafts;
-- source citation validity and claim-to-source traceability;
-- number and severity of conclusions corrected during cross-validation;
-- number of unresolved inter-agent contradictions;
-- critical omissions, defined as a missed boundary or flow that changes the report's explanation of system behavior;
-- runtime/test claims incorrectly inferred from static reading.
+阈值必须在首个 scored run 前冻结；看到结果后改阈值会使整个矩阵失效。
 
-Coverage is source-reading coverage, not test coverage. Report both separately whenever runtime or test evidence exists.
+### 强制质量门
 
-### 7.2 Cost
+- 每个完成运行的关键模块/流程遗漏为 0；冻结的跨目录关键 flow recall 为 100%。
+- 基础设施目录误判为核心业务模块为 0；重要 claim 的可定位源码证据为 100%。
+- 静态证据误标 runtime/test validation 为 0。
+- module F1 相比 Path A：aggregate 降幅不超过 0.02，单仓库不超过 0.05。
+- high-severity 跨 Agent 冲突不增加。
+- `outside_manifest` 为 0，`missing_from_graph` 分类率为 100%。
+- 冻结的关键 entrypoint、shared file 和 cross-boundary edge 全部进入裁决后的 hotspot set。
+- optional precision FN 为 0；两次决策一致，除非差异可追溯到已记录外部失败。
+- standard A/B matrix 中 Joern 调用为 0。
 
-Record:
+任一失败都自动 no-go，成本节省不能抵消质量失败。
 
-- total model input/output tokens by phase and agent;
-- V1 Graphify semantic/deep invocations, backend/model, semantic token budget, and attributable provider cost;
-- V2 Graphify `0.9.13 --code-only` invocations, local compute, graph size, and confirmation that semantic backend calls and provider cost are zero;
-- optional Serena/OSS-LSP, ctags, ast-grep, and explicit deep-only Joern costs, reported separately rather than blended into the standard path;
-- Repomix context-packaging bytes/tokens, compression ratio, and over-budget retries;
-- number of tool calls and agent turns;
-- compute/storage cost where measurable;
-- cost of failed or abandoned work, not only successful completion cost.
+### 可重复性门
 
-### 7.3 Time
+- module membership Jaccard >= 0.85；critical flow edge Jaccard >= 0.90，冻结关键 edge 完全一致。
+- hotspot top-k rank correlation >= 0.85，且不漏关键 hotspot。
+- `outside_manifest` 完全一致，`missing_from_graph` 分类没有无法解释的漂移。
+- aggregate source-reading coverage 差异不超过 5 个百分点，除非两次都超过阈值且排除范围一致。
+- failure class 不发生无法解释的变化。
 
-Record:
+### 效率门
 
-- end-to-end wall-clock time;
-- time to first usable module plan;
-- `SourceUniverse` inventory and dirty-fingerprint time;
-- Graphify `--code-only`, corpus-reconciliation, and deterministic hotspot-ranking time;
-- Repomix packing time and optional precision-resolution time;
-- agent source-reading time;
-- cross-validation and reconciliation time;
-- finalization time;
-- human adjudication time, reported separately from automated run time.
+质量和可重复性通过后，Path B 还必须达到：median model token 至少降低 20%，median wall time 至少降低 20%，median duplicate-read ratio 至少降低 25%；单仓库成本/耗时回退不超过 10%，除非 V2 恢复了已记录的 V1 blocker；optional precision FP rate <= 25%。
 
-### 7.4 Repeated reading and coordination
+质量通过但效率未通过，仍然不能替代 V1，只能带着证据回到研究阶段。
 
-Instrument source reads as normalized `(commit, path, line interval, agent, phase)` records. Record:
+## 八、Rollout 阶段
 
-- total lines requested and unique lines requested;
-- duplicate-read ratio: `(total requested lines - unique requested lines) / total requested lines`;
-- cross-agent duplicate-read ratio;
-- repeated reads of shared files;
-- lines read again by the main agent during cross-validation;
-- ownership collisions and unowned source ranges;
-- number of cross-module claims deferred to the main agent;
-- number of contradictions caused by agents assigning different roles to the same shared code.
+### Stage 0：Offline Benchmark
 
-Overlapping ranges must be unioned before counting unique lines. Aggregate coverage must not sum the same line once per agent.
+完成并裁决 24-run matrix，V1 不变，候选结果不面向用户。退出条件是指标完整、reviewer 签署、晋级结论可由存储数据复算。
 
-### 7.5 Optional precision-escalation quality
+### Stage 1：V2 Shadow
 
-Graphify `0.9.13 --code-only` is always on in Path B and is therefore not an escalation decision. The escalation oracle evaluates whether Serena with an approved OSS LSP, ctags, or ast-grep was materially needed after the always-on graph and hotspot plan. The oracle is determined only after both the pre-precision and final artifacts are frozen. Optional precision evidence is **materially needed** when its source-adjudicated result causes at least one of these changes:
+对符合条件的 standard 分析并行运行 V2，但只交付 V1。至少收集 20 组成对完成分析，并覆盖单包库、多包应用和大型 monorepo；blocked pair 仍计入可靠性分母。所有 precision 分歧、对账失败、blocked、低置信 partition 和至少 25% 普通 pair 都要复核。
 
-- restores a critical missing module or flow;
-- corrects a materially wrong boundary;
-- selects the correct definition/reference among ambiguous same-name symbols;
-- resolves a dynamic registration, macro, generated-code, or missing-range ambiguity that changes agent ownership or final narrative;
-- resolves a high-severity relation that Graphify plus direct source reading could not resolve within the declared standard budget.
+### Stage 2：Internal Canary
 
-Record:
+最多把 5% opt-in 内部 standard 分析交给 V2 主结果；前 10 个 canary 并行运行 V1 作为即时 fallback，并明确标记 canary，不得称 UAT。连续 10 个 canary 无关键问题后最多升到 15%；每一级至少保持一个完整 review window。
 
-- true positive: optional precision escalation fired and was materially needed;
-- false positive: escalation fired but produced no material adjudicated change;
-- true negative: escalation did not fire and no material omission was found;
-- false negative: escalation did not fire but adjudication found optional precision evidence was materially needed, or a critical ambiguity remained that an approved precision adapter would have resolved;
-- trigger stability across the two independent runs;
-- reason code, evidence observed at decision time, selected adapter/backend, and threshold values for every escalation decision.
+退出需要至少 30 个完成 canary、与 offline benchmark 相同的质量门、稳定运维指标，以及 analyzer-skill owner 和 acceptance-rule owner 的明确 go 决定。
 
-An escalation decision cannot be justified retrospectively with evidence unavailable when the decision was made.
+### Stage 3：Default Consideration
 
-Joern is not a fallback precision adapter for standard analysis. Its invocation is correct only when the user explicitly requested deep dataflow, taint, CFG, or PDG analysis and a separate bounded manifest, timeout, and deep budget were fixed. Accidental Joern use in a standard Path B run is an architecture violation, not a true-positive escalation.
+canary 完成不会自动成为默认。还需要更新产品/验收文档、明确 V1 工件兼容策略，并单独执行完整真实 UAT campaign。在真实 UAT 实际完成前，只能说 V2 通过 benchmark/shadow/canary，不能说通过真实 UAT。
 
-### 7.6 Repeatability and operational safety
+## 九、No-Go 与自动回滚
 
-Record:
+出现关键模块/流程遗漏、precision FN、Graphify 越出 manifest、关键漏图未分类、semantic/backend 调用、standard 中未声明 Joern、基础设施误判、伪造/无效证据、重复计算覆盖率、源码树变更、越界写入、依赖 fixture/partial graph 声称通过，或无法复现 ranking/模块/流程时，停止晋级并保留证据。
 
-- module-membership similarity across the two runs;
-- critical flow-edge similarity across the two runs;
-- Graphify corpus-reconciliation agreement and hotspot-rank similarity;
-- optional precision-escalation decision agreement;
-- source coverage delta;
-- cost and time coefficient of variation;
-- source-tree cleanliness before and after each run;
-- out-of-workspace writes, invalid paths, missing artifacts, and failure classification stability.
+canary 中出现一次关键准确性失败、一次 precision FN、一次 source/workspace 边界违规、一次未声明 Joern，或最新 10 个可比 canary 的 p95 耗时/token 高于 V1 超过 20% 时，立即把 V2 allocation 降为 0%，交付或重跑 V1。不得把部分 V2 工件并入 V1；恢复 canary 前必须完成根因审查、冻结新候选并重跑 24-run matrix。
 
-Unlike the existing physical repeatability normalization, this experiment must not exclude module names, module membership, or critical flow edges: those are primary outcome variables.
+## 十、每次运行必须保存什么
 
-## 8. Promotion thresholds
+每条运行记录至少包含：path/stage、run ID、固定输入、commit/dirty state、tool/model version、资源限制、外部命令与分类退出、`SourceUniverse` manifest、Graphify code-only 命令/图/config digest/无 semantic backend 证明、语料对账、hotspot raw feature/weight/rank、Repomix 非空文件列表与预算、precision 前后提案、escalation reason/threshold/query、直接 source read、ownership matrix、normalized read interval、草稿/交叉验证/覆盖率/最终报告、时间/token/cost/retry/failure、目标树边界检查和 reviewer 裁决。
 
-Thresholds are frozen before the first scored run. Changing a threshold after results are visible invalidates the matrix.
+不得记录 secret 和私有 provider 配置。Path B 的 Graphify metadata 必须是本地 `graphify-code-only`；出现 provider/backend identity 是失败，不是普通元数据。
 
-### Mandatory quality gates
+## 十一、最终决策报告
 
-Path B is eligible only if all of the following hold:
+报告先展示逐仓库质量，再展示 Graphify 对账与 hotspot、precision 错误、可重复性、成本/时间/重复阅读、失败和限制。必须同时展示两次独立运行，不能只给平均数；deep-only Joern 单独成节，不能混入 standard aggregate。
 
-- zero critical module or critical flow omissions on every completed repository run;
-- 100% recall for the frozen critical cross-directory flow set;
-- zero unsupported infrastructure directories classified as core business modules;
-- 100% of scored material claims have locatable source evidence;
-- zero static-reading claims mislabeled as runtime/test validation;
-- module F1 is no worse than Path A by more than 0.02 in aggregate or 0.05 on any repository;
-- no increase in unresolved high-severity inter-agent contradictions;
-- zero `outside_manifest` paths and 100% classification of `missing_from_graph` paths in every Path B run;
-- every frozen critical entrypoint, shared file, and cross-boundary edge appears in the adjudicated hotspot set;
-- zero optional precision-escalation false negatives across all Path B runs;
-- optional precision-escalation decisions agree across the two runs for every repository unless the differing decision is traced to a recorded external failure;
-- zero Joern invocations in the standard A/B matrix;
+最终建议只能是：**进入 shadow**、**进入 canary**、**等待更多证据**、**修订后重跑**或**拒绝**。本计划不能得出“已通过真实 UAT”。
 
-Any failure above is an automatic no-go regardless of cost savings.
+## 主线总结
 
-### Repeatability gates
-
-- module-membership similarity of at least 0.85 Jaccard after adjudicated split/merge normalization;
-- critical flow-edge similarity of at least 0.90 Jaccard and no difference on the frozen critical edge set;
-- hotspot top-k rank correlation of at least 0.85 after normalizing ties, with no missing frozen critical hotspot;
-- identical `outside_manifest` results and no unexplained `missing_from_graph` classification drift;
-- aggregate source-reading coverage differs by no more than 5 percentage points between repeats unless both runs exceed the required threshold and the omitted ranges are identical documented exclusions;
-- no unexplained failure-classification change between repeats.
-
-### Efficiency gates
-
-After mandatory quality and repeatability gates pass, Path B must demonstrate all of:
-
-- at least 20% lower median total model tokens than Path A;
-- at least 20% lower median end-to-end wall time than Path A;
-- at least 25% lower median duplicate-read ratio;
-- no repository with more than a 10% cost or elapsed-time regression unless Path B recovers a documented Path A blocker;
-- V2 Graphify `--code-only` produces no semantic backend calls or provider cost on every Path B run;
-- the combined median time of `SourceUniverse`, Graphify `--code-only`, reconciliation, hotspot ranking, and Repomix packing is lower than the median V1 Graphify semantic/deep stage;
-- optional precision false-positive escalation rate no greater than 25%.
-
-If quality passes but efficiency does not, the result is no-go for replacing V1. The candidate may return to research with its evidence preserved.
-
-## 9. Rollout stages
-
-### Stage 0: offline benchmark
-
-Complete and adjudicate the 24-run matrix. V1 remains unchanged. No candidate result is user-facing.
-
-Exit condition: every mandatory metric is present, reviewers have signed the adjudication packet, and the promotion decision is reproducible from stored data.
-
-### Stage 1: V2 shadow
-
-For eligible standard analyses, run V2 beside V1 in a separate workspace. Only V1 output is delivered. V2 receives the same fixed source identity and user brief but cannot modify V1 planning, prompts, artifacts, or final report.
-
-Shadow sampling starts with repositories representative of the six fixed shapes: single-package library, multi-package application, and large monorepo. Continue until at least 20 completed paired analyses exist, including at least five from each shape that is available. Blocked pairs remain in the denominator for reliability reporting.
-
-Re-run the accuracy rubric on a risk-weighted sample: every optional precision-escalation disagreement, every corpus-reconciliation failure, every blocked run, every low-confidence partition, and at least 25% of otherwise normal pairs.
-
-Exit condition: benchmark gates remain satisfied, shadow optional precision false negatives remain zero, Graphify stays inside `SourceUniverse`, no source-boundary violation occurs, and cost/time benefits persist within 5 percentage points of benchmark results.
-
-### Stage 2: internal canary
-
-Route at most 5% of opted-in internal standard analyses to V2 as the primary result. Run V1 in parallel for the first 10 canaries and retain it as immediate fallback. Clearly label the result as canary output, not UAT evidence.
-
-Increase to 15% only after 10 consecutive canaries have no critical adjudication issue, no optional precision-escalation false negative, no Graphify corpus mismatch, no source-boundary violation, and no rollback trigger. Hold each allocation level for at least one full review window; do not increase allocation while any critical comparison is pending.
-
-Exit condition: at least 30 completed canaries, the same quality gates as the offline benchmark, stable operational metrics, and an explicit go decision by the analyzer-skill owner and acceptance-rule owner.
-
-### Stage 3: default consideration
-
-Default promotion is a separate decision, not an automatic consequence of canary completion. It requires updated product/acceptance documentation, an explicit compatibility decision for V1 artifacts, and a separately executed real-UAT campaign that follows `dev-rules/real-uat-regression/README.md` in full.
-
-Until that campaign actually completes, documentation may say only that V2 passed benchmark/shadow/canary evaluation. It must not say V2 passed real UAT.
-
-## 10. Go, no-go, and rollback
-
-### Go
-
-Proceed to the next stage only when all stage exit conditions and all mandatory quality gates pass. A go record must include the frozen configuration, run matrix, missing-data accounting, adjudication decisions, metric calculations, known limitations, and named approvers.
-
-### No-go
-
-Stop promotion when any of these occurs:
-
-- a critical module/flow omission;
-- an optional precision-escalation false negative;
-- a Graphify `outside_manifest` path, an unclassified critical `missing_from_graph` path, or an incomplete always-on static graph;
-- a semantic/backend call from the V2 Graphify `--code-only` stage;
-- a Joern invocation in standard mode without an explicit deep-dataflow request and bounded deep contract;
-- an infrastructure directory promoted as a core module without source-adjudicated business responsibility;
-- invalid or fabricated source evidence;
-- aggregate coverage obtained by double-counting shared reads;
-- a source-tree mutation or output-boundary violation;
-- a claimed pass based on fixtures, partial graphs, interrupted runs, or static artifacts alone;
-- failure to reproduce the hotspot ranking, optional precision-escalation decision, or core module/flow shape;
-- efficiency gains below the frozen thresholds.
-
-A no-go is an experiment outcome, not permission to relax the gate. Preserve the evidence and revise the proposal before restarting the full matrix.
-
-### Automatic rollback during canary
-
-Immediately return allocation to 0% V2 and deliver/re-run V1 when any of these occurs:
-
-- one critical accuracy failure;
-- one optional precision-escalation false negative;
-- one Graphify `outside_manifest` path, unclassified critical graph omission, or semantic/backend invocation;
-- one undeclared Joern invocation in standard mode;
-- one source-boundary or workspace-isolation violation;
-- two high-severity boundary errors within any 10 canaries;
-- more than 10% of canaries fail to produce a complete candidate artifact for reasons not also affecting V1;
-- p95 elapsed time or total token cost exceeds V1 by more than 20% over the latest 10 comparable canaries;
-- required evidence is missing or cannot be tied to the analyzed source commit.
-
-Rollback must preserve both workspaces, logs, failure classifications, and the V1 fallback provenance. Do not merge partial V2 artifacts into V1. Resume canary only after root-cause review, a revised frozen candidate, and a fresh 24-run matrix.
-
-## 11. Required evaluation record
-
-Each run record must contain enough information for an independent reviewer to recompute the metrics:
-
-- path and rollout stage;
-- run ID, fixed input, source commit, source dirty state, tool/model versions, and resource limits;
-- complete commands and classified exits for every invoked external tool;
-- `SourceUniverse` manifest, dirty fingerprint, inclusion/exclusion reasons, and source-policy digest;
-- Graphify `0.9.13 --code-only` command, graph artifacts, configuration digest, and proof that no semantic backend was called;
-- corpus reconciliation with expected code files, graph source files, `missing_from_graph`, and `outside_manifest`;
-- hotspot raw features, weights, ranked output, and shared-ownership proposal;
-- Repomix explicit non-empty file list, configuration, token budget, pack manifest, and failure/secret-scan classification;
-- pre-precision module/flow proposal;
-- optional precision-escalation decision, reason code, observed features, selected OSS adapter/backend, queries, and thresholds;
-- post-precision proposal when applicable;
-- direct source-range reads that adjudicate core implementation and final citations;
-- any explicit deep-only Joern record kept outside standard metrics, including user question, bounded manifest, budget, and evidence adjudication;
-- agent ownership matrix, including shared files and allowed overlap;
-- normalized source-read intervals by agent and phase;
-- drafts, cross-validation corrections, coverage, final report, and limitations;
-- wall time, tokens, cost, retries, and failure classification;
-- target cleanliness and output-boundary check;
-- reviewer scores, disagreements, adjudication, and final metric row.
-
-Secrets and private provider configuration must not be recorded. Public backend/model identity and non-sensitive execution metadata should be recorded where a V1 tool was actually invoked. Path B must record Graphify as local `graphify-code-only`; an unexpected provider/backend identity is a failure, not normal V2 metadata. Serena records must identify the approved OSS language server and version without private configuration.
-
-## 12. Decision report shape
-
-The final evaluation report should lead with per-repository quality outcomes, then Graphify corpus reconciliation and hotspot quality, optional precision-escalation errors, repeatability, cost/time/repeated-reading savings, failures, and limitations. Standard results must exclude deep-only Joern cost and quality from their aggregate; any separate deep experiment is reported in its own section. The report must show both independent runs rather than only averages.
-
-The report must distinguish:
-
-- completed paired comparisons;
-- blocked Path A or Path B runs;
-- unpaired operational evidence;
-- benchmark conclusions;
-- shadow observations;
-- canary observations;
-- future real-UAT evidence, if and only if it was separately executed under the repository rule.
-
-The final recommendation is one of: **promote to shadow**, **promote to canary**, **hold for more evidence**, **revise and rerun**, or **reject**. "Passed real UAT" is not an available conclusion from this evaluation plan.
+V2 只有在“质量不退步、结果可重复、效率显著提升”三组门全部通过后，才能从 benchmark 逐步进入 shadow 和 canary。每一级都保留 V1、保留失败证据并设置自动回滚；真实 UAT 始终是独立验收，不能被实验数据替代。

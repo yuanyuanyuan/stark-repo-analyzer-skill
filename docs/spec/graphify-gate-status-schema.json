@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stark-repo-analyzer.local/schemas/graphify-gate-status-schema.json",
+  "title": "Graphify Gate Status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "code",
+    "outcome",
+    "stage",
+    "target",
+    "work_dir",
+    "graphify",
+    "artifacts",
+    "failure"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "code": {
+      "type": "integer",
+      "enum": [0, 10, 30]
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["ready", "dependency-unavailable", "blocked"]
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["preflight", "extract", "postprocess", "post-graph", "navigation-map", "complete"]
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graphify": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "extraction_mode"],
+      "properties": {
+        "version": {
+          "type": ["string", "null"]
+        },
+        "extraction_mode": {
+          "const": "code-only"
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "failure": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["class", "message"],
+          "properties": {
+            "class": {
+              "type": "string",
+              "minLength": 1
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "code": {"const": 0}
+        }
+      },
+      "then": {
+        "properties": {
+          "outcome": {"const": "ready"},
+          "stage": {"const": "complete"},
+          "failure": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "code": {"const": 10}
+        }
+      },
+      "then": {
+        "properties": {
+          "outcome": {"const": "dependency-unavailable"},
+          "stage": {"const": "preflight"},
+          "failure": {"type": "object"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "code": {"const": 30}
+        }
+      },
+      "then": {
+        "properties": {
+          "outcome": {"const": "blocked"},
+          "stage": {"not": {"const": "complete"}},
+          "failure": {"type": "object"}
+        }
+      }
+    }
+  ]
+}

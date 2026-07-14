@@ -1,0 +1,210 @@
+# stark-repo-analyzer-skill: Faithful Port + Graphify Tasks
+
+> **Status: superseded.** The active task sequence is
+> [`docs/exec-plans/graphify-simplification-plan.md`](../../exec-plans/graphify-simplification-plan.md).
+> Completed entries below remain historical evidence; unchecked entries are not
+> active work unless they are reintroduced by the active plan.
+
+状态：`[ ]` 待执行，`[~]` 执行中，`[x]` 完成，`[!]` 失败/需人工介入。
+
+## Current V1 Graphify Migration Gate
+
+- [x] M01 将 Graphify active path 迁移到 `0.9.13+ --code-only --no-cluster`，移除 LLM/provider 探测和 semantic chunking；更新 doctor、contracts、skill 文档和测试。
+  - 证据：`src/stark_repo_analyzer/cli.py`、`contracts.py`、`acceptance/doctor.sh`、`skills/repo-analyzer/SKILL.md`、`pytest -q`（17 passed）。
+- [x] M02 选择 `click` 作为小型 pilot，按本地 `skills/repo-analyzer/SKILL.md` 阶段 5-6 真实启动核心/次要 subagents，生成独立模块草稿。
+  - 证据：`docs/baseline/physical-runs/click/run-4-code-only/subagent-dispatch.json`；4 个任务均 completed；四个 `drafts/06-module-*.md` 已生成。
+- [x] M03 比较原始 `docs/baseline/reference-runs/click` 与 code-only pilot：结构证据、报告深度、模块拆分、覆盖率、引用、稳定性和失败边界。
+  - 证据：`docs/baseline/physical-runs/click/run-4-code-only/comparison.md`；`validate --complete` 和 `finalize` 均返回 0。
+- [ ] M04 仅当 M03 给出可审计的改善或明确的取舍结论后，重跑六个 `docs/baseline/reference-runs` 项目的完整 standard baseline。
+  - 当前状态：pilot 已通过；等待 pilot 结果确认后启动六项目 full standard baseline。
+
+## Phase -1: Decomposition (Current Gate)
+
+- [x] D01 明确最终目标和不做事项
+  - 输出：`docs/plan/reimplementation-decomposition.md` 第 1/2 节
+  - 验证：目标能用一句话描述，且不把标准化/自动化误当成当前阶段。
+- [x] D02 列出需要处理的对象
+  - 输出：`docs/plan/reimplementation-decomposition.md` 第 3 节
+  - 验证：每个对象都有上下文、问题、证据和预期产物。
+- [x] D03 建立阶段依赖关系
+  - 输出：`docs/plan/reimplementation-decomposition.md` 第 4/5 节
+  - 验证：阶段无循环依赖，每阶段有通过条件。
+- [x] D04 确认第一条最小纵向链路
+  - 依赖：D01-D03
+  - 范围：本地 `click` 输入 -> Graphify code-only 建图成功且图谱非空 -> 规模扫描 -> 一个核心模块源码验证 -> 最小报告 -> 图谱与结构验证。
+  - 失败边界：doctor preflight/post-graph 非零时中止本次分析，不得降级。
+  - 验证：用户已确认范围；决策记录于 `docs/adr/0003-graphify-is-a-required-structure-evidence-gate.md`。
+  - 模式：V1 仅实现 repo-analyzer `standard`；Graphify 只使用 `0.9.13+ --code-only --no-cluster`，不进入 semantic/LLM 路径。
+- [x] D05 用一个任务验证拆分粒度
+  - 依赖：D04
+  - 首个负向样本：当前仓库的 `graphify-out/` 报告为 0 nodes / 0 edges / 0 communities，验证器必须稳定拒绝。
+  - 模型边界：doctor 必须确认 code-only 模式和 semantic extraction disabled；backend/model 不参与当前路径，也不得被写入运行元数据。
+  - Bootstrap：Graphify 不可用时，Agent 可执行官方非敏感安装/升级和复检；当前 code-only 路径不需要 API key、企业代理或私有 provider 地址。
+  - 执行器：使用 `graphify extract <target> --code-only --no-cluster --out <WORK_DIR>`，随后使用 `graphify cluster-only <WORK_DIR> --no-label --no-viz` 生成 normalized 报告；记录 Graphify 版本、退出码、raw/normalized 产物路径和 doctor JSON。
+  - 输出边界：只接受 `$WORK_DIR/graphify-out/` 中的产物，目标仓库不得出现本次运行写入的 `graphify-out/`。
+  - 失败：code-only 是本地确定性路径；版本、权限、执行器、空图、无效产物和源边界错误立即失败，不重试或伪造成功。
+  - 健康：doctor post-graph 检查 `graph.json`、`GRAPH_REPORT.md`、节点、边和来源引用；`click` 还必须有一条带来源定位的 `EXTRACTED` 边。
+  - 证据：Graphify map 作为侧车上下文；源码裁决图谱冲突，`EXTRACTED` 验证核心路径，`INFERRED` 标待验证，`AMBIGUOUS` 只作为风险/疑问，并将冲突写入交叉验证草稿。
+  - 验证：有效图谱必须通过 preflight/post-graph doctor；空图、缺失来源引用或目标仓库写入必须稳定阻断。
+  - 当前证据：`acceptance/doctor-self-test.sh` 已证明两次独立健康图分类、空图稳定返回 30、工作区越界拒绝和无凭据输出；click 的两次独立 Graphify 归档运行位于 `docs/baseline/physical-runs/click/run-2` 和 `run-3`，`physical-repeatability-check.sh` 通过；真实 click/codex-plugin 控制面运行进一步通过 normalized graph 的 post-graph 健康门。
+
+- [x] D06 定义 doctor 预检契约
+  - 输入：`preflight|post-graph --target <repo> --work-dir <dir> [--json]`
+  - 输出：Graphify 版本、code-only 模式、路径隔离边界和图谱健康的诊断摘要/JSON；不记录 provider/model。
+  - 退出码：`0=ready`、`10=bootstrap_required`、`20=user_configuration_required`、`30=blocked`。
+  - 验证：doctor 不执行正式建图、不写目标仓库、不输出密钥；所有程序化检测集中在 doctor；决策记录于 ADR-0014/0015。
+  - 当前证据：`acceptance/doctor.sh`、`acceptance/doctor-self-test.sh`。
+
+## Phase 0: Baseline (Completed)
+
+- [x] B01 固定参考仓库源码 commit
+  - 输入：`docs/baseline/source-corpus-manifest.json`
+  - 验证：6 个本地仓库 HEAD 与 manifest 一致。
+- [x] B02 执行 6 个参考项目的 `standard` 分析
+  - 输入：`/Users/chuzu/projests/stark-repo-analyzer-reference-sources/`
+  - 验证：每个项目有最终报告、metadata、日志、覆盖率和 checks。
+- [x] B03 生成跨项目比较和重实现验收清单
+  - 输出：`docs/baseline/cross-project-validation.md`、`docs/baseline/reimplementation-acceptance-checklist.md`
+  - 验证：JSON、文件完整性、文件大小、commit 和 diff 检查通过。
+
+## Phase 0.5: Physical Baseline Gate (Blocking)
+
+- [x] P01 建立物理基线分级定义
+  - 输出：`docs/baseline/physical-baseline.md`
+  - 验证：明确 P0 源码、P1 产物、P2 真实调用、P3 自动判定、P4 重复运行、P5 动态行为；P5 已评估并明确为 V1 范围外。
+- [x] P02 实现源码和产物完整性验证器
+  - 输出：`acceptance/physical-baseline-check.sh`
+  - 验证：`./acceptance/physical-baseline-check.sh`，但只能在 D04/D05 通过后正式启用。
+- [x] P03 固定参考 skill 的真实调用入口和运行配置
+  - 依赖：P01、P02
+  - 验证：固定输入能返回退出码、stdout/stderr、metadata 和产物目录。
+  - 证据：`codex exec --json`、固定 `input.md`、run-2/run-3 metadata、execution-log 和失败尝试记录。
+  - 证据：`codex exec --json`、固定 `input.md`、click 与 codex-plugin-cc 的两组 metadata、execution-log 和失败尝试记录。
+- [x] P04 对 `click` 和 `codex-plugin-cc` 重复运行两次
+  - 依赖：P03
+  - 验证：两次运行的结构化结果、来源、覆盖率和失败记录可比较。
+  - 当前证据：click 与 codex-plugin-cc 两次运行均通过 `acceptance/physical-repeatability-check.sh`。
+  - 阻断：没有输入快照或差异阈值时，不得进入大规模重实现。
+- [x] P05 扩展物理验证到其余 4 个项目
+  - 依赖：P04
+  - 验证：`httpx`、`ruff`、`claude-code`、`codex` 均有运行快照和差异报告；四个固定 HEAD 的源树在运行前后保持 clean。
+  - 续跑证据：HTTPX、Claude Code、Codex 已补充 `physical-runs/*/run-2` 及 Graphify raw/normalized sidecar；Ruff 按用户决定不再续跑并保留失败记录。
+
+## Phase 1: Specification (Sequential)
+
+- [x] S01 提取参考 skill 的输入/输出契约
+  - 依赖：B03、D04、D05、P03、P04
+  - 上下文：参考 `SKILL.md`、README、baseline reports
+  - 输出：`docs/spec/input-output-contract.md`
+  - 验证：逐项映射触发词、输入形式、输出目录和错误边界。
+  - 失败处理：缺失项标记 `待确认`，不自行补全。
+- [x] S02 确认保真移植与 Graphify 增强范围
+  - 依赖：S01
+  - 输出：`docs/adr/0012-copy-the-reference-files-with-a-minimal-graphify-diff.md`
+  - 验证：明确复制范围、唯一允许的 Graphify 增强、禁止变更和产品级 `deep` 不进入 V1。
+  - 失败处理：冲突交给人工决定。
+- [x] S03 设计统一任务输入模板和运行 metadata
+  - 依赖：S01
+  - 输出：`docs/templates/analysis-run-input.md`、metadata schema
+  - 验证：能够表达 6 个基线项目的输入和运行信息。
+- [x] S04 设计第一版验证器
+  - 依赖：S01、S03
+  - 输出：`acceptance/doctor.sh` 与结构/链接/Mermaid/覆盖率检查
+  - 验证：对现有 6 个 baseline runs 运行，结果可解释。
+
+## Phase 2: Implementation (Small Batches)
+
+第一批只实现 1-2 个任务，先验证任务粒度和验证器有效性，再扩大并行度。
+
+- [x] I01 创建目标技能目录和插件元数据
+  - 依赖：S01、S02
+  - 所有权：技能目录与插件 metadata
+  - 验证：安装/结构检查、JSON 校验、触发契约检查。
+  - 证据：`acceptance/skill-structure-check.sh`；固定输入为仓库 skill/plugin tree，输出为结构检查摘要，退出码 0；失败边界为缺文件、非法 JSON 或缺触发词。
+- [x] I02 实现本地路径和 GitHub 仓库输入归一化
+  - 依赖：S01、S03
+  - 所有权：输入解析模块
+  - 验证：6 个本地基线项目 + URL/owner-repo fixtures。
+  - 证据：`tests/test_cli.py::test_local_input_records_commit_shape_without_cloning`、`test_public_owner_repo_input_is_normalized_without_credentials`、`test_public_input_rejects_credentials`；固定输入为本地基线和 public URL fixtures，退出码 0；非法本地仓库和含凭据 URL 返回 `ValueError`。
+- [x] I03 实现规模统计与分析模式选择
+  - 依赖：I02
+  - 所有权：规模/模式模块
+  - 验证：固定 fixture 的文件、行数、排除规则和门槛结果。
+  - 证据：`tests/test_cli.py::test_size_report_excludes_tests_and_generated_dependency_directories`、`test_questions_change_with_project_features`；固定 fixture 输出 1 个源码文件/2 行并排除 tests/node_modules，非 `standard` 模式返回退出码 30。
+- [x] I04 实现项目文档/外部研究上下文收集
+  - 依赖：I02、S03
+  - 所有权：research/context 模块
+  - 验证：来源记录、工具失败记录、无网络时的可解释降级。
+  - 证据：`src/stark_repo_analyzer/cli.py:collect_context` 和 `tests/test_cli.py::test_questions_change_with_project_features`；固定输入为 Python/pyproject fixture，输出记录本地文档、URL 候选和 `agent-research-required`，无外部来源时生成离线问题，不伪造研究完成。
+- [x] I05 实现动态问题和报告计划生成
+  - 依赖：I03、I04
+  - 所有权：question/plan 模块
+  - 验证：不同项目类型产生不同问题，非固定模板复读。
+  - 证据：`src/stark_repo_analyzer/cli.py:_adaptive_questions`、`tests/test_cli.py::test_questions_change_with_project_features`；Python/pyproject fixture 输出配置问题和离线研究问题，固定 fallback 与特征问题可区分。
+- [x] I06 实现模块分析任务编排
+  - 依赖：I05、S04
+  - 所有权：module orchestration
+  - 验证：任务隔离、并行写入边界、失败重试和状态记录。
+  - 证据：`acceptance/implementation-fixture-check.sh` 对 `click`、`codex-plugin-cc`、`httpx`、`claude-code` 的独立 work-dir 运行；每个输出含 `drafts/06-module-tasks.json`、独立模块草稿、执行日志和固定失败分类。真实 Agent/UAT 证据：`/tmp/stark-repo-analyzer-real-click-v3`（2 个任务完成）与 `/tmp/stark-repo-analyzer-real-codex-plugin-v1`（1 个任务完成）；并行 Agent 启动、接管和运行时重试仍由 skill Agent 按 `SKILL.md` 阶段 6 执行，未在 Python 中伪装实现。
+- [x] I07 实现交叉验证和覆盖率门控
+  - 依赖：I06、S04
+  - 所有权：validation/coverage 模块
+  - 验证：人为制造缺覆盖和错误引用时能失败。
+  - 证据：`tests/test_cli.py::test_complete_validation_requires_every_manifested_module_draft`、`test_doctor_rejects_unlocatable_graph_evidence`；缺模块、缺覆盖和越界来源分别返回 `ContractError`/doctor 30。真实 adjudication：`/tmp/stark-repo-analyzer-real-click-v3/drafts/07-cross-validation.md` 与 `/tmp/stark-repo-analyzer-real-codex-plugin-v1/drafts/07-cross-validation.md`，机械门控仍不替代源码 adjudication。
+- [x] I08 实现最终报告融合与产物 manifest
+  - 依赖：I06、I07
+  - 所有权：report/output 模块
+  - 验证：单一最终 Markdown、metadata、日志、checks 和链接完整。
+  - 证据：`acceptance/implementation-fixture-check.sh` 及 `acceptance/run-contract-check.sh`；fixture run 的 `ANALYSIS_REPORT.md`、`metadata.json`、`execution-log.md`、`checks.md` 和 `manifest.json` 完成，manifest 每个文件含 64 位 SHA-256 且按 `output-manifest-schema.json` 校验。真实最终融合：`/tmp/stark-repo-analyzer-real-click-v3` 与 `/tmp/stark-repo-analyzer-real-codex-plugin-v1` 均通过 `validate --complete`、`finalize`，manifest 状态为 `complete`。
+
+## Phase 3: Calibration and Regression
+
+- [x] R01 用 `click` 和 `codex-plugin-cc` 做首批粒度实验
+  - 依赖：I01、I02、I03、I08
+  - 验证：两个项目分别完成一轮报告，检查项可自动判断通过/失败。
+  - 失败处理：优先拆细任务或修正验证器，不直接扩大并行规模。
+  - 证据：`/tmp/stark-repo-analyzer-real-click-v3` 与 `/tmp/stark-repo-analyzer-real-codex-plugin-v1` 使用固定 HEAD `b67832c...`、`db52e28...` 完成真实 Graphify、Agent 模块阅读、源码 adjudication、coverage gate 和最终融合；两个目标源树的 before/after status 均 clean。fixture 结果仍只作为机械控制面回归，不作为真实 UAT。
+- [x] R02 修正任务粒度、输入模板和验证器
+  - 依赖：R01
+  - 验证：R01 的失败项能被稳定重现并修复。
+  - 证据：`tests/test_cli.py::test_complete_validation_requires_every_manifested_module_draft` 重现缺任务失败；`src/stark_repo_analyzer/contracts.py` 增加 manifest-to-draft 完整性和 schema 门控；真实 Click/Codex-plugin runs 的 `validate --complete` 与 `finalize` 均通过，当前测试套件为 17 passed。
+- [!] R03 回归 `httpx` 和 `ruff`
+  - 依赖：R02、I04、I05、I06、I07
+  - 验证：报告主线、证据引用、覆盖率和限制记录符合验收清单。
+  - 证据：`/tmp/stark-repo-analyzer-real-httpx-v2` 使用固定 HEAD `b5addb...` 和官方 bounded tuning flags 完成真实 Graphify、source-locatable normalization、Agent 模块阅读、adjudication、coverage gate 与最终融合；manifest 为 `complete`，源树 clean。Ruff 的 `/tmp/stark-repo-analyzer-real-ruff-v1`、`v2`、`v3` 记录 semantic extraction 失败；随后 `docs/baseline/physical-runs/ruff/run-2-code-only/` 使用 Graphify `0.9.13 --code-only --no-cluster` 完成静态 code-only 物理分析，post-graph doctor 通过。R03 仍保留 `[!]`，因为 semantic 与 code-only 证据不是同一 P4 模式。
+- [x] R04 回归 `claude-code` 和 `codex`
+  - 依赖：R03
+  - 验证：bounded scope、未读范围和大型项目失败边界不被隐藏。
+  - 证据：`/tmp/stark-repo-analyzer-real-claude-code-v2` 使用固定 HEAD `a371ab...` 和官方 bounded tuning flags 完成真实 Graphify、source-locatable normalization、bounded Agent 模块阅读、源码 adjudication、coverage gate 与最终融合；manifest 为 `complete`，源树 clean。Codex v3 `/tmp/stark-repo-analyzer-real-codex-v3` 使用固定 HEAD `9e552e...` 完成 bounded Graphify、source-locatable normalization、6 个 Agent 业务模块草稿、源码 adjudication、coverage gate 与最终融合；`validate --complete`、`finalize` 和 manifest `complete` 均通过，目标源树 clean。R04 的独立证据完整；本次依赖顺序通过用户批准的 Ruff skip 例外继续执行。
+- [x] R05 汇总参考结果与重实现结果差异
+  - 依赖：R01-R04
+  - 输出：`docs/baseline/implementation-comparison.md`
+  - 验证：每个差异有来源、影响、是否接受和修正任务。
+  - 证据：`docs/baseline/implementation-comparison.md` 记录六个 fixture 结果、失败重试、五次真实 Agent-gated 完成或边界判定运行和“不宣称语义等价”的影响/后续任务；Ruff 的 Graphify 阻断保留为明确残余风险，未伪造报告。用户批准跳过 Ruff 后，差异报告及残余风险记录完成。
+
+## Phase 4: Release Gate
+
+- [x] G01 运行自动验证器（Ruff 例外）
+  - 依赖：R05
+  - 验证：结构、JSON、链接、Mermaid、覆盖率、metadata 和回归均通过。
+  - 证据：`acceptance/skill-structure-check.sh`、`acceptance/run-contract-check.sh`、`acceptance/physical-baseline-check.sh`、`acceptance/doctor-self-test.sh`、`pytest -q`（17 passed）、五个真实 complete manifest 和 `git diff --check` 均通过；Ruff 的 code-only run 已归档，但 semantic P3/P4 仍不宣称通过，P5 动态行为已明确排除在 V1 范围外。
+- [x] G02 人工复核高风险项
+  - 依赖：G01
+  - 验证：无未决的契约冲突、伪造证据或越界写入。
+  - 证据：人工抽查 Claude Code、Codex 与 Ruff code-only 报告的核心源码/模块引用；确认固定源树 clean、接受运行无目标仓库 Graphify 输出、semantic 失败项目无伪造图谱/报告、Ruff 模式边界明确记录。Ruff code-only 不被写成 semantic 回归通过。
+- [x] G03 生成最终交付报告和变更说明（含 Ruff 残余风险）
+  - 依赖：G02
+  - 验证：用户能从报告追溯到任务、代码、验证输出和残余风险。
+  - 证据：`docs/baseline/reimplementation-release-report.md`、`docs/baseline/implementation-comparison.md`、`docs/agents/goal-execution-record.md`、Ruff `run-2-code-only` 的 `metadata.json`/`execution-log.md`/`checks.md`/`manifest.json` 已生成；正式交付包含明确的 Ruff semantic residual risk，不能宣称六项目 semantic Graphify 全通过。
+
+## Dependency Summary
+
+```text
+B01-B03 -> S01 -> S02 -> I01
+S01 -> S03 -> S04
+S01/S03 -> I02 -> I03 -> I05
+I02/S03 -> I04 -> I05
+I05/S04 -> I06 -> I07 -> I08
+I01/I02/I03/I08 -> R01 -> R02 -> R03
+R03 (user-approved Ruff skip) -> R04 -> R05 -> G01 -> G02 -> G03
+```

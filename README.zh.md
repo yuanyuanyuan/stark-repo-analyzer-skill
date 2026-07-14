@@ -1,12 +1,12 @@
 # Repo Analyzer
 
-一个 AI 编程 Agent 技能，用于对开源项目进行深度架构分析，生成专业级架构报告——包含设计洞察、权衡分析、Mermaid 架构图和强制的 Graphify 结构证据闸门。
+一个 AI 编程 Agent 技能，用于对开源项目进行深度架构分析，生成专业级架构报告——包含设计洞察、权衡分析、Mermaid 架构图和可审计的 Graphify 结构导航增强。
 
-正式读源码前，Agent 会把 Graphify headless 运行在本次分析工作区，并由 `acceptance/doctor.sh` 检查环境和图谱健康。Graphify 只提供导航上下文，源码裁决冲突，所有产物都写在目标仓库之外。
+正式读源码前，Agent 会检查本机是否存在兼容的 Graphify。可用时通过 code-only gate 生成并验证结构导航；缺失时只提供安装指引，由用户选择安装后复检或本次使用纯源码兼容流程。Graphify 只提供导航上下文，源码裁决冲突，所有产物都写在目标仓库之外。
 
 兼容 [Claude Code](https://claude.ai/claude-code)、[Codex](https://github.com/openai/codex)、[OpenClaw](https://github.com/anthropics/openclaw) 等所有支持 Skills 格式的 AI 编程 Agent。
 
-**[English Documentation](README.md)**
+仓库维护性文档以中文为主；命令、标识符和专业术语保留其原始写法。
 
 ## 相关文章
 
@@ -45,7 +45,7 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 - **并行 Subagent 分析** — 为每个核心模块启动独立 Agent 并行分析，高效处理大型代码库
 - **竞品定位** — 对比设计哲学和技术路线差异，而非功能清单
 - **Mermaid 架构图** — 贯穿报告的系统架构图、数据流图和模块时序图
-- **交互式工作流** — 根据项目特征生成针对性问题，在深入分析前与你对齐方向
+- **按需交互** — 标准分析默认一键执行；只有显式深度分析才在快速扫描后进行一轮集中对齐
 
 ## 使用方式
 
@@ -75,24 +75,23 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 
 ## 分析模式
 
-扫描代码库后，技能会让你选择分析深度：
+未指定时直接使用标准分析；明确要求“深度分析”时进入深度模式。不提供快速模式。
 
 | 模式 | 核心模块覆盖率 | 次要模块覆盖率 | 适用场景 |
 |------|--------------|--------------|---------|
-| **快速分析** | >= 30% | >= 10% | 快速了解项目全貌 |
 | **标准分析**（默认） | >= 60% | >= 30% | 常规架构分析 |
-| **深度分析** | >= 90% | >= 60% | 深入研究每个设计决策 |
+| **深度分析**（显式选择） | >= 90% | >= 60% | 快速扫描后集中确认一次范围与重点，再深入研究设计决策 |
 
 ## 工作流程
 
-1. **克隆与扫描** — 克隆仓库（或使用本地路径），按模块统计有效代码行数
-2. **外部调研** — 搜索项目评价、竞品对比、架构讨论；遍历官网关键页面
-3. **自适应提问** — 根据项目特征生成针对性问题，不是固定问题清单
-4. **动态报告结构** — 根据你的回答和项目特点设计章节布局
-5. **并行深度分析** — 为每个核心模块启动 Subagent 并行分析
-6. **交叉验证** — 跨模块验证结论，检查代码阅读覆盖率
+1. **克隆与扫描** — 克隆仓库（或使用本地路径），固定 commit 并选择分析模式
+2. **Graphify 导航** — 可用时运行 code-only gate；缺失时由用户选择安装或兼容流程
+3. **范围与调研** — 统计代码规模、搜索外部资料；深度模式只集中确认一次范围与重点
+4. **动态报告结构** — 根据项目特点设计章节布局和模块边界
+5. **并行深度分析** — 为核心模块启动 Subagent；能力不可用时先取得用户同意再顺序执行
+6. **交叉验证** — 回到源码验证图谱和跨模块结论，检查代码阅读覆盖率
 7. **多源融合** — 将调研、模块分析、洞察融合为连贯叙事
-8. **最终报告** — 输出包含 Mermaid 图表的单一 Markdown 文件
+8. **最终报告** — 只向用户输出一份包含 Mermaid 图表的 Markdown 文件
 
 ## 报告输出
 
@@ -113,7 +112,9 @@ git clone https://github.com/yzddmr6/repo-analyzer.git %USERPROFILE%\.claude\ski
 
 ## 可选依赖
 
-技能开箱即用，使用 Claude Code 内置工具。以下 MCP 服务器为可选增强：
+技能可以使用 Agent 的基础源码工具完成纯源码兼容流程。Graphify `0.9.13+` 是结构导航增强依赖；Agent 不会自动安装或升级，缺失时会给出指引并等待用户选择。
+
+以下 MCP 服务器为可选调研增强：
 
 - [Tavily MCP](https://github.com/tavily-ai/tavily-mcp) — 通过 `tavily_crawl` 遍历网站
 - [Brave Search MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/brave-search-mcp) — 替代搜索引擎

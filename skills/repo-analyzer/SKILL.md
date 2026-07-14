@@ -1,38 +1,50 @@
 ---
 name: repo-analyzer
-description: Use when the user mentions "分析项目"、"分析仓库"、"分析 GitHub"、"项目分析"、"源码分析"、"架构分析"、"代码分析"、"学习这个项目"、"研究这个框架"、"看看这个库怎么实现的"、"对比两个项目"、"项目评测"、"框架评测"
+description: Analyze an open-source Git repository and produce a source-backed architecture report. Use when the user asks to "分析项目"、"分析仓库"、"分析 GitHub 仓库"、"项目分析"、"源码分析"、"架构分析"、"代码分析"、"学习这个项目"、"研究这个框架"、"看看这个库怎么实现的"、"对比两个项目"、"项目评测" or "框架评测".
 ---
 
 # Git 项目深度分析技能
 
-深度分析开源项目并生成专业架构报告。报告是有深度洞察的技术研究，读完后读者能理解业务问题、掌握架构设计、产生自己的思考。
+深度分析开源项目并生成专业架构报告。普通用户只需给出仓库 URL、`owner/repo` 或本地 Git 路径；未指定模式时直接执行 `standard`，明确要求深度分析时执行 `deep`。不要要求用户从模式菜单中选择，也不要让用户复述内部流程。
 
-V1 保留本文件后续的参考分析流程、Why > What 方法和报告责任，只增加一个强制的 Graphify code-only 结构证据侧车。正式分析前，Agent 必须先完成 `acceptance/doctor.sh preflight --target <repo> --work-dir <WORK_DIR> --json`，再运行：
+## 默认执行合同
+
+对单仓库分析，将工作目录创建在目标仓库之外的 `$HOME/repo-analyses/<repo>-<YYYYMMDD>`；如已存在，追加递增后缀，且新目录必须为空。固定源码 commit，目标仓库保持只读，所有生成内容只写入 `<WORK_DIR>`。
+
+先检查 Graphify `0.9.13+` 是否可用：
+
+- 可用时，只通过仓库提供的单一 Graphify gate 执行 code-only 建图、原始证据保留、来源规范化、健康验证和导航 map 生成。不要在 Skill 中复制底层 doctor、`extract` 或 `cluster-only` 编排。
+- 缺失或不兼容时，只展示官方安装/升级指引，并暂停让用户选择“安装后复检”或“本次使用无 Graphify 的原版兼容流程”。不得代替用户安装，也不得自动进入兼容流程。
+- gate 返回依赖不可用时仍按上一条等待用户选择；Graphify 已开始执行后出现空图、无效工件、来源越界或健康失败，必须停止，不能切换到兼容流程。
+
+Graphify 始终使用 code-only；不得使用 semantic extraction、LLM provider、semantic chunking，或探测/记录 backend/model。兼容流程不得生成伪造的 Graphify 文件，只在运行记录和最终报告限制中明确披露未使用 Graphify。
+
+完成模块阅读、源码交叉验证和覆盖率汇总后，由主 Agent 直接融合 `<WORK_DIR>/ANALYSIS_REPORT.md`。用户只接收这一份最终报告；草稿、图谱和检查记录只是隔离工作区中的支撑证据。任何必需质量门失败都必须如实停止，不能手写或补造成功工件。
+
+图谱只作导航：`EXTRACTED` 关系必须回到源码验证，`INFERRED` 仅为待验证，`AMBIGUOUS` 仅可作为风险或问题。源码与图谱冲突时以源码为准，并记录到 `drafts/07-cross-validation.md`。
+
+## Graphify Gate 调用
+
+优先调用仓库安装的单一命令，不得绕过它直接编排 doctor、`extract` 或 `cluster-only`：
 
 ```bash
-graphify extract <target> --code-only --no-cluster --out <WORK_DIR>
-acceptance/doctor.sh post-graph --target <target> --work-dir <WORK_DIR> --json
+stark-repo-analyzer-graphify-gate --target <TARGET> --work-dir <WORK_DIR>
 ```
 
-两个 doctor 检查任一非零都必须中止本次分析。Graphify 固定为 `0.9.13` 或更高兼容版本，禁止调用 semantic extraction、LLM provider 或 semantic chunking；因此不再探测、读取或记录 backend/model。Graphify 产物只允许位于 `<WORK_DIR>/graphify-out/`，目标仓库保持只读。
+如果 console script 未安装，但当前 Skill 来自包含 `src/stark_repo_analyzer/graphify_gate.py` 的完整仓库 checkout，则从该 Skill 的仓库根目录执行等价模块入口：
 
-Graphify `extract --code-only --no-cluster` 只做本地代码结构提取，不调用模型。控制面随后调用 Graphify 官方 `cluster-only <WORK_DIR> --no-label --no-viz`，保留 `raw-code-only-*` graph/report，并生成 source-locatable normalized graph/report 供 doctor 验证；两套证据都留在 `<WORK_DIR>/graphify-out/`。若外部报告修复后需要继续，使用 `PYTHONPATH=src python -m stark_repo_analyzer.cli resume --work-dir <WORK_DIR>`，它会重新运行 post-graph doctor 并恢复到 Agent handoff，不跳过健康门。
+```bash
+PYTHONPATH=<SKILL_REPOSITORY_ROOT>/src python -m stark_repo_analyzer.graphify_gate \
+  --target <TARGET> --work-dir <WORK_DIR>
+```
 
-post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `graph.json`，把结构地图写入 `drafts/01-graphify-map.md`，作为后续模块识别的导航上下文。图谱不替代源码阅读：`EXTRACTED` 关系必须回到源码验证，`INFERRED` 只能标记待验证，`AMBIGUOUS` 只能作为风险或疑问；图谱与源码冲突时以源码及其文件/行号证据为准，并把冲突写入 `drafts/07-cross-validation.md`。
+只按进程返回码和 `<WORK_DIR>/graphify-gate-status.json` 分支：
 
-本仓库同时提供确定性的控制面入口：`PYTHONPATH=src python -m stark_repo_analyzer.cli analyze <input> --work-dir <WORK_DIR> --mode standard` 负责阶段 1-5 的固定产物和 Agent 任务清单；必要时 `resume --work-dir <WORK_DIR>` 恢复 post-graph 修复；Agent 完成并交叉验证 `drafts/06-module-*.md` 后，运行 `PYTHONPATH=src python -m stark_repo_analyzer.cli finalize --work-dir <WORK_DIR>` 完成阶段 8。`validate --complete` 是 finalization 的机器校验入口。
+- `0`：读取 `drafts/01-graphify-map.md`，继续 Graphify 增强分析；
+- `10`：依赖缺失或不兼容，暂停并让用户选择安装后复检或本次兼容流程；
+- `30`：输入、执行、工件、健康或源码边界失败，立即停止，不得自动进入兼容流程。
 
-## When to Use
-
-- 分析开源项目的架构和设计
-- 对比两个同类项目的设计差异
-- 深入研究一个框架或库的实现思路
-
-## When NOT to Use
-
-- 简单的代码问题或调试
-- 单文件分析或代码审查
-- 不涉及架构层面的代码修改
+stdout JSON 与 status 文件用于机器判断，不是第二份用户报告。Skill 不得把 gate 的内部阶段、工件或失败摘要直接扩张为用户交付物。
 
 ## 输出语言
 
@@ -86,30 +98,23 @@ post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `gra
 
 ## 分析工作流
 
-**灵活性原则**：以下所有阶段和章节都是建议性的指引，不是必须严格执行的清单。agent 应根据当前分析的项目特性动态决策——如果某个阶段或环节对当前项目没有意义，可以跳过或简化。一切以最终报告的质量为准。
+默认 `standard` 路径在输入无实质歧义时不等待用户确认。用户明确要求深度分析时使用 `deep`，快速扫描后把建议范围、重点和确实需要用户裁决的问题合并为唯一一轮集中询问。两种模式都不得跳过 Graphify 可用性分支、源码裁决、覆盖率汇总或最终质量检查。
 
 ### 阶段 1: 项目获取与初始化
 
-1. 解析用户输入（支持 `owner/repo`、GitHub/GitLab/Gitee URL、本地路径、项目名称）并固定源码 commit
-2. 创建位于目标仓库之外的工作区：在用户主目录下创建 `repo-analyses/${REPO_NAME}-{YYYYMMDD}` 目录作为 `$WORK_DIR`（跨平台：macOS/Linux 使用 `$HOME`，Windows 使用 `$USERPROFILE` 或 `$HOME`）
-3. 如果用户提供本地路径则跳过 clone，否则 `git clone --depth=1` 克隆仓库
-4. 运行 doctor preflight，使用 Graphify headless CLI 建立深度结构图，再运行 doctor post-graph；失败不可降级
-5. 获取基本元数据（Star、Fork、贡献者、代码统计），并记录 Graphify 版本、backend/model、时间和失败原因（不记录密钥）
+1. 解析用户输入（支持 `owner/repo`、GitHub/GitLab/Gitee URL 和本地 Git 路径），选择唯一的默认 `$WORK_DIR`，并固定源码 commit
+2. 根据用户表达选择 `standard` 或 `deep`；没有明确深度要求时使用 `standard`
+3. 检查 Graphify，并按默认执行合同运行单一 gate，或在依赖不可用时等待用户选择安装后复检/兼容流程
+4. gate 通过后读取 `drafts/01-graphify-map.md`；兼容流程则记录 `graphify: unavailable` 并继续纯源码扫描
+5. 记录实际可获得的项目元数据和外部资料；不可获得的资料标记为未执行，不阻塞分析
 
-### 阶段 2: 项目规模评估与分析模式选择
+### 阶段 2: 项目规模评估与覆盖率目标
 
 1. **统计有效代码行数**（排除可跳过代码），按模块列出分布
    - 可跳过代码定义：测试代码、构建/部署配置（Dockerfile、CI yaml 等）、自动生成代码（protobuf 生成、lock 文件等）、示例/文档代码
    - 使用 `find` + `wc -l` 或 `cloc` 等工具统计，按顶层目录分组
-2. **向用户报告代码规模**，使用 AskUserQuestion 让用户选择分析模式：
-
-| 模式 | 核心模块覆盖率 | 次要模块覆盖率 | 适用场景 |
-|------|-------------|-------------|---------|
-| 快速分析 | ≥30% | ≥10% | 快速了解项目全貌 |
-| 标准分析（推荐） | ≥60% | ≥30% | 常规架构分析 |
-| 深度分析 | ≥90% | ≥60% | 深入研究每个设计决策 |
-
-3. 将代码规模统计和用户选择的分析模式写入 `drafts/03-plan.md`，后续阶段据此控制分析深度
+2. 写入 `drafts/03-plan.md`：`standard` 的核心/次要模块最低覆盖率为 60%/30%，`deep` 为 90%/60%
+3. 超大仓库可以使用显式 bounded scope。必须记录纳入内容、排除内容、选择理由和覆盖率分母，范围内覆盖率不能伪装成全仓覆盖率
 
 **覆盖率计算规则**：
 - 覆盖率 = 通过 Read 工具实际请求过的行范围之并集 / 文件总行数
@@ -122,7 +127,7 @@ post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `gra
 
 ### 阶段 3: 外部调研 + 项目文档研读（先搜再读）
 
-1. WebSearch 搜索项目评价、对比、架构讨论（至少 3-5 次搜索）
+1. 在可用时搜索项目评价、对比和架构讨论；工具或网络不可用时，将未执行原因写入调研草稿并继续
 2. **遍历项目官网**（如果存在）：
    - 从 README 或 GitHub 页面提取官网 URL
    - 使用 WebFetch/tavily_crawl 遍历官网关键页面（首页、Features、Use Cases、Comparison、Blog 等）
@@ -141,9 +146,9 @@ post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `gra
    - **项目背后的组织动机**（如适用）：商业公司的战略考量、开源社区的生态定位
 5. 生成分析规划写入 `drafts/03-plan.md`
 
-### 阶段 4: 项目特征识别 + 自适应提问
+### 阶段 4: 项目特征识别 + 自适应聚焦
 
-这是核心阶段。不使用固定问题列表，而是根据项目特征生成针对性问题。
+这是核心阶段。不使用固定问题列表，而是根据项目特征生成针对性分析问题，并由 Agent 在分析中回答。
 
 **步骤：**
 
@@ -156,33 +161,33 @@ post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `gra
    - 社区定位（核心基础设施、应用层工具、教学项目等）
 3. **从特征中提炼问题**：根据观察到的项目特征生成针对性问题。问题应该帮助聚焦分析方向，而不是走流程
 
-   **思维过程**——每个观察都可能暗示一个值得问用户的问题：
-   - 观察到的技术选择 → 问动机（不常见的技术组合？自己实现了通常用第三方库解决的功能？）
-   - 观察到的架构特征 → 问优先级（性能优化痕迹？复杂的插件/扩展系统？）
-   - 观察到的设计张力 → 问取舍（简单性 vs 灵活性？向后兼容的包袱？）
-   - 观察到的项目定位 → 问受众（目标用户是谁？在生态中是替代还是填补空白？）
+   **思维过程**——每个观察都可能暗示一个值得分析的问题：
+   - 观察到的技术选择 → 分析动机（不常见的技术组合？自己实现了通常用第三方库解决的功能？）
+   - 观察到的架构特征 → 分析优先级（性能优化痕迹？复杂的插件/扩展系统？）
+   - 观察到的设计张力 → 分析取舍（简单性 vs 灵活性？向后兼容的包袱？）
+   - 观察到的项目定位 → 分析受众（目标用户是谁？在生态中是替代还是填补空白？）
 
    **维度启发**——什么样的项目特征暗示什么样的分析角度：
    - 小而精的库 → API 设计哲学、边界划定；大型框架 → 模块化策略、向后兼容、生态治理
    - 使用新兴技术 → 为什么选择它、迁移成本；多语言/多范式 → 语言边界设计
    - 大量泛型/类型体操 → 类型安全 vs 复杂度权衡；极简 API → 简单性如何实现、牺牲了什么
 
-   **好问题的特征**：具体（基于代码中观察到的现象）、有分析价值（答案会影响分析方向）、用户能答（问关注点和偏好，不问需要深入代码才能回答的技术细节）、不重复（不问通过代码就能回答的问题）
-4. **向用户提问**：使用 AskUserQuestion 工具向用户提问，每次不超过 3 个问题
-   - 其中一个问题应确认**报告开头的详略程度**：对于知名项目，用户可能不需要冗长的产品介绍和竞品对比，只想直接进入代码分析。询问用户是否需要场景化引入和竞品定位章节，还是直接从项目全景和代码分析开始
-5. **不限轮次**：可多轮提问直到方向明确，分析过程中发现新的关键分歧点可以再追问
+   **好问题的特征**：具体（基于代码中观察到的现象）、有分析价值（答案会影响分析方向）、可由源码或公开资料回答、不重复（不问已经能直接从代码得出的事实）
+4. 将问题和已知证据写入 `drafts/03-plan.md`，并在模块任务中分配
+5. `standard` 不为这些探索问题阻塞用户；Agent 自行研究，信息不足时在报告中标记限制
+6. `deep` 把建议分析范围、选择理由、重点和必须由用户裁决的问题合并为一轮集中询问；用户回复后不得再进行第二轮模式/范围确认
 
-**关键原则**：问题完全由项目特征驱动，不预设类别。不同项目应该产生完全不同的问题。
+**关键原则**：问题完全由项目特征驱动，不预设类别。`standard` 默认一键执行；`deep` 只集中询问一次。两种模式都不能用零散追问把分析责任转回用户。
 
 ### 阶段 5: 动态报告结构设计
 
-根据用户回答 + 项目特征，设计本次报告的章节结构。
+根据已收集的证据和项目特征，设计本次报告的章节结构。
 
 **步骤：**
 
-1. **综合信息**：结合阶段 3 的调研、阶段 4 的项目特征和用户回答
+1. **综合信息**：结合阶段 3 的调研和阶段 4 的项目特征
 2. **设计章节结构**：不使用固定模板，但必须满足骨架约束（见下方）
-3. **输出报告大纲**：将设计好的报告大纲输出给用户确认后再继续
+3. 将报告大纲写入 `drafts/05-modules-plan.md` 并继续；`standard` 不等待确认，`deep` 也不在阶段 4 的集中询问之后重复确认
 4. **识别模块**：追踪核心数据流，识别 N 个逻辑模块（按业务功能划分），分为核心模块和次要模块
 5. **设计模块叙事线**：确定模块在报告中的呈现顺序和过渡逻辑，不按目录结构排列，而是按读者理解的最佳路径组织：
    - 选择叙事主线：数据流驱动（请求从进入到离开经过哪些模块）、分层驱动（从底层到上层）、或问题驱动（从核心问题到解决方案逐层展开）
@@ -191,8 +196,8 @@ post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `gra
 6. **写入计划**：输出模块清单和报告大纲写入 `drafts/05-modules-plan.md`
 
 **骨架约束**（报告不规定具体章节，但必须满足）：
-- 有**场景化问题引入**（用具体场景讲清楚项目解决什么问题、现有方案的不足、为什么需要这个项目——素材来自阶段 3 调研笔记）。**注意**：如果用户在阶段 4 表示不需要冗长介绍（如项目已经很知名），可以精简或跳过此章节，直接从项目全景开始
-- 有**竞品定位**（与同类项目的关键差异，不是功能清单对比，而是设计哲学和技术路线的差异）。**注意**：同上，用户可选择跳过
+- 有**场景化问题引入**（用具体场景讲清楚项目解决什么问题、现有方案的不足、为什么需要这个项目——素材来自阶段 3 调研笔记）。项目定位已经明确时可精简，直接进入项目全景
+- 有**竞品定位**（与同类项目的关键差异，不是功能清单对比，而是设计哲学和技术路线的差异）。证据不足时标记为未找到，不阻塞报告
 - 有**项目全景**（让读者快速理解项目是什么、解决什么问题）
 - 有**深度分析**（核心设计的 Why、权衡、与业界对比）
 - 有**评价与启发**（诚实的优缺点、读者能从中学到什么）
@@ -201,7 +206,7 @@ post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `gra
 
 ### 阶段 6: 并行深度分析（subagent 团队）
 
-必须使用 Agent 工具并行启动 subagent。参考 [module-analysis-guide.md](references/module-analysis-guide.md) 中的 prompt 模板和协作规范。
+运行时提供 Agent 工具时，必须并行启动 subagent。参考 [module-analysis-guide.md](references/module-analysis-guide.md) 中的 prompt 模板和协作规范。运行时不提供该能力时，在开始模块深度分析前暂停，说明能力缺失和耗时影响，让用户明确选择继续顺序分析或停止。只有用户同意后，主 Agent 才能按同一任务清单顺序完成草稿，并记录 `parallelism: degraded`；覆盖率、交叉验证和报告质量门不得降低。
 
 每个 subagent 的 prompt 中必须包含项目整体设计哲学和全局视角要求，确保模块分析不是孤立的。
 
@@ -260,7 +265,7 @@ post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `gra
 |------|------|--------|-----------|---------|--------|------|
 | ... | 核心/次要 | ... | ... | ... | ...% | ✅/❌ |
 
-8. 汇总生成最终报告（不包含覆盖率章节）
+8. 主 Agent 汇总生成最终报告（不包含覆盖率章节），检查必需章节、源码证据、覆盖率和未验证关系后，只交付 `ANALYSIS_REPORT.md`
 
 ### 草稿文件清单
 
@@ -278,8 +283,8 @@ post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `gra
 
 ## 特殊场景
 
-- **超大型项目（>50000 行）**：优先分析核心模块，使用 Agent 并行分析
-- **对比分析模式**：两个项目分别完成阶段 1-4，然后在阶段 5 设计对比式报告结构，骨架约束中增加"设计决策对比"和"选型建议"
+- **超大型项目（>50000 行）**：优先分析核心数据流并使用显式 bounded scope；报告必须披露纳入、排除、理由和覆盖率分母
+- **对比分析**：分别为每个仓库按用户选择的同一分析模式完成独立运行和质量检查，再基于两个已完成报告生成对比；不要把多仓库输入塞入一次 Graphify gate
 
 ## 输出要求
 
@@ -288,3 +293,7 @@ post-graph 通过后，读取 `<WORK_DIR>/graphify-out/GRAPH_REPORT.md` 和 `gra
 3. 面向需要理解业务架构的开发者
 4. 亮点和问题的评价思维框架参考 [analysis-guide.md](references/analysis-guide.md)
 5. 分析哲学和深度标准参考 [analysis-guide.md](references/analysis-guide.md)
+
+## 执行主线总结
+
+默认 `standard` 直接执行，显式 `deep` 只集中询问一次。Graphify 可用时先建立并验证结构导航，缺失时由用户选择安装或兼容流程；subagent 不可用也必须先取得同意。最终由主 Agent 回到源码交叉验证、汇总覆盖率，并只交付一份中文 `ANALYSIS_REPORT.md`。

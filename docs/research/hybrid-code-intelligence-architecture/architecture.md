@@ -368,3 +368,7 @@ Graphify 的文件级 `update` 不等同于 Tree-sitter 编辑级 incremental pa
 5. 任何工具都不能越过 manifest 或写入目标仓库。
 6. V1 与 V2 产物、验收口径和状态必须明确分版本。
 7. “更快/更省/更准确”只能由总运行 A/B 数据证明，不能由单个前置阶段推断。
+
+## 主线总结
+
+V2 的核心不是增加更多工具，而是明确证据分工：Git manifest 定义语料，Graphify code-only 提供静态关系候选，hotspot rank 决定阅读优先级，可选 resolver 只解决具名歧义，Agent 直接读取源码并裁决。任何缓存、增量更新或深度数据流能力都不能绕过来源边界、工作区隔离和版本化证据合同。

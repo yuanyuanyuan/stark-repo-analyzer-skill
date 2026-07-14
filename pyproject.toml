@@ -9,10 +9,7 @@ description = "Agent-native architectural repository analysis with Graphify evid
 requires-python = ">=3.10"
 
 [project.scripts]
-stark-repo-analyzer = "stark_repo_analyzer.cli:main"
+stark-repo-analyzer-graphify-gate = "stark_repo_analyzer.graphify_gate:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-stark_repo_analyzer = ["doctor.sh"]

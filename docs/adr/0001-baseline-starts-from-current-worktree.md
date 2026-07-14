@@ -1,8 +1,8 @@
 # 基线从当前工作树开始
 
-改造前基线以当前 `stark-repo-analyzer-skill` 工作树的清空状态为准，不考虑此前 Git 历史中的实现、提交或行为；`参考仓库源代码/repo-analyzer-master` 仅作为外部参考语料，用于定义待重新实现的能力契约。
+改造前基线以当前 `stark-repo-analyzer-skill` 工作树的清空状态为准，不考虑此前 Git 历史中的实现、提交或行为；`vendor/repo-analyzer-reference` 仅作为外部参考语料，用于定义待重新实现的能力契约。
 
-## Consequences
+## 影响
 
 - 基线报告不使用 Git 历史作为现状证据。
 - 参考仓库内容必须与当前项目状态分开标注。

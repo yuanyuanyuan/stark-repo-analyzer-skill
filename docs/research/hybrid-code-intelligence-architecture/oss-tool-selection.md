@@ -1,168 +1,126 @@
-# OSS and local-only tool selection for hybrid code intelligence
+# 混合代码智能的 OSS 与本地工具选型
 
-Status: final research selection for the proposed V2 architecture. It aligns with `README.md` and `architecture.md`; it does not modify the released V1 contract or constitute real UAT evidence.
+状态：V2 提案的最终研究选型。本文与本目录的 `README.md` 和 [architecture.md](architecture.md) 对齐，但不修改已发布的 V1 合同，也不构成真实 UAT 证据。
 
-## 1. Selection policy
+本文先回答“选什么”，再说明“为什么”和“哪些不能选”。迁移前的完整英文矩阵保留在
+[`docs/archive/research-source/hybrid-code-intelligence-architecture/oss-tool-selection.en.md`](../../archive/research-source/hybrid-code-intelligence-architecture/oss-tool-selection.en.md)，只用于追溯细节。
 
-The phase-one architecture uses an auditable Git source universe and a local Graphify code graph. It does **not** build a second application-owned Tree-sitter plus SQLite cross-file graph. Tree-sitter remains Graphify's parser substrate, a narrow custom-query extension point, and a possible future replacement only if comparative evidence justifies that work.
+## 一、选型结论
 
-All admitted runtime tools must be open source, runnable with outbound network access denied, isolated to the analysis workspace, pinned to reviewed releases, and able to return source-locatable evidence or an explicit limitation. Directory structure and graph communities are navigation evidence, not final business-module boundaries.
+第一阶段采用 Git `SourceUniverse` 加 Graphify code-only 静态图，不再建设一套由应用自行拥有的 Tree-sitter + SQLite 跨文件图。Tree-sitter 继续作为 Graphify 的 parser substrate，也就是底层解析器，并只在明确的语法精度缺口中作为扩展；除非 A/B 证据证明 Graphify 无法达标，否则不升级为完整替代品。
 
-The categories mean:
+直觉上，这个边界是在避免同一项目同时维护“两套地图系统”。类比的边界是，Git、Graphify 和可选 resolver 各自仍有不同职责，不是简单删除冗余：Git 管语料真源，Graphify 管静态结构候选，Agent 和源码管最终语义。
 
-- **Default**: required for every V2 standard run.
-- **Recommended context**: expected context-packaging component, but not an authority for final claims.
-- **Optional precision**: invoked for bounded ambiguity or unsupported-language cases.
-- **Explicit deep mode**: heavy analysis requiring an explicit data-flow/security question and separate budget.
-- **Future/deferred**: not a phase-one dependency; requires a new admission decision.
-- **Excluded**: prohibited from the architecture profile.
+所有进入 runtime 的工具必须：开源、可在禁止出网时运行、只写分析工作区、锁定审查过的版本，并能给出来源可定位的证据或明确限制。目录结构和 graph community 只能辅助导航，不能直接成为业务模块。
 
-License labels are preliminary engineering classifications, not legal advice. Admission uses the license files and dependency inventory shipped by the exact pinned artifact.
+## 二、工具分层
 
-## 2. Selection matrix
+| 分层 | 选择 | 作用 | 关键边界 |
+|---|---|---|---|
+| 默认 | Git `SourceUniverse` | 枚举 tracked 与 untracked-not-ignored 文件，记录 commit、dirty fingerprint、hash 和特殊 Git 状态 | manifest 是源码全集权威，commit 不能单独代表 dirty worktree |
+| 默认 | Graphify `0.9.13 --code-only` | 生成 symbol、import、call、inheritance、community 和来源可定位的静态关系候选 | 禁止 semantic/LLM/provider；与 `SourceUniverse` 对账；重要关系回到源码裁决 |
+| 推荐上下文 | Repomix `1.16.1` | 把明确文件列表压缩为受 token 预算限制的 Agent 定向上下文 | `--stdin` 不能为空；保持 Secretlint；压缩有损，不能作最终行号证据 |
+| 可选精度 | Serena `1.5.3` + OSS LSP | 在 Graphify 有实质歧义时解析 definition/reference/implementation | 只允许独立审计的开源 LSP；拒绝付费 JetBrains backend |
+| 可选精度 | Universal Ctags | Graphify/LSP 不支持时提供广语言 definition/scope inventory | tag 不能证明 reference、call direction 或 data flow |
+| 可选精度 | ast-grep `0.44.1` | 用确定性 rule 查 decorator、registration、builder、macro 等结构 | 是语法模式证据，不是通用 name resolution 或跨文件图 |
+| 窄扩展/未来替代 | Tree-sitter `0.26.x` | 补 exact byte/point range 和特殊框架语法；可能成为未来替代基础 | 第一阶段不能借此重建完整仓库图；每个 grammar/scanner/query pack 单独审计 |
+| 显式 deep | Joern `4.0.579` | 回答明确的 taint、source-to-sink、CFG、DDG、PDG 或安全数据流问题 | 不属于 standard；需要用户问题、独立预算、有界 manifest 和超时 |
+| 仅设计参考 | Aider repository map | 为 `HotspotRanker` 提供 symbol ranking 与 token budget 思路 | 不为获得 repo-map 而安装完整 Aider runtime |
+| 未来评估 | Semgrep CE、已验证 SCIP producer、其他 OSS static graph | 只有证明增量价值后才可能进入 | 每项重新经过来源、维护、offline、正确性、license 和 rollout 门 |
 
-| Category | Tool/component | Reviewed version | License | Architecture role | Limits and admission rule |
-|---|---|---:|---|---|---|
-| Default | Git-backed `SourceUniverse` | System Git, version recorded per run | GPL-2.0 | Enumerate tracked plus untracked-not-ignored files; record commit, dirty fingerprint, content hashes, ignore state, deleted paths, symlinks, submodules, LFS pointers, and sparse checkout | Base enumeration is `git -C "$TARGET" ls-files -z --cached --others --exclude-standard`, but the controller must add missing-tracked, submodule, LFS, symlink, and sparse-state checks. Commit identity alone is not a dirty-worktree cache key. The manifest, not a directory walk or downstream tool, is the source-universe authority |
-| Default | Graphify CLI `--code-only` static graph adapter | `graphifyy 0.9.13` | MIT | Use local Tree-sitter extraction to produce symbols, imports, calls, inheritance, communities, path/impact evidence, and source-locatable static graph candidates before hotspot ranking | Run only `--code-only`; default V2 must not invoke document/media semantic extraction, an LLM backend, or provider APIs. Pin command/config and deny outbound network. Graphify has no confirmed exact positive file-list interface, so reconcile its effective corpus against `SourceUniverse`: `outside_manifest` blocks; `missing_from_graph` is classified by unsupported language or parse failure. Source code adjudicates material graph relations |
-| Recommended context | Repomix context-pack adapter | `1.16.1` | MIT | Pack manifest-selected hotspot neighborhoods into compressed, token-bounded orientation context for agents | Invoke with a non-empty target-relative file list through `--stdin`; reject empty stdin before launch. Keep Secretlint enabled; disable file processors, Git diff, and Git log injection. Enforce hard token/file-size budgets. Compression is lossy and may fall back to full content, so packs cannot serve as final line-accurate evidence |
-| Optional precision | Serena MCP with OSS LSP backends only | `1.5.3` | MIT for Serena; each language server audited separately | Resolve definitions, references, declarations, implementations, and symbol overviews when Graphify evidence is ambiguous or materially incomplete | LSP-only admission. Each configured language server must be maintained, OSS, pinned, offline-capable, source-locatable, and separately licensed/audited. Record adapter, server/version, request, response summary, ranges, timing, and failure. The paid JetBrains backend is rejected in configuration and acceptance |
-| Optional precision | Universal Ctags | Exact release pinned before implementation | GPL-2.0 | Broad-language fallback inventory for definitions and scopes when Graphify/LSP coverage is unavailable | Separate-process use only. Tags do not establish references, call direction, or data flow. Admit after parser fixtures, binary provenance, license review, deterministic JSON output checks, and demonstrated incremental value |
-| Optional precision | ast-grep | `0.44.1` | MIT | Deterministic structural queries for decorators, registrations, builders, macros, and framework-specific syntax patterns | Rule-driven syntax evidence, not general name resolution or a cross-file architecture graph. Admit reviewed rule packs one at a time; pin binary and rules; require golden-query fixtures and source ranges. Findings remain `STRUCTURAL_QUERY` evidence pending source interpretation |
-| Optional extension / future replacement | Tree-sitter core and bindings | `0.26.x` family, exact binding/grammar versions pinned per use | MIT for core/bindings; grammar licenses vary | Existing parser substrate inside Graphify; caller-owned query extension for exact byte/point ranges or unsupported framework syntax; possible future static-graph replacement | Phase one must not rebuild a full repository graph with Tree-sitter. Add a direct query only for a named coverage/precision gap and audit every grammar, external scanner, ABI, and query pack. A replacement adapter requires A/B evidence that Graphify cannot meet quality or operational gates and triggers full architecture reevaluation |
-| Explicit deep mode | Joern local code-property-graph/data-flow adapter | `4.0.579` | Apache-2.0 | Answer explicit taint, source-to-sink, CFG, CDG, DDG, PDG, lifecycle, or security/data-flow questions | Not a standard-run dependency. Require an explicit user question, bounded language/directory/file manifest, independent install/disk budget, timeout, process/resource limits, and source adjudication. Unsupported frontend/build failures and budget exhaustion are named outcomes; deep failure must not invalidate already accepted standard static evidence |
-| Design reference, not runtime | Aider repository map | Reviewed as an algorithm reference | Apache-2.0 | Its symbol-graph ranking and token-budgeted repository map inform the `HotspotRanker` design | Do not install the full Aider application only to obtain repo-map behavior. Reuse only small deterministic ranking ideas justified by V2 tests, with required attribution |
-| Future/deferred | Semgrep Community Edition local evaluation | Exact component/version not selected | Component/license set must be re-audited | Possible local rule and intra-file data-flow evidence if it adds measurable value beyond Graphify and ast-grep | No phase-one dependency. A trial must isolate exact OSS components, run offline with telemetry/remote services disabled, use reviewed local rules, and never imply access to commercial cross-file/interfile capabilities |
-| Future/deferred | Verified SCIP producer and ingestion adapter | Not selected | Protocol and producer licenses vary | Potential normalized symbol/reference interchange for a specifically admitted ecosystem | SCIP syntax support alone is insufficient. Every producer must independently pass provenance, maintenance, offline, correctness, source-range, license, and transitive dependency gates before its output is accepted |
-| Future/deferred | Alternative OSS static-graph adapter | Not selected | Varies | Possible replacement if Graphify code-only fails frozen coverage, precision, repeatability, or maintenance gates | Must implement the `StaticGraph` contract, reconcile against `SourceUniverse`, produce source-locatable normalized evidence, and pass the complete benchmark/shadow/canary evaluation. Convenience or language count alone is not sufficient |
+license 标签是工程初筛，不是法律意见。最终准入以固定 artifact 自带的 license 和完整依赖 inventory 为准。
 
-## 3. Selected architecture
+## 三、选定架构
 
 ```text
 Git SourceUniverse
-  tracked + untracked-not-ignored + dirty fingerprint
-                    |
-                    v
+        |
+        v
 Graphify 0.9.13 --code-only
-  local Tree-sitter AST + static cross-file graph + communities
-                    |
-                    v
+        |
+        v
 Deterministic HotspotRanker
-  graph centrality + cross-boundary edges + entrypoints
-  + change/test/question relevance + unresolved relations
-                    |
-          +---------+----------+
-          |                    |
-          v                    v
-Optional PrecisionResolver   Repomix ContextPack
-Serena LSP / ctags /         compressed orientation,
-ast-grep / narrow            strict token budget
-Tree-sitter query
-          |                    |
-          +---------+----------+
-                    v
-Agent direct source-range reads
-                    |
-                    v
-business modules -> subagents -> cross-validation -> report
+        |
+   +----+------------------+
+   |                       |
+   v                       v
+Optional PrecisionResolver  Repomix ContextPack
+   |                       |
+   +-----------+-----------+
+               v
+      Agent direct source-range reads
+               |
+               v
+ business modules -> subagents -> cross-validation -> report
 
-Explicit deep-dataflow only:
-Joern CPG / CFG / PDG / data flow
+仅显式 deep-dataflow：Joern CPG / CFG / PDG / data flow
 ```
 
-The controller owns the source manifest, evidence normalization, hotspot scoring, provenance, and state machine. It may use compact deterministic storage for its own metadata, but phase one does not introduce a second full parser/index database that duplicates Graphify.
+controller 拥有 source manifest、证据规范化、hotspot 评分、provenance 和状态机。它可以用紧凑、确定性的存储保存自己的 metadata，但第一阶段不能再引入一套重复 Graphify 的完整 parser/index 数据库。
 
-## 4. Corpus and evidence rules
+## 四、语料与证据规则
 
-1. `SourceUniverse` is authoritative for the analyzed corpus. It includes tracked files and untracked-not-ignored files under the declared policy and records a commit plus dirty-worktree fingerprint.
-2. The manifest records path, content hash, size, language hint, inclusion/exclusion reason, and symlink/submodule/LFS/sparse/deleted state.
-3. Graphify's detected source files are compared with the expected code-file manifest. `outside_manifest` is a hard failure. `missing_from_graph` must be classified as unsupported, excluded by explicit policy, or parse failure; it cannot silently disappear.
-4. Graphify `--code-only` produces local static evidence. It must not be labeled runtime validation, semantic/deep extraction, or proof that every cross-file edge is correct.
-5. Graphify communities, Git directories, text proximity, and change history may rank hotspots but cannot directly become business modules or subagent ownership.
-6. Precision tools are invoked only for a recorded unresolved relation that affects a material boundary, flow, or conclusion. Failure becomes `UNRESOLVED`, not a guessed edge.
-7. Repomix output is orientation context. Core implementations, disputed relations, and final citations come from direct source-range reads.
-8. Joern evidence is deep static data-flow evidence, not runtime execution. Material findings return to source and configuration adjudication.
-9. Every evidence item records tool, exact version, source identity, source path/range, query/rule, confidence, timing, and adjudication state.
-10. All outputs, caches, indexes, packs, logs, and tool homes are redirected to `$WORK_DIR`; the target repository remains read-only.
+1. `SourceUniverse` 是分析语料权威，包含策略允许的 tracked 和 untracked-not-ignored 文件，并记录 commit 与 dirty fingerprint。
+2. manifest 记录 path、content hash、size、language hint、纳入/排除理由，以及 symlink、submodule、LFS、sparse 和 deleted 状态。
+3. Graphify 检测到的源码必须与 manifest 对账。`outside_manifest` 直接阻塞；`missing_from_graph` 必须分类为不支持、显式排除或 parse failure。
+4. Graphify `--code-only` 是本地静态证据，不能标为 runtime validation、semantic/deep extraction，也不能证明所有跨文件 edge 正确。
+5. community、目录、文本邻近和历史只用于 hotspot 排序，不能直接决定业务模块或 subagent 所有权。
+6. precision tool 只解决已记录、会影响重要边界/流程/结论的 unresolved relation；失败写为 `UNRESOLVED`，不能猜测关系。
+7. Repomix pack 只帮助建立方向；核心实现、争议关系和最终引用必须直接读取 source range。
+8. Joern 仍是静态 data-flow 证据，不是 runtime execution。
+9. 每条证据记录工具、精确版本、source identity、path/range、query/rule、置信度、耗时和裁决状态。
+10. 输出、缓存、索引、pack、日志和 tool home 全部重定向到 `$WORK_DIR`，目标仓库保持只读。
 
-## 5. Admission gates
+## 五、准入门
 
-| Gate | Required evidence |
+| Gate | 必需证据 |
 |---|---|
-| Provenance | Official source/release, exact version or commit, artifact hash, installation source, maintenance status, and reproducible install record |
-| License | Direct license file plus machine-readable inventory of runtime, bundled, optional, downloaded, grammar, rule, model, and server dependencies; unknown/custom/field-of-use terms block admission absent explicit approval |
-| Local-only | Representative run succeeds with outbound network denied; telemetry, update checks, hosted configuration/rules, provider calls, and remote model execution are disabled or absent |
-| Corpus control | Exact manifest input where supported; otherwise a deterministic effective-corpus reconciliation with blocking `outside_manifest` behavior |
-| Source traceability | Material facts resolve to valid files and byte/line ranges in the fixed source identity |
-| Determinism | Two clean runs produce stable normalized graph/facts, corpus classifications, failure classes, and tool metadata within declared thresholds |
-| Resource bounds | Wall time, CPU, memory, disk, process count, file count, context tokens, and deep-analysis budgets are explicit; cancellation leaves auditable state |
-| Isolation | Target-tree before/after identity is unchanged and all writes stay inside the run workspace |
-| Failure semantics | Unsupported language, parse error, incomplete graph, unavailable LSP, pack over-budget, timeout, and deep-budget exhaustion are named states, never empty success |
-| Incremental value | Optional/deep tools improve a frozen quality metric or answer an explicit question; otherwise they are removed from the path |
+| Provenance | 官方 source/release、精确 version/commit、artifact hash、安装来源、维护状态和可复现安装记录 |
+| License | 顶层 license 加 runtime、bundled、optional、downloaded、grammar、rule、model 和 server 的机器可读 inventory |
+| Local-only | 禁止出网的代表性运行通过；关闭或不存在 telemetry、update check、hosted rule/config 和 provider call |
+| Corpus control | 支持时传精确 manifest；否则确定性对账，并由 `outside_manifest` 阻塞 |
+| Source traceability | 重要事实能解析到固定 source identity 中的有效 file 和 byte/line range |
+| Determinism | 两次 clean run 的规范化图、事实、语料分类、失败分类和工具 metadata 在阈值内稳定 |
+| Resource bounds | wall time、CPU、memory、disk、process、file、context token 和 deep budget 明确；取消后仍可审计 |
+| Isolation | 目标树前后身份不变，所有写入都位于工作区 |
+| Failure semantics | unsupported language、parse error、incomplete graph、LSP unavailable、over-budget 和 timeout 都是具名状态 |
+| Incremental value | 可选/deep 工具必须改善冻结指标或回答明确问题，否则移出路径 |
 
-The V2 standard path requires Git and Graphify code-only. Repomix is the recommended packer, but a pack failure may fall back to bounded direct source reads with an explicit limitation. Serena, Ctags, ast-grep, direct Tree-sitter queries, and Joern cannot become accidental prerequisites for an ordinary standard result.
+standard 路径只强制 Git 和 Graphify code-only。Repomix 失败时可以退回有边界的 direct source read，并披露限制；Serena、Ctags、ast-grep、direct Tree-sitter 和 Joern 不能意外变成普通 standard 结果的前置依赖。
 
-## 6. Transitive dependency audit
+## 六、传递依赖审计
 
-The audit is repeated whenever a version, lockfile, wheel, binary, grammar, query/rule pack, language server, frontend, model, build image, or installer changes.
+版本、lockfile、wheel、binary、grammar、rule pack、LSP server、frontend、model、build image 或 installer 变化时，都要重新审计。
 
-| Component | Dependency risks | Required audit artifact |
-|---|---|---|
-| Git / `SourceUniverse` | System build, crypto/network libraries, credential helpers, LFS, submodule helpers, platform-specific path behavior | Package provenance, `git --version --build-options`, license notice, command allowlist, offline trace, LFS/submodule policy, and platform fixtures for NUL paths, symlinks, sparse checkout, dirty/untracked/deleted files |
-| Graphify `0.9.13 --code-only` | Python dependency graph, Tree-sitter bindings/grammars/external scanners, optional document/media/LLM packages, clustering/graph dependencies, install-time downloads, local-vs-upstream version drift | Hash-locked environment, CycloneDX/SPDX or equivalent SBOM, full license report, optional-extra inventory, grammar/source mapping, artifact hashes, exact command/config, network-deny trace proving no semantic/provider call, corpus reconciliation, source-location fixtures, and target-isolation check |
-| Repomix `1.16.1` | Node runtime, npm dependency tree, Secretlint and rules, tokenizer, `web-tree-sitter`, bundled Wasm grammars, install scripts, fallback from compressed to full content | Frozen lockfile, npm/CycloneDX/SPDX SBOM, license report, bundled-asset hashes/licenses, install-script review, offline trace, security/config snapshot, empty-stdin test, token-budget test, and compression-fallback accounting |
-| Serena `1.5.3` plus OSS LSP | Python/runtime dependencies, MCP transport, project configuration, telemetry/update behavior, language-server binaries/plugins/runtime downloads, and server-specific licenses | Serena lock/SBOM/license report, backend allowlist that rejects JetBrains, one complete audit per language server, offline trace, deterministic workspace config, request/response fixtures, source-range validation, resource profile, and uninstall/rollback instructions |
-| Universal Ctags | Binary provenance, compiled parsers, JSON support, linked libraries, copyleft obligations | Exact release/build hash, build options, license notices, package provenance, parser fixtures, deterministic JSON output, and distribution/legal review |
-| ast-grep `0.44.1` | Rust crates, parser packages, bundled assets, rule packs, install scripts | Binary hash, Cargo SBOM/license report for the exact build, parser/rule hashes and licenses, offline trace, golden-query fixtures, and source-range validation |
-| Direct Tree-sitter extension | Native binding, ABI range, grammar wheels/generated parsers, external scanners, query packs, concurrency behavior | Hash-locked binding/grammar packages, license file for every grammar and scanner, ABI report, query-pack hashes, parse-error fixtures, range correctness tests, and evidence-delta comparison against Graphify |
-| Joern `4.0.579` | JVM/runtime, launchers, language frontends, CPG libraries, native tools, build-system integrations, downloaded components, large caches | Exact distribution hash, Apache and third-party notices, complete SBOM/license report, frontend inventory, installer/download review, network-deny trace, bounded-language fixtures, resource/disk profile, timeout/cancellation test, and source-to-result provenance checks |
+- Git：检查系统构建、linked library、credential helper、LFS/submodule helper、平台路径行为和 offline trace。
+- Graphify：锁 Python dependency、Tree-sitter grammar/scanner、optional semantic/LLM extra、clustering dependency 和安装期下载，并证明 code-only 无 provider call。
+- Repomix：锁 npm tree、Secretlint、tokenizer、`web-tree-sitter`、Wasm grammar、install script 和压缩回退行为。
+- Serena/LSP：Serena 与每个 language server 分开做 SBOM、license、offline、source range 和资源审计，backend allowlist 必须拒绝 JetBrains。
+- Ctags、ast-grep、direct Tree-sitter、Joern：分别固定 binary/build、parser/grammar/rule/frontend、license、fixture、range correctness 和取消/资源行为。
 
-Audit failures are blocking:
+顶层 permissive license 不能覆盖未经审计的 bundled grammar、server、frontend、binary、rule、model 或 runtime download。`UNKNOWN`、缺失、不可再分发、source-available-only 或 field-of-use license 默认阻塞，除非获得明确 owner/legal 批准。SBOM 只是证据输入，不能替代人工对 optional path 和 bundled asset 的核对。
 
-- A permissive top-level license does not admit unaudited bundled grammars, language servers, frontends, binaries, rules, models, or runtime downloads.
-- `UNKNOWN`, missing, non-redistributable, source-available-only, or field-of-use licenses require explicit owner/legal approval and are not treated as OSS by default.
-- Development dependencies may be excluded only when the shipped/runtime artifact proves they are absent.
-- Separate-process use does not remove notice, redistribution, or operational audit obligations.
-- SBOM generation is an evidence input, not a substitute for reconciling optional paths, bundled assets, and runtime downloads.
+## 七、明确排除
 
-## 7. Explicit exclusions
+- 第一阶段自建 Tree-sitter + SQLite 完整跨文件图：重复 Graphify，并提前承担 parser、query、invalidation 和 schema 所有权。
+- 默认路径中的 Graphify document/media semantic 或 LLM extraction：重新引入 latency、provider cost 和外部配置。
+- CodeQL：license/distribution 边界不符合本 local-only OSS profile。
+- Serena 付费 JetBrains backend、Semgrep 商业跨文件能力、closed SaaS/hosted index/remote graph API：超出 OSS 与本地信任边界。
+- GitHub Stack Graphs：已归档且不维护，不作为第一阶段核心依赖。
+- 未验证 SCIP indexer：能生成可解析 SCIP 文件不等于 producer 正确、维护、本地、可定位或 license 兼容。
 
-| Excluded tool/capability | Reason |
-|---|---|
-| Phase-one application-owned Tree-sitter plus SQLite full cross-file graph | Duplicates Graphify's admitted code graph, creates parser/query/invalidation/schema ownership before evidence shows it is necessary, and conflicts with the final phase-one architecture |
-| Graphify document/media semantic or LLM-backed extraction in the default V2 path | Reintroduces the latency, provider cost, and external configuration that `--code-only` is intended to remove. Any future semantic mode needs a separate product decision and evidence contract |
-| CodeQL | Not an OSS dependency suitable for this local-only profile; licensing/distribution restrictions conflict with the admission policy |
-| Serena paid JetBrains backend | Paid/proprietary backend and dependency boundary. V2 permits Serena only through independently audited OSS language servers |
-| Semgrep commercial cross-file/interfile capabilities | Paid/proprietary capability and service boundary; it cannot be represented as Community Edition or as a local OSS cross-file graph |
-| Closed SaaS code intelligence, hosted indexing, hosted rule/model execution, and proprietary remote graph APIs | Source leaves the local trust boundary, operation is externally controlled, and reproducible offline acceptance is impossible |
-| GitHub Stack Graphs | Archived/unmaintained for this selection; phase one does not add an archived core dependency |
-| Unverified SCIP indexers | A parseable SCIP file does not prove that its producer is correct, maintained, local-only, source-locatable, or license-compatible |
+排除的是具体能力，不是永远禁止项目名称。未来的 Semgrep CE 本地实验或已验证 SCIP producer 仍可走完整准入流程，但不能暗示具备被排除的商业能力。
 
-The exclusions are capability-specific. A future Semgrep Community Edition local experiment or verified SCIP producer may be evaluated through the full admission process, but neither is part of phase one and neither may imply access to excluded commercial/unknown capabilities.
+## 八、决策摘要
 
-## 8. Final decision summary
+- 默认：Git `SourceUniverse` + Graphify `0.9.13 --code-only`。
+- 推荐上下文：Repomix `1.16.1`，只用于 manifest-selected、token-bounded hotspot pack。
+- 可选精度：审计过的 Serena OSS LSP、Universal Ctags、ast-grep 和窄范围 Tree-sitter query。
+- 显式 deep：Joern 只回答用户明确提出且有独立预算的数据流/安全问题。
+- 最终语义权威：直接读取固定 source range 的 Agent，不是任何 graph、community 或 pack。
 
-- **Default:** Git-backed `SourceUniverse` plus Graphify `0.9.13 --code-only` as the local static graph adapter.
-- **Recommended context:** Repomix `1.16.1` for manifest-selected, compressed, token-bounded hotspot packs; agents still read exact source ranges for adjudication.
-- **Optional precision:** Serena `1.5.3` with audited OSS LSP backends only, Universal Ctags, ast-grep `0.44.1`, and narrowly scoped direct Tree-sitter queries.
-- **Tree-sitter boundary:** Graphify's parser substrate and a custom-query/future-replacement foundation, not a new phase-one application-owned full graph.
-- **Explicit deep mode:** Joern `4.0.579` for bounded, user-requested data-flow/security questions only.
-- **Design reference only:** Aider's repository-map ranking and token-budget approach; no Aider runtime dependency.
-- **Future/deferred:** Semgrep Community Edition local evaluation, verified SCIP producers, and alternative OSS static-graph adapters that pass the full evidence and rollout gates.
-- **Excluded:** a duplicate phase-one Tree-sitter/SQLite graph, default Graphify semantic/LLM extraction, CodeQL, Serena's paid JetBrains backend, Semgrep commercial cross-file capabilities, closed SaaS, archived Stack Graphs, and unverified SCIP indexers.
+主要来源：Graphify `v0.9.13`、Tree-sitter/py-tree-sitter、Repomix `v1.16.1`、Serena `v1.5.3`、Universal Ctags、ast-grep `0.44.1`、Joern `v4.0.579`、Aider repo-map 和 SCIP protocol。逐条 URL 与 claim-to-source 映射见 [tool-research.md](tool-research.md) 及其归档英文底稿。
 
-The governing split is: Git defines the source universe, Graphify code-only supplies default static structure, Repomix packages orientation context, optional resolvers sharpen bounded ambiguities, Joern answers explicit deep-dataflow questions, and source-reading Agents remain the semantic authority.
+## 主线总结
 
-## 9. Primary sources reviewed
-
-- Graphify official repository and `v0.9.13`: https://github.com/Graphify-Labs/graphify and https://github.com/Graphify-Labs/graphify/releases/tag/v0.9.13
-- Tree-sitter and py-tree-sitter: https://github.com/tree-sitter/tree-sitter and https://github.com/tree-sitter/py-tree-sitter
-- Repomix repository and `v1.16.1`: https://github.com/yamadashy/repomix and https://github.com/yamadashy/repomix/releases/tag/v1.16.1
-- Serena repository, LSP/JetBrains backend distinction, and `v1.5.3`: https://github.com/oraios/serena and https://github.com/oraios/serena/releases/tag/v1.5.3
-- Universal Ctags: https://github.com/universal-ctags/ctags
-- ast-grep and `0.44.1`: https://github.com/ast-grep/ast-grep and https://github.com/ast-grep/ast-grep/releases/tag/0.44.1
-- Joern and `v4.0.579`: https://github.com/joernio/joern and https://github.com/joernio/joern/releases/tag/v4.0.579
-- Aider repository-map design: https://github.com/Aider-AI/aider and https://aider.chat/docs/repomap.html
-- SCIP protocol: https://github.com/sourcegraph/scip
-
-The detailed Graphify, Tree-sitter, and Repomix claim-to-source mapping is preserved in [tool-research.md](tool-research.md). Before implementation, every selected release must also pass the direct license-file and transitive dependency audit defined above.
+第一阶段只保留一套默认静态图：Git 管源码全集，Graphify 管结构候选，Repomix 管上下文，precision tool 只补明确缺口，Joern 只处理显式 deep 问题。任何工具要进入路径，都必须先证明本地可运行、来源可定位、依赖可审计且确实带来增量价值。
