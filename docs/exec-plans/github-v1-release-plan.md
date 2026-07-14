@@ -1,6 +1,6 @@
 # GitHub v1.0.0 发布执行计划
 
-- 状态：`active`
+- 状态：`completed`
 - 质量门：完整门
 - 独立Judge：必须
 - 日期：2026-07-14
@@ -13,7 +13,7 @@
 | 固定字段 | 当前内容 |
 |---|---|
 | 文档角色 | 定义首次 GitHub 源码 Release 的操作顺序、验证合同与发布边界 |
-| 当前状态 | `active`；目标仓库已恢复为 Public，继续执行 R4 |
+| 当前状态 | `completed`；GitHub `v1.0.0` 源码 Release 已公开 |
 | 当前结论/入口 | 候选版本为 `v1.0.0`；唯一分发地址为 `yuanyuanyuan/stark-repo-analyzer-skill`，稳定 Skill 名为 `repo-analyzer` |
 | 何时读取 | 执行本次发布的任何正式修改或 GitHub 写操作前 |
 | 何时更新 | 任务顺序、验证、阻塞、实际结果或发布范围变化时 |

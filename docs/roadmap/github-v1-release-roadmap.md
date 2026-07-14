@@ -1,6 +1,6 @@
 # GitHub v1.0.0 发布路线图
 
-状态：`active`
+状态：`completed`
 
 执行计划：
 [github-v1-release-plan.md](../exec-plans/github-v1-release-plan.md)
@@ -8,7 +8,7 @@
 | 固定字段 | 当前内容 |
 |---|---|
 | 文档角色 | 定义首次公开 GitHub Release 的目标、边界、阶段与退出条件 |
-| 当前状态 | `active`；维护者已确认执行 |
+| 当前状态 | `completed`；GitHub `v1.0.0` 源码 Release 已公开 |
 | 当前结论/入口 | 从 `main` 发布 `v1.0.0` 源码型 GitHub Release；统一分发地址与 README 来源致谢 |
 | 何时读取 | 准备修改发布元数据、执行真实安装验证、提交、推送、打标签或创建 Release 时 |
 | 何时更新 | 发布边界、阶段、支持范围或退出条件变化时 |

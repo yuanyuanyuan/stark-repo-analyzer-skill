@@ -42,7 +42,7 @@
 
 - 此记录只证明仓库内合同与本机 CLI 语法；尚未证明远端 marketplace 安装或 G5 真实回归 UAT。
 
-## Judge Review
+### Judge Review
 
 - Verdict: pass（仅针对当前 R1/R2 发布候选的仓库增量，不代表 GitHub Release 已完成）
 - 刚性约束违规：无。README 与 adapter manifest 统一使用 `yuanyuanyuan/stark-repo-analyzer-skill`；MIT 参考致谢明确独立维护、非镜像、无官方关联；未把 marketplace 安装或 G5 真实回归 UAT 写成已通过。
@@ -93,6 +93,39 @@
 ### 下一刀
 
 - 提交本次恢复记录，推送本地发布提交，创建并核对 `v1.0.0` Release。
+
+## 记录 · 2026-07-14（R4 完成）
+
+### 实际事实
+
+- 推送 `main` 至 `3fac41db5892d6883d37a17cd49cff54495daab7`。
+- 创建并推送带注释标签 `v1.0.0`；远端解包标签提交与 `main` 相同。
+- 创建公开、非 draft、非 prerelease、无附件的 GitHub Release：[v1.0.0](https://github.com/yuanyuanyuan/stark-repo-analyzer-skill/releases/tag/v1.0.0)。
+- Release Notes 保留参考项目致谢，以及“未执行真实外部 marketplace 安装与 G5 真实回归 UAT”的边界。
+
+### Worker 验证
+
+- `gh release view v1.0.0`：`isDraft=false`、`isPrerelease=false`、`targetCommitish=main`。
+- `git ls-remote origin`：`main` 与 `refs/tags/v1.0.0^{}` 均为 `3fac41d`。
+
+### Boundary Check
+
+- 本次完成的是 GitHub 源码 Release；未执行的真实外部 marketplace 安装与 G5 真实回归 UAT 仍不构成通过声明。
+
+### 阻塞与下一刀
+
+- 无阻塞。
+- 下一刀：如需扩张发布证据，另建计划执行真实外部安装 smoke 与 G5。
+
+### Judge Review · R4 收口复审
+
+Verdict: pass
+
+- 刚性约束违规：无。远端 `main`、annotated `v1.0.0` tag 与 Release 均指向 `3fac41db5892d6883d37a17cd49cff54495daab7`；Release 为正式发布、无附件。Release Notes 明确声明 marketplace 安装与 G5 回归尚未执行，未越级宣传。
+- 问题：无阻塞问题。
+- 缺失验证：真实外部 marketplace 安装及发布级 G5 三流程真实回归 UAT。
+- 建议复查范围：若后续执行上述验证，更新 progress/notes 后重新审查边界。
+- 独立执行结果：GitHub API、`git ls-remote`、annotated tag 解引用、release metadata validator、control-plane audit、远端提交 diff check 均通过。
 
 ## 记录 · 2026-07-14
 
