@@ -148,17 +148,24 @@ def awaiting_judge_plans(root: Path) -> list[str]:
 
 
 def judge_dispatch_context(root: Path) -> str:
+    """Remind orchestrator only for plans already ready for close-out review.
+
+    Hooks never create Judge sessions themselves. Dispatch is once per ready plan:
+    only when status is awaiting-judge and no pass/waiver exists yet.
+    """
     plans = awaiting_judge_plans(root)
     if not plans:
         return ""
     paths = ", ".join(f"`{path}`" for path in plans)
     return (
-        f"Independent Judge dispatch is pending for {paths}. The orchestrating Agent must "
-        "start a native read-only Judge subagent without asking the user to paste a prompt. "
-        "If native subagents are unavailable, the Agent must autonomously run "
-        "`python tools/release/run-independent-judge.py --plan <plan-path>` instead. "
-        "The Worker may only append the returned fixed Judge Review verbatim; it must not "
-        "invent a verdict or mark the plan completed."
+        f"Independent Judge dispatch is pending for {paths}. Dispatch once at close-out: "
+        "build/load the scoped review package, then start a native read-only Judge subagent "
+        "without asking the user to paste a prompt. If native subagents are unavailable, "
+        "autonomously run `python tools/release/run-independent-judge.py --plan <plan-path>` "
+        "(fixed model gpt-5.6-terra / medium). Do not spawn additional Judges on every edit "
+        "or stop event while the same plan remains awaiting-judge. The Worker may only append "
+        "the returned fixed Judge Review verbatim; it must not invent a verdict or mark the "
+        "plan completed."
     )
 
 

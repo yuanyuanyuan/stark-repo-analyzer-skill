@@ -1,0 +1,71 @@
+{
+  "user_goal": "实现默认 Judge：触发、用户豁免、审查包、阻塞标准、固定模型、三轮上限、调度与验证",
+  "acceptance_items": [
+    "任何正式 Delivery Task 默认要求 Judge；只有当前任务结构化用户豁免可省略",
+    "Judge 缺少审查包字段时返回 blocked: insufficient review package",
+    "仅指定阻塞类别可阻止收口；范围外问题非阻塞",
+    "子代理或 fallback 使用 gpt-5.6-terra / medium 并在 Review 留证",
+    "自动化与文档验证通过，独立 Judge 给出 verdict"
+  ],
+  "startup_baseline": {
+    "summary": "git status --short at package build time",
+    "captured_at": "2026-07-14T06:27:52.624274+00:00",
+    "git_status_short": " M .codex/hooks/control_plane_gate.py\nM  CONTEXT.md\nAM docs/adr/0026-default-judge-with-scoped-review-package.md\nMM docs/adr/README.md\nM  docs/aiprompts/README.md\nM  docs/aiprompts/judge-handoff.md\n M docs/dev-rules/document-control/README.md\n M docs/dev-rules/dual-agent-review/README.md\n M docs/dev-rules/task-quality-gates/README.md\nMM docs/exec-plans/README.md\nAM docs/exec-plans/default-judge-review-plan.md\nAM docs/exec-plans/default-judge-review-progress.md\nMM docs/roadmap/README.md\nAM docs/roadmap/default-judge-review-roadmap.md\n M tools/release/run-independent-judge.py\n?? docs/exec-plans/artifacts/default-judge-review-review-package.json\n?? tests/unit/test_judge_review_package.py\n?? tools/release/judge_review_package.py\n"
+  },
+  "owned_files": [
+    "docs/roadmap/default-judge-review-roadmap.md",
+    "docs/roadmap/README.md",
+    "docs/exec-plans/default-judge-review-plan.md",
+    "docs/exec-plans/default-judge-review-progress.md",
+    "docs/exec-plans/README.md",
+    "docs/adr/0026-default-judge-with-scoped-review-package.md",
+    "docs/adr/README.md",
+    "docs/aiprompts/judge-handoff.md",
+    "docs/aiprompts/README.md",
+    "CONTEXT.md",
+    "docs/dev-rules/task-quality-gates/README.md",
+    "docs/dev-rules/dual-agent-review/README.md",
+    "docs/dev-rules/document-control/README.md",
+    "tools/release/judge_review_package.py",
+    "tools/release/run-independent-judge.py",
+    ".codex/hooks/control_plane_gate.py",
+    "tests/unit/test_judge_review_package.py",
+    "docs/exec-plans/artifacts/default-judge-review-review-package.json"
+  ],
+  "excluded_user_changes": [],
+  "worker_verification": {
+    "commands_run": [
+      "python3 -m unittest tests.unit.test_judge_review_package -v",
+      "python3 tools/release/validate-control-plane.py --mode all",
+      "git diff --check",
+      "python3 tools/release/run-independent-judge.py --plan docs/exec-plans/default-judge-review-plan.md --print-command"
+    ],
+    "results": [
+      "unittest exit=0; tail=json: owned_files\n...\n----------------------------------------------------------------------\nRan 13 tests in 0.039s\n\nOK",
+      "validate exit=0; Control-plane validation: PASS (mode=all)",
+      "git diff --check exit=0",
+      "print-command exit=0; model fixed in argv"
+    ],
+    "not_run": [
+      "真实 UAT"
+    ],
+    "deviations": "Round2 revise: require startup_baseline.captured_at; normalize progress EOF; accurate verification evidence."
+  },
+  "blocking_criteria": [
+    "违反用户明确目标、验收项或审查包范围",
+    "可复现功能错误、数据/安全风险、控制面状态错误",
+    "任务要求但缺失的验证证据",
+    "审查包缺字段或边界无法确认"
+  ],
+  "plan": "docs/exec-plans/default-judge-review-plan.md",
+  "progress": "docs/exec-plans/default-judge-review-progress.md",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "medium",
+  "non_blocking_hints": [
+    "风格偏好",
+    "可选重构",
+    "范围外发现",
+    "不影响当前验收的历史问题"
+  ],
+  "generated_at": "2026-07-14T06:27:52.624843+00:00"
+}

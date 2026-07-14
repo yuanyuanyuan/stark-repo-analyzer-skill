@@ -4,7 +4,7 @@
 |---|---|
 | 文档角色 | 定义按风险触发的目标、假设、偏离和交付边界检查；不负责 roadmap/plan 生命周期真源 |
 | 当前状态 | `active` |
-| 当前结论/入口 | 轻量门 vs 完整门两档；完整门字段写入本仓库 plan/progress，不另建并行计划格式 |
+| 当前结论/入口 | 轻量门 vs 完整门两档；Delivery Task 默认独立 Judge + 审查包；完整门字段写入 plan/progress |
 | 何时读取 | 任何 Delivery Task 开始前判断档位；完整门或高风险交付执行前必读 |
 | 何时更新 | 触发条件、四关定义或与控制面落点关系变化时 |
 | 关联真源 | 控制面生命周期 → [document-control](../document-control/README.md)；审查协议 → [dual-agent-review](../dual-agent-review/README.md)；产品验收上限 → [real-uat-regression](../real-uat-regression/README.md) |
@@ -33,7 +33,7 @@
 必须：
 
 - Worker 自验，并在最终回复写清验证结果；
-- 按 [dual-agent-review](../dual-agent-review/README.md) 判断是否可省略独立 Judge；
+- 默认独立 Judge（审查包协议见 [dual-agent-review](../dual-agent-review/README.md)）；仅用户当前任务书面豁免可省略；
 - 不强制创建 roadmap / plan / progress。
 
 ### 完整门
@@ -84,25 +84,25 @@
 
 ## 四、边界示例
 
-- 修改一个拼写错误并保存：Delivery Task；轻量门；通常可省略 Judge。
+- 修改一个拼写错误并保存：Delivery Task；轻量门；默认仍要 Judge，除非用户书面豁免。
 - 修改 Graphify gate 失败语义：Delivery Task；完整门；必须 Judge；聚焦或真实 UAT 按 real-uat-regression。
 - 只读检查代码并在对话中回答：非 Delivery Task。
 - 讨论尚未决定是否实施的想法：非 Delivery Task；写入 plan/ADR 后转为交付任务。
 
 ## 五、与流水线的关系
 
-完整门 + 必须 Judge +（若适用）UAT 规则同时生效时，顺序为：
+Delivery Task 默认 Judge。完整门 + 审查包 +（若适用）UAT 规则同时生效时，顺序为：
 
-1. 目标关 / 启动关  
-2. 工作区基线  
-3. Worker 实现与自验  
-4. 收尾关预检（Boundary Check、Worker 证据）  
-5. Judge 只读审查  
-6. 仅当变更触及产品/gate/验收语义时，按 real-uat-regression 执行聚焦 UAT 或（发布宣称时）真实回归  
-7. 满足 document-control 的 completed 条件后才改状态  
+1. 目标关 / 启动关
+2. 工作区基线（进入审查包）
+3. Worker 实现与自验
+4. 收尾关预检（Boundary Check、Worker 证据）并生成/补全审查包
+5. 进入 `awaiting-judge` 后，Orchestrator 只调度一次独立 Judge
+6. 仅当变更触及产品/gate/验收语义时，按 real-uat-regression 执行聚焦 UAT 或（发布宣称时）真实回归
+7. 满足 document-control 的终态条件后才升级状态
 
 Judge `pass` 不等于真实回归 UAT 通过。
 
 ## 主线总结
 
-先判断是不是 Delivery Task，再选轻量门或完整门。完整门把四关写进本仓库的 plan/progress，不另起状态机；产品是否“验过”仍以 real-uat-regression 为上限。
+先判断是不是 Delivery Task，再选轻量门或完整门。Delivery Task 默认独立 Judge，并用审查包限定范围；完整门把四关写进 plan/progress，不另起状态机；产品是否“验过”仍以 real-uat-regression 为上限。

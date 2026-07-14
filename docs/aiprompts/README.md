@@ -30,4 +30,4 @@
 
 ## 当前入口
 
-- [judge-handoff.md](judge-handoff.md)：完整门独立 Judge 输入包模板。
+- [judge-handoff.md](judge-handoff.md)：默认 Judge 的自动调度、审查包与回传协议。

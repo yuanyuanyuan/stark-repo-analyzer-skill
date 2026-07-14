@@ -115,9 +115,12 @@ Worker/Judge 权限与迭代见
 
 ### completed 与 Judge
 
+默认 Judge、审查包、固定模型与阻塞标准以 [dual-agent-review](../dual-agent-review/README.md) 与 ADR-0026 为准；本节只规定它们如何落入 plan/progress 生命周期。
+
+
 - 触发完整门，或属于必须 Judge 的改动：progress 中需有 `Verdict: pass`，或用户书面豁免（含豁免人、豁免项、剩余风险），才可将 plan 标为 `completed`。
 - Worker 自验结束的合法中间态是 `awaiting-judge`（写在 plan 状态或 progress 收口阶段）；**不得**用“已在 progress 披露流程缺口”代替 pass/豁免。
-- 轻量门且可省略 Judge：不要求 Judge 报告；须显式写 `独立Judge：可省略` 或“本层可省略 Judge”及理由。
+- 省略 Judge 仅接受当前任务用户书面豁免（豁免人/豁免项/剩余风险）；Agent 不得自免。历史“可省略”措辞若仍出现，不得解释为 Agent 可自行跳过默认 Judge。
 - 机械校验：`python tools/release/validate-control-plane.py --mode audit`。完整门激活字段检查用 `--mode bootstrap`。Codex hooks 在编辑/停止时触发同一护栏。
 - Judge `pass` 不自动等于真实回归 UAT 通过；产品/gate 变更的证据上限仍是
   [`../real-uat-regression/README.md`](../real-uat-regression/README.md)。
