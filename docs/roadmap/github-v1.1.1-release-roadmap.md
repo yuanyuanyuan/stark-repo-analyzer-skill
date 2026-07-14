@@ -29,9 +29,9 @@
 |---|---|
 | S0 元数据 | 纠正发布：`VERSION` 与 adapter/`package.json` 均为 `1.1.2`；CHANGELOG 记录 v1.1.1→v1.1.2 |
 | S1 验证 | 单元测试、release/control-plane 校验通过；**打 tag 前**安全扫描 PASS |
-| S2 发布 | 远端 `main`、`v1.1.2` 标签与 GitHub Release 指向同一提交 |
+| S2 发布 | 打 tag 当刻远端 `main`、`v1.1.2` 标签与 GitHub Release 指向同一提交；收口文档可后推 `main` |
 | S3 收口 | progress 记录证据与 v1.1.1 时序披露；独立 Judge 或用户书面豁免后 `completed` |
 
 ## 完成口径
 
-GitHub 源码 Release **`v1.1.2`** 公开且元数据一致；先扫后 tag 的安全扫描 PASS 有 progress 证据；`v1.1.1` 时序缺口已披露；未执行的真实 marketplace/G5 在 notes 中披露。
+GitHub 源码 Release **`v1.1.2`** 公开且元数据一致；先扫后 tag 的安全扫描 PASS 有 progress 证据；发布提交上 tag/Release 与当时 main 一致（收口文档提交可不在 tag 上）；`v1.1.1` 时序缺口已披露；未执行的真实 marketplace/G5 在 notes 中披露。

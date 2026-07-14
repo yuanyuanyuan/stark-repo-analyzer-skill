@@ -8,9 +8,9 @@
 
 | 字段 | 内容 |
 |---|---|
-| 阶段 | 第三轮 Judge revise：对齐 roadmap/plan 到 v1.1.2 |
-| 已完成 | v1.1.2 公开且扫描通过；控制面完成条件修订中 |
-| 下一刀 | 提交控制面修订 → Judge 复审 |
+| 阶段 | 第四轮 Judge revise：澄清 tag 后 main 可前移 |
+| 已完成 | v1.1.2 发布提交 `19d8995`；控制面文档在后续提交 |
+| 下一刀 | 提交完成条件澄清 → Judge |
 
 ## 记录
 
@@ -238,3 +238,33 @@
 **阻塞与下一刀**
 
 - 提交后进入独立 Judge 第四轮。
+
+### 2026-07-14 — 独立 Judge（第四轮）
+
+### Judge Review
+- Verdict: revise
+- 刚性约束违规：验收项“`main`/`v1.1.2` tag/Release 同一提交”当前不满足。
+- 问题（按严重级别）：
+  - P1：`origin/main` 与 `v1.1.2^{}` 不一致：前者为 `520bc2085a9de651b30527cc7208de88fdb30e96`，后者为 `19d8995d27533eb4ba425d3e48cdbd57d5098a01`。GitHub Release 对应 `v1.1.2`，因此当前无法满足同提交验收。
+- 缺失验证：无；本地廉价检查已独立重跑。若修正 tag/Release 或分支引用，必须重新提供“扫描在该 tag 前完成”的证据。
+- 建议复查范围：仅复查并修正 `main`、`v1.1.2` tag、GitHub Release 的提交对齐及其扫描时序证据。
+- 独立执行的验证及结果：
+  - `gitleaks dir --no-banner --redact .`：PASS，`no leaks found`。
+  - `gitleaks git --no-banner --redact --log-opts="--all" .`：PASS，79 commits，`no leaks found`。
+  - 跟踪面密钥模式无命中；`.gitignore` 包含 `.env`、`.env.*`。
+  - `python -m pytest tests/unit -q -p no:cacheprovider --basetemp /tmp/judge-pytest`：PASS，42 passed。
+  - `python tools/release/validate-release-metadata.py`：PASS，`version=1.1.2`。
+  - `validate-control-plane.py --mode bootstrap/audit` 与 `git diff --check`：PASS。
+  - `gh release view v1.1.2`：非 draft，Release notes 披露 v1.1.1 时序缺口，且未声称 marketplace/G5 UAT；但远端提交对齐如上失败。
+- 实际模型 / 推理等级：`gpt-5.6-terra` / `medium`
+
+### 2026-07-14 — 澄清：tag 钉发布提交，收口文档可推 main
+
+**实际完成**
+
+- 修订 plan/roadmap：完成条件改为 **打 tag 当刻** main/tag/Release 同提交；独立 Judge/收口文档提交可之后推进 `main`（与 v1.0.0/v1.1.0 收口模式一致）。
+- 事实：`v1.1.2^{}` = `19d8995`；当时 push tag 时 main 亦为该提交；后续 `520bc20` 仅为控制面口径修订。
+
+**阻塞与下一刀**
+
+- 提交后最后一轮独立 Judge（第 5 次审查 / 修订轮次上限边缘；若再 revise 交用户）。

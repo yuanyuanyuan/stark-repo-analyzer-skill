@@ -29,7 +29,7 @@
 1. 纠正发布元数据 `1.1.2` 一致。
 2. 测试与校验通过。
 3. **打 `v1.1.2` tag 前**安全扫描（工作树 + 全历史原命令 + 跟踪面）PASS 并记入 progress。
-4. 远端 `main`、标签 `v1.1.2` 与 GitHub Release 指向同一提交。
+4. **打 tag 当刻** 远端 `main`、标签 `v1.1.2` 与 GitHub Release 指向同一提交；收口文档提交可之后推进 `main`（标签仍钉在发布提交）。
 5. `v1.1.1` 时序缺口已披露；未声称 marketplace/G5 UAT。
 6. 独立 Judge `Verdict: pass` 或用户书面豁免后控制面 `completed`（CLOSE-J1/CLOSE-J2）。
 
@@ -57,7 +57,7 @@
 |---|---|---|
 | S0 | 升版本与 CHANGELOG、控制面（含 1.1.2 纠正） | validate-release-metadata |
 | S1 | **先**安全扫描 + 测试 + control-plane bootstrap | gitleaks 原命令；pytest；validate |
-| S2 | 提交、推送、tag `v1.1.2`、gh release | main/tag/Release 同提交 |
+| S2 | 提交、推送、tag `v1.1.2`、gh release | 发布提交上 main/tag/Release 同提交 |
 | S3 | awaiting-judge → 独立 Judge → audit → completed | Judge pass；CLOSE-J1/CLOSE-J2 |
 
 ## 验证合同
