@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Run the Codex fallback for an independent, read-only Judge review.
+"""Run the Codex fallback for an independent Judge review.
 
-Uses a scoped review package and fixed model/reasoning settings so fallback
-does not inherit drifting user defaults.
+Role is read-only for formal tree edits. Sandbox uses workspace-write so the
+Judge can re-run cheap local tests (temp/pytest cache side-effects only).
+Fixed model/reasoning settings so fallback does not inherit drifting defaults.
 """
 
 from __future__ import annotations
@@ -17,6 +18,8 @@ from pathlib import Path
 _RELEASE_DIR = Path(__file__).resolve().parent
 if str(_RELEASE_DIR) not in sys.path:
     sys.path.insert(0, str(_RELEASE_DIR))
+
+JUDGE_SANDBOX = "workspace-write"
 
 from judge_review_package import (
     JUDGE_MODEL,
@@ -47,9 +50,25 @@ excluded paths or invent ownership from a dirty worktree. If the package is
 incomplete, return blocked: insufficient review package and stop.
 
 Read AGENTS.md and docs/dev-rules/dual-agent-review/README.md for protocol.
-You are strictly read-only: do not edit files, run formatters, stage, commit,
-stash, reset, or change control-plane state. Independently run at least one
-relevant read-only check against the owned files.
+
+Role constraints:
+- Do not edit formal repository files, run tree-rewriting formatters, stage,
+  commit, stash, reset, or change control-plane state.
+- Verification side-effects are allowed only under system temp, pytest
+  basetemp, or gitignored caches (e.g. `.pytest_cache`).
+
+Independent verification (mandatory for cheap local checks):
+- Re-run the core risk checks yourself. Prefer the same unit tests / validators
+  Worker claimed when they are local and cheap.
+- NEVER pass by citing Worker pytest/lint/typecheck results as a substitute
+  when you did not re-run them. Phrases like "sandbox blocked temp writes so
+  I trust Worker's 8 passed" are invalid for pass.
+- If a required cheap re-run fails due to environment, Verdict must be
+  `blocked` or `revise` with 缺失验证 — not pass.
+- High-cost/network/deploy/real UAT matrix checks are the only class that may
+  rely on Worker evidence without re-run.
+- Suggested pytest form when needed:
+  `python -m pytest <owned tests> -q -p no:cacheprovider --basetemp /tmp/judge-pytest`
 
 Blocking findings are limited to the package blocking_criteria. Style
 preferences, optional refactors, out-of-scope discoveries, and historical
@@ -171,7 +190,7 @@ def main(argv: list[str] | None = None) -> int:
         "codex",
         "exec",
         "--sandbox",
-        "read-only",
+        JUDGE_SANDBOX,
         "--ephemeral",
         "-m",
         package.model or JUDGE_MODEL,
@@ -194,6 +213,7 @@ def main(argv: list[str] | None = None) -> int:
         print(" ".join(shlex_quote(part) for part in printable))
         print(f"# package={package_path}")
         print(f"# model={package.model} reasoning={package.reasoning_effort}")
+        print(f"# sandbox={JUDGE_SANDBOX}")
         return 0
 
     if args.dry_run:

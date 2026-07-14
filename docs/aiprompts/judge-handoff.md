@@ -3,7 +3,7 @@
 本文件是 **Agent 调度 Judge 的内部输入协议**，不是要求用户复制或粘贴命令的模板。进入 `awaiting-judge` 后，Orchestrator 必须自行选择以下路径：
 
 1. 优先启动当前运行时提供的独立只读 Judge 子代理；
-2. 子代理能力不可用时，自动运行 `python tools/release/run-independent-judge.py --plan <plan-path>`，由它以 `codex exec --sandbox read-only` 创建临时 Judge；
+2. 子代理能力不可用时，自动运行 `python tools/release/run-independent-judge.py --plan <plan-path>`，由它以 `codex exec`（默认 `--sandbox workspace-write`，仅验证侧写）创建临时 Judge；
 3. Worker 只可将返回的固定区块原样追加到 progress，再运行控制面校验。Judge 或 Worker 都不能在这一步直接改为 `completed`。
 
 只有 fallback 不可用、Judge 返回 `blocked`，或需要用户书面豁免时才向用户说明原因；不要把 prompt 或命令交给用户手动执行。
@@ -39,9 +39,10 @@ Orchestrator 自动捕获基线和文件边界；Worker 只补充目标、验收
 
 ## Judge 必做
 
-1. 只读审查相对基线的任务增量和本任务拥有的文件范围。
-2. 至少独立执行一项与核心风险相关的验证（优先重跑针对性测试）。
-3. 按 `docs/dev-rules/dual-agent-review/README.md` 输出：
+1. 只读审查相对基线的任务增量和本任务拥有的文件范围（不改正式文件；验证可写临时/可忽略缓存）。
+2. 至少独立执行一项与核心风险相关的验证；代码任务**必须亲自重跑**针对性测试或等价校验，不得以 Worker 的 pytest/lint 结果顶替。
+3. 若廉价本地重跑因环境失败：记 `blocked`/`revise` + 缺失验证，不得 pass。
+4. 按 `docs/dev-rules/dual-agent-review/README.md` 输出：
 
 ```markdown
 ### Judge Review
@@ -54,7 +55,7 @@ Orchestrator 自动捕获基线和文件边界；Worker 只补充目标、验收
 - 实际模型 / 推理等级：`gpt-5.6-terra` / `medium`
 ```
 
-4. 不要把静态工件或未跑矩阵抬成真实 UAT 通过。
+5. 不要把静态工件或未跑矩阵抬成真实 UAT 通过。
 
 ## 阻塞判定
 

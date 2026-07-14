@@ -31,3 +31,7 @@ Judge 在 Worker 自验准备收口时只启动一次；子代理优先，`codex
 ## 取代关系
 
 不取代现有 ADR；它细化 Task Quality Gates 与 Dual-Agent Review 的默认审查策略。
+
+## 修订记录
+
+- 2026-07-14：澄清 fallback 沙箱与独立验证义务。Judge 角色仍禁止改正式树；`run-independent-judge.py` 使用 `workspace-write` 仅覆盖验证侧写（临时目录 / pytest basetemp / 可忽略缓存），以便重跑廉价本地测试。禁止以「只读沙箱写不了临时目录」为由采信 Worker 的 pytest 等结果并 `pass`；细则见 `docs/dev-rules/dual-agent-review/` 第六节与 `docs/aiprompts/judge-handoff.md`。

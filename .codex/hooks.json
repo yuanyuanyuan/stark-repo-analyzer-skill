@@ -38,6 +38,12 @@
             "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/control_plane_gate.py\"",
             "timeout": 30,
             "statusMessage": "Control-plane audit and Judge dispatch"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/code_map_gate.py\"",
+            "timeout": 30,
+            "statusMessage": "Code-map stale reminder"
           }
         ]
       }
@@ -50,6 +56,12 @@
             "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/control_plane_gate.py\"",
             "timeout": 30,
             "statusMessage": "Control-plane audit and Judge dispatch on stop"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/code_map_gate.py\"",
+            "timeout": 30,
+            "statusMessage": "Code-map stale reminder on stop"
           }
         ]
       }

@@ -156,8 +156,15 @@ class JudgeReviewPackageTests(unittest.TestCase):
             package_mod.default_artifact_path(self.plan),
         )
         with patch.object(judge_mod, "repo_root", return_value=self.root):
-            code = judge_mod.main(["--plan", str(self.plan), "--print-command"])
+            from io import StringIO
+            import contextlib
+            buf = StringIO()
+            with contextlib.redirect_stdout(buf):
+                code = judge_mod.main(["--plan", str(self.plan), "--print-command"])
         self.assertEqual(code, 0)
+        out = buf.getvalue()
+        self.assertIn("workspace-write", out)
+        self.assertNotIn("--sandbox read-only", out)
 
     def test_prompt_contains_model_and_package(self):
         pkg = package_mod.ReviewPackage(
@@ -266,6 +273,25 @@ class JudgeReviewPackageTests(unittest.TestCase):
             progress="docs/exec-plans/sample-progress.md",
         )
         self.assertIn("startup_baseline", pkg.missing_fields())
+
+
+    def test_prompt_forbids_worker_test_substitution(self):
+        pkg = package_mod.ReviewPackage(
+            user_goal="g",
+            acceptance_items=["a"],
+            startup_baseline={"summary": "s", "git_status_short": "", "captured_at": "t0"},
+            owned_files=["x"],
+            excluded_user_changes=[],
+            worker_verification=package_mod.WorkerVerification(
+                commands_run=["pytest"], results=["8 passed"]
+            ),
+            blocking_criteria=list(package_mod.DEFAULT_BLOCKING_CRITERIA),
+            plan="docs/exec-plans/sample-plan.md",
+            progress="docs/exec-plans/sample-progress.md",
+        )
+        prompt = judge_mod.build_prompt(self.root, pkg)
+        self.assertIn("NEVER pass by citing Worker", prompt)
+        self.assertIn("workspace-write", judge_mod.JUDGE_SANDBOX)
 
 
 class ControlPlaneGateHookTests(unittest.TestCase):

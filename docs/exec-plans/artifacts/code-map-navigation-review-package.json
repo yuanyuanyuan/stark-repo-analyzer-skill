@@ -1,0 +1,62 @@
+{
+  "user_goal": "重审代码地图导航交付：此前 Judge 未独立重跑 pytest 即 pass；已修正 dual-agent-review/fallback 沙箱后重新独立验证",
+  "acceptance_items": [
+    "code-map 交付物与 hook 合同仍满足原 roadmap 验收",
+    "Judge 必须亲自重跑 pytest 等廉价检查，不得采信 Worker 结果顶替",
+    "run-independent-judge 使用可验证侧写沙箱；规则文档已禁止 substitution pass"
+  ],
+  "startup_baseline": {
+    "summary": "git status --short at package build time",
+    "captured_at": "2026-07-14T09:31:16.957453+00:00",
+    "git_status_short": "M  .codex/hooks.json\nA  .codex/hooks/code_map_gate.py\nM  AGENTS.md\nMM CONTEXT.md\nM  docs/README.md\n M docs/adr/0026-default-judge-with-scoped-review-package.md\nA  docs/adr/0027-repo-code-map-with-graphify-assist-and-reminder-hooks.md\nM  docs/adr/README.md\nM  docs/aiprompts/judge-handoff.md\nA  docs/code-map/README.md\nA  docs/code-map/map.yaml\nM  docs/dev-rules/README.md\nA  docs/dev-rules/code-map/README.md\nM  docs/dev-rules/dual-agent-review/README.md\nM  docs/exec-plans/README.md\nA  docs/exec-plans/artifacts/code-map-navigation-review-package.json\nAM docs/exec-plans/code-map-navigation-plan.md\nAM docs/exec-plans/code-map-navigation-progress.md\nM  docs/roadmap/README.md\nA  docs/roadmap/code-map-navigation-roadmap.md\nA  tests/unit/test_code_map_gate.py\n M tests/unit/test_judge_review_package.py\n M tools/release/run-independent-judge.py\n"
+  },
+  "owned_files": [
+    "docs/code-map/",
+    "docs/dev-rules/code-map/",
+    "docs/dev-rules/dual-agent-review/README.md",
+    "docs/aiprompts/judge-handoff.md",
+    "docs/adr/0026-default-judge-with-scoped-review-package.md",
+    "docs/adr/0027-repo-code-map-with-graphify-assist-and-reminder-hooks.md",
+    "tools/release/run-independent-judge.py",
+    "tests/unit/test_judge_review_package.py",
+    "tests/unit/test_code_map_gate.py",
+    ".codex/hooks/code_map_gate.py",
+    ".codex/hooks.json",
+    "AGENTS.md",
+    "CONTEXT.md",
+    "docs/exec-plans/code-map-navigation-plan.md",
+    "docs/exec-plans/code-map-navigation-progress.md"
+  ],
+  "excluded_user_changes": [],
+  "worker_verification": {
+    "commands_run": [
+      "python -m pytest tests/unit/test_judge_review_package.py tests/unit/test_code_map_gate.py -q",
+      "python tools/release/validate-control-plane.py --mode audit"
+    ],
+    "results": [
+      "22 passed",
+      "PASS (awaiting-judge without completed is ok)"
+    ],
+    "not_run": [
+      "真实回归 UAT"
+    ],
+    "deviations": "作废首次 Judge pass；修正独立验证规则与 fallback 沙箱后重审"
+  },
+  "blocking_criteria": [
+    "违反用户明确目标、验收项或审查包范围",
+    "可复现功能错误、数据/安全风险、控制面状态错误",
+    "任务要求但缺失的验证证据",
+    "审查包缺字段或边界无法确认"
+  ],
+  "plan": "docs/exec-plans/code-map-navigation-plan.md",
+  "progress": "docs/exec-plans/code-map-navigation-progress.md",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "medium",
+  "non_blocking_hints": [
+    "风格偏好",
+    "可选重构",
+    "范围外发现",
+    "不影响当前验收的历史问题"
+  ],
+  "generated_at": "2026-07-14T09:31:16.957781+00:00"
+}

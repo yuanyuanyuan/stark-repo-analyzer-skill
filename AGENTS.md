@@ -14,6 +14,7 @@
 | 轻量门 / 完整门 | [`docs/dev-rules/task-quality-gates/`](docs/dev-rules/task-quality-gates/) |
 | Worker / Judge / `awaiting-judge` / completed 护栏 | [`docs/dev-rules/dual-agent-review/`](docs/dev-rules/dual-agent-review/) |
 | 聚焦 UAT vs 真实回归 UAT | [`docs/dev-rules/real-uat-regression/`](docs/dev-rules/real-uat-regression/) |
+| 本仓库代码地图（功能→分层→入口） | [`docs/code-map/`](docs/code-map/)、规则 [`docs/dev-rules/code-map/`](docs/dev-rules/code-map/) |
 | 开发规则总索引 | [`docs/dev-rules/README.md`](docs/dev-rules/README.md) |
 | 文档地图 | [`docs/README.md`](docs/README.md) |
 | 产品行为 | `skills/repo-analyzer/`、[`docs/spec/`](docs/spec/)、`CONTEXT.md`、有效 ADR |
@@ -28,9 +29,10 @@
 3. 读 [`docs/dev-rules/document-control/README.md`](docs/dev-rules/document-control/README.md)。
 4. 开发交付前读 [`docs/dev-rules/task-quality-gates/README.md`](docs/dev-rules/task-quality-gates/README.md)；必须 Judge 时再读 [`docs/dev-rules/dual-agent-review/README.md`](docs/dev-rules/dual-agent-review/README.md)。
 5. 从 [`docs/roadmap/README.md`](docs/roadmap/README.md) 与 [`docs/exec-plans/README.md`](docs/exec-plans/README.md) 解析生命周期；**只有 `active` 控制面能授权执行**，`completed` 只作背景。
-6. 编辑前执行 `git status --short`，保留用户已有改动。
-7. 涉及产品行为时，读 `CONTEXT.md`、[`docs/spec/README.md`](docs/spec/README.md)、[`docs/adr/README.md`](docs/adr/README.md)，再只读相关合同与当前有效 ADR。
-8. 涉及 analyzer skill、Graphify gate、输出合同或验收语义时，编辑前读 [`docs/dev-rules/real-uat-regression/README.md`](docs/dev-rules/real-uat-regression/README.md)。
+6. 理解任务目标后、**大范围搜索或跨模块改文件前**，读 [`docs/code-map/README.md`](docs/code-map/README.md) 与 [`docs/code-map/map.yaml`](docs/code-map/map.yaml)，按 feature 打开 entrypoints；维护规则见 [`docs/dev-rules/code-map/`](docs/dev-rules/code-map/)。
+7. 编辑前执行 `git status --short`，保留用户已有改动。
+8. 涉及产品行为时，读 `CONTEXT.md`、[`docs/spec/README.md`](docs/spec/README.md)、[`docs/adr/README.md`](docs/adr/README.md)，再只读相关合同与当前有效 ADR。
+9. 涉及 analyzer skill、Graphify gate、输出合同或验收语义时，编辑前读 [`docs/dev-rules/real-uat-regression/README.md`](docs/dev-rules/real-uat-regression/README.md)。
 
 ## Graphify 路由
 

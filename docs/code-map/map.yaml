@@ -1,0 +1,378 @@
+# Semantic code map for this repository (not the analyzed target repo).
+# True source for feature → layer → entrypoints. See README.md and docs/dev-rules/code-map/.
+version: 1
+updated: "2026-07-14"
+
+layers:
+  - id: product-entry
+    name: 产品入口
+    summary: 用户/宿主触发分析能力时首先接触的 Skill 与说明入口。
+  - id: contracts
+    name: 产品合同
+    summary: 可依赖的输入输出、失败语义与公开行为边界。
+  - id: runtime
+    name: 运行实现
+    summary: gate、脚本与运行时编排，决定一次分析如何实际执行。
+  - id: control-plane
+    name: 开发控制面
+    summary: roadmap/plan/progress、协作规则与 Agent 导航，不定义用户分析合同。
+  - id: verification
+    name: 验证与护栏
+    summary: 测试、校验脚本与 Codex hooks，约束交付与收口，不替代产品 UAT 真源。
+
+features:
+  - id: repo-analysis-skill
+    name: 仓库分析 Skill
+    status: active
+    summary: 面向「分析仓库/架构/源码」请求的主 Skill 正文与默认执行合同。
+    task_hints:
+      - 改 skill 触发词或默认流程
+      - 改用户可见分析步骤说明
+      - 排查 skill 与 gate 的调用关系
+    layers:
+      product-entry:
+        entrypoints:
+          - skills/repo-analyzer/SKILL.md
+      contracts:
+        entrypoints:
+          - docs/spec/input-output-contract.md
+      runtime:
+        entrypoints:
+          - skills/repo-analyzer/scripts/graphify_gate.py
+      control-plane:
+        entrypoints:
+          - CONTEXT.md
+      verification:
+        entrypoints:
+          - tests/unit/test_graphify_gate.py
+    watch_paths:
+      - skills/repo-analyzer/SKILL.md
+      - skills/repo-analyzer/scripts/
+      - docs/spec/input-output-contract.md
+
+  - id: graphify-gate
+    name: Graphify Gate
+    status: active
+    summary: code-only 建图、健康验证与导航 map 的确定性 gate；产品结构证据入口。
+    task_hints:
+      - 改 Graphify 调用或退出码
+      - 改 gate 健康/源码边界语义
+      - 排查 graphify-gate-status
+    layers:
+      product-entry:
+        entrypoints:
+          - skills/repo-analyzer/references/graphify-integration-guide.md
+      contracts:
+        entrypoints:
+          - skills/repo-analyzer/references/contracts/graphify-gate-status.schema.json
+      runtime:
+        entrypoints:
+          - skills/repo-analyzer/scripts/graphify_gate.py
+      control-plane:
+        entrypoints:
+          - docs/adr/0016-graphify-code-only-v1.md
+          - docs/adr/0018-validate-the-normalized-usable-graph.md
+      verification:
+        entrypoints:
+          - tests/unit/test_graphify_gate.py
+    watch_paths:
+      - skills/repo-analyzer/scripts/graphify_gate.py
+      - skills/repo-analyzer/references/graphify-integration-guide.md
+      - skills/repo-analyzer/references/contracts/
+
+  - id: analysis-writing-guides
+    name: 分析写作与模块指南
+    status: active
+    summary: Agent 阅读模块与撰写架构报告时的参考指南（非机器 schema）。
+    task_hints:
+      - 改报告结构或写作原则
+      - 改模块覆盖/交叉验证指引
+    layers:
+      product-entry:
+        entrypoints:
+          - skills/repo-analyzer/references/analysis-guide.md
+      contracts:
+        entrypoints:
+          - docs/spec/input-output-contract.md
+      runtime:
+        entrypoints:
+          - skills/repo-analyzer/references/module-analysis-guide.md
+      control-plane:
+        entrypoints:
+          - docs/dev-rules/real-uat-regression/README.md
+      verification:
+        entrypoints:
+          - tests/contract/
+    watch_paths:
+      - skills/repo-analyzer/references/analysis-guide.md
+      - skills/repo-analyzer/references/module-analysis-guide.md
+
+  - id: product-io-contract
+    name: 输入输出合同
+    status: active
+    summary: 分析输入、工作区隔离、交付物与模式覆盖率等产品边界。
+    task_hints:
+      - 改 standard/deep 模式语义
+      - 改 WORK_DIR 或最终交付物
+      - 改公开失败/停止条件
+    layers:
+      product-entry:
+        entrypoints:
+          - README.md
+          - README.zh.md
+      contracts:
+        entrypoints:
+          - docs/spec/input-output-contract.md
+          - docs/spec/README.md
+      runtime:
+        entrypoints:
+          - skills/repo-analyzer/SKILL.md
+      control-plane:
+        entrypoints:
+          - docs/adr/README.md
+      verification:
+        entrypoints:
+          - tests/contract/
+    watch_paths:
+      - docs/spec/
+      - README.md
+      - README.zh.md
+
+  - id: skill-distribution
+    name: Skill 分发与核心包
+    status: active
+    summary: Skill 核心交付文件清单与发布元数据校验；决定安装适配器必须带走的路径。
+    task_hints:
+      - 增删 skill 包内文件
+      - 改安装适配或 core package 合同
+    layers:
+      product-entry:
+        entrypoints:
+          - skills/repo-analyzer/SKILL.md
+      contracts:
+        entrypoints:
+          - tools/release/core-package-files.txt
+      runtime:
+        entrypoints:
+          - tools/release/validate-release-metadata.py
+      control-plane:
+        entrypoints:
+          - docs/adr/0025-use-the-skill-bundle-as-the-single-distribution-source.md
+      verification:
+        entrypoints:
+          - tests/install/
+    watch_paths:
+      - tools/release/core-package-files.txt
+      - tools/release/validate-release-metadata.py
+      - .claude-plugin/
+      - .codex-plugin/
+      - .agents/
+
+  - id: document-control
+    name: 文档控制面
+    status: active
+    summary: roadmap/plan/progress/spec/ADR 的读取创建维护与唯一真源规则。
+    task_hints:
+      - 新建或收口控制面
+      - 改文档生命周期状态机
+      - 查当前 active 主线
+    layers:
+      product-entry:
+        entrypoints:
+          - AGENTS.md
+      contracts:
+        entrypoints:
+          - docs/dev-rules/document-control/README.md
+      runtime:
+        entrypoints:
+          - docs/roadmap/README.md
+          - docs/exec-plans/README.md
+      control-plane:
+        entrypoints:
+          - docs/README.md
+      verification:
+        entrypoints:
+          - tools/release/validate-control-plane.py
+    watch_paths:
+      - docs/dev-rules/document-control/
+      - docs/roadmap/
+      - docs/exec-plans/
+      - docs/adr/
+      - docs/spec/
+
+  - id: quality-gates-and-judge
+    name: 质量门与独立 Judge
+    status: active
+    summary: Delivery Task 轻量/完整门、审查包、Worker/Judge 与 awaiting-judge 收口。
+    task_hints:
+      - 改 Judge 协议或审查包字段
+      - 改完整门触发或 completed 门槛
+      - 排查假 completed
+    layers:
+      product-entry:
+        entrypoints:
+          - AGENTS.md
+      contracts:
+        entrypoints:
+          - docs/dev-rules/task-quality-gates/README.md
+          - docs/dev-rules/dual-agent-review/README.md
+      runtime:
+        entrypoints:
+          - tools/release/judge_review_package.py
+          - tools/release/run-independent-judge.py
+      control-plane:
+        entrypoints:
+          - docs/adr/0026-default-judge-with-scoped-review-package.md
+      verification:
+        entrypoints:
+          - tests/unit/test_judge_review_package.py
+          - .codex/hooks/control_plane_gate.py
+    watch_paths:
+      - docs/dev-rules/task-quality-gates/
+      - docs/dev-rules/dual-agent-review/
+      - tools/release/judge_review_package.py
+      - tools/release/run-independent-judge.py
+      - .codex/hooks/control_plane_gate.py
+
+  - id: real-uat-regression
+    name: 真实 UAT 与聚焦验收
+    status: active
+    summary: 开发期聚焦 UAT 与发布级真实回归的证据上限；防止假通过。
+    task_hints:
+      - 改 UAT 场景或证据等级
+      - 声明产品/gate 验收是否通过
+    layers:
+      product-entry:
+        entrypoints:
+          - docs/dev-rules/README.md
+      contracts:
+        entrypoints:
+          - docs/dev-rules/real-uat-regression/README.md
+      runtime:
+        entrypoints:
+          - docs/adr/0022-separate-focused-uat-from-real-regression-uat.md
+      control-plane:
+        entrypoints:
+          - docs/dev-rules/document-control/README.md
+      verification:
+        entrypoints:
+          - tests/baseline/
+    watch_paths:
+      - docs/dev-rules/real-uat-regression/
+
+  - id: control-plane-validator-hooks
+    name: 控制面校验与 hooks
+    status: active
+    summary: completed/bootstrap 机械校验与 Codex 生命周期护栏（非产品 gate）。
+    task_hints:
+      - 改 validate-control-plane 规则
+      - 改 control_plane_gate 事件或 deny 语义
+      - 调试 hooks 不触发
+    layers:
+      product-entry:
+        entrypoints:
+          - docs/dev-rules/dual-agent-review/README.md
+      contracts:
+        entrypoints:
+          - docs/dev-rules/document-control/README.md
+      runtime:
+        entrypoints:
+          - tools/release/validate-control-plane.py
+          - .codex/hooks/control_plane_gate.py
+      control-plane:
+        entrypoints:
+          - .codex/hooks.json
+      verification:
+        entrypoints:
+          - tests/unit/test_judge_review_package.py
+    watch_paths:
+      - tools/release/validate-control-plane.py
+      - .codex/hooks/control_plane_gate.py
+      - .codex/hooks.json
+
+  - id: code-map-navigation
+    name: 代码地图导航
+    status: active
+    summary: 本仓库功能→分层→入口地图、维护规则与过期提醒 hook。
+    task_hints:
+      - 改 map.yaml 或 code-map 规则
+      - 改 code_map_gate 提醒逻辑
+      - 新功能需要登记导航入口
+    layers:
+      product-entry:
+        entrypoints:
+          - docs/code-map/README.md
+          - AGENTS.md
+      contracts:
+        entrypoints:
+          - docs/dev-rules/code-map/README.md
+          - docs/adr/0027-repo-code-map-with-graphify-assist-and-reminder-hooks.md
+      runtime:
+        entrypoints:
+          - docs/code-map/map.yaml
+          - .codex/hooks/code_map_gate.py
+      control-plane:
+        entrypoints:
+          - docs/roadmap/code-map-navigation-roadmap.md
+          - docs/exec-plans/code-map-navigation-plan.md
+      verification:
+        entrypoints:
+          - tests/unit/test_code_map_gate.py
+    watch_paths:
+      - docs/code-map/
+      - docs/dev-rules/code-map/
+      - .codex/hooks/code_map_gate.py
+      - AGENTS.md
+
+  - id: domain-language-context
+    name: 领域语言与 CONTEXT
+    status: active
+    summary: 产品与协作共用的领域词汇真源，避免术语漂移。
+    task_hints:
+      - 新增或重定义领域术语
+      - 对齐 skill/文档用词
+    layers:
+      product-entry:
+        entrypoints:
+          - CONTEXT.md
+      contracts:
+        entrypoints:
+          - docs/dev-rules/domain-language.md
+      runtime:
+        entrypoints:
+          - CONTEXT.md
+      control-plane:
+        entrypoints:
+          - docs/dev-rules/README.md
+      verification:
+        entrypoints:
+          - docs/dev-rules/output-style/README.md
+    watch_paths:
+      - CONTEXT.md
+      - docs/dev-rules/domain-language.md
+
+  - id: output-style
+    name: 输出与文档文风
+    status: active
+    summary: Agent 回复、维护性文档与代码注释的语言和渐进式表达规则。
+    task_hints:
+      - 改中英文/注释语言约定
+      - 改文档首屏固定字段要求
+    layers:
+      product-entry:
+        entrypoints:
+          - AGENTS.md
+      contracts:
+        entrypoints:
+          - docs/dev-rules/output-style/README.md
+      runtime:
+        entrypoints:
+          - docs/dev-rules/output-style/README.md
+      control-plane:
+        entrypoints:
+          - docs/README.md
+      verification:
+        entrypoints:
+          - docs/dev-rules/document-control/README.md
+    watch_paths:
+      - docs/dev-rules/output-style/
