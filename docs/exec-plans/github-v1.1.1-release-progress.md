@@ -8,9 +8,9 @@
 
 | 字段 | 内容 |
 |---|---|
-| 阶段 | v1.1.2 纠正发布中；先扫后 tag |
-| 已完成 | 1.1.2 元数据；pre-tag gitleaks PASS；pytest/validators PASS |
-| 下一刀 | commit/push/tag/Release v1.1.2 → Judge |
+| 阶段 | 第三轮 Judge revise：对齐 roadmap/plan 到 v1.1.2 |
+| 已完成 | v1.1.2 公开且扫描通过；控制面完成条件修订中 |
+| 下一刀 | 提交控制面修订 → Judge 复审 |
 
 ## 记录
 
@@ -191,3 +191,50 @@
 
 - `v1.1.1` 保留为已公开历史标签（指向 `8110153`）；时序缺口已在 Judge 与 progress 披露。
 - 纠正可安装版本为 `v1.1.2`，含完整扫描配置与先扫后 tag 证据。
+
+### 2026-07-14 — v1.1.2 tag 与 Release
+
+**实际完成**
+
+- 提交：`19d8995 release: prepare v1.1.2 corrective GitHub distribution`
+- 推送 `main`；注释标签 `v1.1.2`；GitHub Release 非 draft
+- 对齐：`HEAD` == `origin/main` == `v1.1.2^{}` == `19d8995`
+- 安全扫描发生在 commit/tag 之前（见上一节）；commit 后复扫仍 PASS
+
+**Boundary Check**
+
+- `v1.1.1` 仍指向 `8110153`，时序缺口已披露；可安装纠正版本为 `v1.1.2`
+- 安全扫描 PASS ≠ 真实回归 UAT / marketplace
+
+**阻塞与下一刀**
+
+- awaiting-judge 复审纠正发布
+
+### 2026-07-14 — 独立 Judge（第三轮）
+
+### Judge Review
+- Verdict: revise
+- 刚性约束违规：无。
+- 问题（按严重级别）：
+  - P1：活动 roadmap 及 plan 的部分完成条件仍将 `v1.1.1` 作为发布版本与 `main/tag/Release` 对齐目标；实际纠正发布为 `v1.1.2`。这与当前用户目标及 progress 中的纠正口径冲突，属于待收口控制面不一致。
+- 缺失验证：无。pre-tag 时序依据 progress 的时间记录；本次独立复跑确认当前完整扫描通过。
+- 建议复查范围：仅更新 `docs/roadmap/github-v1.1.1-release-roadmap.md` 与 `docs/exec-plans/github-v1.1.1-release-plan.md` 的目标、完成条件及验证命令，使其准确指向 `v1.1.2` 纠正发布；随后重审。
+- 独立执行的验证及结果：
+  - `gitleaks dir --no-banner --redact .`：PASS，`no leaks found`。
+  - `gitleaks git --no-banner --redact --log-opts="--all" .`：PASS，78 commits、`no leaks found`。
+  - `python -m pytest tests/unit -q -p no:cacheprovider --basetemp /tmp/judge-pytest`：PASS，42 passed。
+  - `python tools/release/validate-release-metadata.py`：PASS，version=`1.1.2`。
+  - `python tools/release/validate-control-plane.py --mode audit` 与 `git diff --check`：均 PASS。
+  - 跟踪面密钥模式无命中，`.gitignore` 包含 `.env`、`.env.*`。
+  - `HEAD`、`origin/main`、本地及远端 `v1.1.2^{}` 均为 `19d8995d27533eb4ba425d3e48cdbd57d5098a01`；GitHub `v1.1.2` Release 非 draft。Release notes 明确披露 v1.1.1 时序缺口，且未声称 marketplace/G5 UAT。
+- 实际模型 / 推理等级：`gpt-5.6-terra` / `medium`
+
+### 2026-07-14 — 控制面完成口径对齐 v1.1.2
+
+**实际完成**
+
+- 修订 roadmap/plan：完成条件、阶段退出与验证命令统一指向 **`v1.1.2` 纠正发布**；保留 `v1.1.1` 时序缺口披露。
+
+**阻塞与下一刀**
+
+- 提交后进入独立 Judge 第四轮。

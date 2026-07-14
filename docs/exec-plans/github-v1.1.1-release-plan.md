@@ -1,4 +1,4 @@
-# GitHub v1.1.1 发布执行计划
+# GitHub v1.1.1/v1.1.2 发布执行计划
 
 状态：`awaiting-judge`
 
@@ -9,7 +9,7 @@
 
 | 固定字段 | 内容 |
 |---|---|
-| 文档角色 | `v1.1.1` 发布顺序与验证 |
+| 文档角色 | pre-release security scan 发布顺序与验证（完成口径 `v1.1.2`） |
 | 当前状态 | `awaiting-judge`；S0–S2 已完成，等待独立 Judge |
 | 何时读取 | 执行本发布任一步前 |
 | 关联真源 | roadmap；VERSION；progress；pre-release-security-scan |
@@ -26,11 +26,12 @@
 
 ### 完成条件
 
-1. 元数据 `1.1.1` 一致。
+1. 纠正发布元数据 `1.1.2` 一致。
 2. 测试与校验通过。
-3. 发布前安全扫描（工作树 + 全历史 + 跟踪面）PASS 并记入 progress。
-4. 标签与 GitHub Release 指向发布提交。
-5. 独立 Judge `Verdict: pass` 或用户书面豁免后控制面 `completed`（CLOSE-J1/CLOSE-J2）。
+3. **打 `v1.1.2` tag 前**安全扫描（工作树 + 全历史原命令 + 跟踪面）PASS 并记入 progress。
+4. 远端 `main`、标签 `v1.1.2` 与 GitHub Release 指向同一提交。
+5. `v1.1.1` 时序缺口已披露；未声称 marketplace/G5 UAT。
+6. 独立 Judge `Verdict: pass` 或用户书面豁免后控制面 `completed`（CLOSE-J1/CLOSE-J2）。
 
 ## 启动关
 
@@ -54,9 +55,9 @@
 
 | ID | 动作 | 验证 |
 |---|---|---|
-| S0 | 升版本与 CHANGELOG、控制面 | validate-release-metadata |
-| S1 | 安全扫描 + 测试 + control-plane bootstrap | gitleaks；pytest；validate |
-| S2 | 提交、推送、tag、gh release | 远端一致 |
+| S0 | 升版本与 CHANGELOG、控制面（含 1.1.2 纠正） | validate-release-metadata |
+| S1 | **先**安全扫描 + 测试 + control-plane bootstrap | gitleaks 原命令；pytest；validate |
+| S2 | 提交、推送、tag `v1.1.2`、gh release | main/tag/Release 同提交 |
 | S3 | awaiting-judge → 独立 Judge → audit → completed | Judge pass；CLOSE-J1/CLOSE-J2 |
 
 ## 验证合同
@@ -68,7 +69,7 @@
 - `python tools/release/validate-release-metadata.py`
 - `python tools/release/validate-control-plane.py --mode bootstrap` 与收口 `audit`
 - `git diff --check`
-- `gh release view v1.1.1`
+- `gh release view v1.1.2`
 
 ## 收口路径
 
