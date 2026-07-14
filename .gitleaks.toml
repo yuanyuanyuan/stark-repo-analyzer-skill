@@ -1,0 +1,17 @@
+# Repo-local gitleaks config for release security scans.
+# Extends default rules; allowlists only confirmed large non-secret historical fixtures.
+
+title = "stark-repo-analyzer-skill"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Historical baseline/UAT graph dumps and local graphify outputs are multi-MB analysis artifacts, not credential stores. Secrets must not be introduced into these paths; source and skill code remain fully scanned."
+paths = [
+  '''(^|/)docs/baseline/''',
+  '''(^|/)tests/baseline/''',
+  '''(^|/)测试证据/''',
+  '''(^|/)graphify-out/''',
+  '''(^|/)\.gstack/''',
+]

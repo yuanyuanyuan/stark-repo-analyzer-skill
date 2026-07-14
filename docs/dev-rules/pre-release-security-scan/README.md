@@ -72,6 +72,7 @@ rg -n '^\.env($|\.|$)' .gitignore
 假阳性处理：
 
 - 允许对 **确认的** 测试夹具 / 文档占位符使用 gitleaks allowlist（路径或规则级），并在 progress 写明理由。
+- 本仓库历史中的超大 baseline/`graph.json`、UAT 证据包路径应通过根目录 `.gitleaks.toml` 路径 allowlist 处理，**不要**用 `--max-target-megabytes` 冒充“已扫全历史密钥面”。
 - **禁止**为通过而全局关闭规则、跳过 `--log-opts="--all"`，或只扫最近一次 commit 冒充全历史。
 
 泄漏处置顺序（一旦 FAIL）：

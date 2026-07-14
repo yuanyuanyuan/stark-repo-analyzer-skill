@@ -1,6 +1,6 @@
 # GitHub v1.1.1 发布执行计划
 
-状态：`active`
+状态：`awaiting-judge`
 
 - 质量门：完整门
 - 独立Judge：必须
@@ -10,7 +10,7 @@
 | 固定字段 | 内容 |
 |---|---|
 | 文档角色 | `v1.1.1` 发布顺序与验证 |
-| 当前状态 | `active` |
+| 当前状态 | `awaiting-judge`；S0–S2 已完成，等待独立 Judge |
 | 何时读取 | 执行本发布任一步前 |
 | 关联真源 | roadmap；VERSION；progress；pre-release-security-scan |
 
