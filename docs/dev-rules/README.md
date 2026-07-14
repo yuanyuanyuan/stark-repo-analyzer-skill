@@ -13,6 +13,7 @@
 | [`real-uat-regression/`](real-uat-regression/) | 区分开发期聚焦 UAT 与发布级真实回归，覆盖模式、Graphify 选择、健康门和 subagent 同意边界 |
 | [`code-map/`](code-map/) | 本仓库代码地图真源、更新触发、无影响声明与提醒 hook 行为 |
 | [`pre-release-security-scan/`](pre-release-security-scan/) | 公开发版前强制密钥/敏感资料扫描（工作树 + 全 git 历史）；与真实回归 UAT 并列且互不替代 |
+| [`version-release/`](version-release/) | 公开版本发布总规则：SOP 顺序、元数据/tag/Release、检查清单、纠正发版与 tag/main 语义；编排安全扫描与 Judge |
 | [`domain-language.md`](domain-language.md) | 领域语言和 ADR 使用约束 |
 | （后续）其它 dev 规则 | 新增时在本 README 登记一行，保持「一类规则一个子目录」 |
 

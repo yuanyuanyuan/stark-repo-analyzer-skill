@@ -14,6 +14,7 @@
 | 轻量门 / 完整门 | [`docs/dev-rules/task-quality-gates/`](docs/dev-rules/task-quality-gates/) |
 | Worker / Judge / `awaiting-judge` / completed 护栏 | [`docs/dev-rules/dual-agent-review/`](docs/dev-rules/dual-agent-review/) |
 | 聚焦 UAT vs 真实回归 UAT | [`docs/dev-rules/real-uat-regression/`](docs/dev-rules/real-uat-regression/) |
+| 版本发布 SOP / checklist | [`docs/dev-rules/version-release/`](docs/dev-rules/version-release/) |
 | 发布前密钥/敏感资料扫描 | [`docs/dev-rules/pre-release-security-scan/`](docs/dev-rules/pre-release-security-scan/) |
 | 本仓库代码地图（功能→分层→入口） | [`docs/code-map/`](docs/code-map/)、规则 [`docs/dev-rules/code-map/`](docs/dev-rules/code-map/) |
 | 开发规则总索引 | [`docs/dev-rules/README.md`](docs/dev-rules/README.md) |
@@ -34,7 +35,7 @@
 7. 编辑前执行 `git status --short`，保留用户已有改动。
 8. 涉及产品行为时，读 `CONTEXT.md`、[`docs/spec/README.md`](docs/spec/README.md)、[`docs/adr/README.md`](docs/adr/README.md)，再只读相关合同与当前有效 ADR。
 9. 涉及 analyzer skill、Graphify gate、输出合同或验收语义时，编辑前读 [`docs/dev-rules/real-uat-regression/README.md`](docs/dev-rules/real-uat-regression/README.md)。
-10. 涉及 VERSION/tag/GitHub Release 或公开发版时，执行前读 [`docs/dev-rules/pre-release-security-scan/README.md`](docs/dev-rules/pre-release-security-scan/README.md)，并按该规则完成扫描证据。
+10. 涉及 VERSION/tag/GitHub Release 或公开发版时，执行前读 [`docs/dev-rules/version-release/README.md`](docs/dev-rules/version-release/README.md)（总 SOP/checklist），并按其中顺序完成 [`pre-release-security-scan`](docs/dev-rules/pre-release-security-scan/README.md) 等子门。
 
 ## Graphify 路由
 
@@ -57,7 +58,7 @@ When the user types `/graphify`, or when answering codebase structure questions 
 - 是否 Delivery Task、轻量门/完整门：[`task-quality-gates`](docs/dev-rules/task-quality-gates/README.md)
 - 独立 Judge、`awaiting-judge`、禁止假 `completed`、校验脚本与 Codex hooks：[`dual-agent-review`](docs/dev-rules/dual-agent-review/README.md)
 - 证据等级上限：[`real-uat-regression`](docs/dev-rules/real-uat-regression/README.md)
-- 打 tag / GitHub Release / 公开发版前：[`pre-release-security-scan`](docs/dev-rules/pre-release-security-scan/README.md)（工作树 + 全历史密钥扫描 PASS；不替代真实回归 UAT）
+- 打 tag / GitHub Release / 公开发版：[`version-release`](docs/dev-rules/version-release/README.md)（SOP + checklist）；密钥子门 [`pre-release-security-scan`](docs/dev-rules/pre-release-security-scan/README.md)；均不替代真实回归 UAT
 - 开发任务结束时，按 document-control / dual-agent-review 报告：主线目标、关键改动、Worker 验证、Judge verdict 或可省略理由、剩余阻塞/未验证项与下一刀。
 - Judge `pass` 不等于真实回归 UAT 通过。
 

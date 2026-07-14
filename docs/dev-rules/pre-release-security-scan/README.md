@@ -7,7 +7,7 @@
 | 当前结论/入口 | **Release 阻断门**：打 tag / 创建 GitHub Release / 声明版本已公开就绪前，必须完成本规则规定的扫描且无真实泄漏 |
 | 何时读取 | 准备升 `VERSION`、写发布 CHANGELOG、推送发布提交、打 tag、`gh release create` 或公开“可安装发布”前 |
 | 何时更新 | 扫描工具、必扫范围、通过标准或证据落点变化时 |
-| 关联真源 | 产品发布级行为验收 → [real-uat-regression](../real-uat-regression/README.md)；控制面收口 → [document-control](../document-control/README.md) / [dual-agent-review](../dual-agent-review/README.md) |
+| 关联真源 | 发版总顺序/checklist → [version-release](../version-release/README.md)；产品 UAT → [real-uat-regression](../real-uat-regression/README.md)；控制面 → [document-control](../document-control/README.md) / [dual-agent-review](../dual-agent-review/README.md) |
 
 ## 一、要解决什么
 
@@ -103,6 +103,7 @@ rg -n '^\.env($|\.|$)' .gitignore
 
 | 门 | 职责 | 与本规则关系 |
 |---|---|---|
+| [version-release](../version-release/README.md) | 发版总 SOP、tag/main 语义、纠正发版 | 本规则是其 Phase 2 刚需子门 |
 | [real-uat-regression](../real-uat-regression/README.md) | 用户等价入口到报告的产品行为 | 并列发布门；互不替代 |
 | [task-quality-gates](../task-quality-gates/README.md) / [dual-agent-review](../dual-agent-review/README.md) | 交付思考关口与独立 Judge | 发布任务仍走完整门/Judge 时，本扫描是 Worker 验证证据之一 |
 | `validate-release-metadata.py` / `validate-control-plane.py` | 版本投影与控制面状态 | 元数据/状态正确 ≠ 无密钥泄漏 |

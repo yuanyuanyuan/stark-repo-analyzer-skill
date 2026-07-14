@@ -1,55 +1,41 @@
 {
-  "user_goal": "Publish GitHub source release v1.1.1 with pre-release security scan gate; address Judge revise on full-history gitleaks.",
+  "user_goal": "Close security-scan release control plane on corrective v1.1.2; tag pins release commit 19d8995; post-tag docs (incl. version-release SOP) may advance main.",
   "acceptance_items": [
-    "VERSION and adapter manifests are 1.1.1",
-    "gitleaks worktree + full history exact command PASS recorded in progress",
-    "unit tests and release/control-plane validators PASS",
-    "origin/main, tag v1.1.1, and GitHub Release point at release commit 8110153",
-    "Release notes do not claim marketplace/G5 UAT"
+    "Plan/roadmap completion criteria target v1.1.2 corrective release",
+    "At tag time main/tag/Release shared release commit 19d8995; tag remains pinned there; post-tag docs may advance main",
+    "VERSION/adapters 1.1.2; exact gitleaks PASS before v1.1.2 tag recorded in progress",
+    "v1.1.1 timing gap disclosed; no marketplace/G5 UAT claim"
   ],
   "startup_baseline": {
     "summary": "git status --short at package build time",
-    "captured_at": "2026-07-14T10:25:47.856916+00:00",
-    "git_status_short": ""
+    "captured_at": "2026-07-14T10:38:15.233037+00:00",
+    "git_status_short": "M  AGENTS.md\nM  docs/dev-rules/README.md\nM  docs/dev-rules/pre-release-security-scan/README.md\nA  docs/dev-rules/version-release/README.md\nM  docs/exec-plans/artifacts/github-v1.1.1-release-review-package.json\n M docs/exec-plans/github-v1.1.1-release-progress.md\n"
   },
   "owned_files": [
-    ".gitleaks.toml",
-    "VERSION",
-    "CHANGELOG.md",
-    "package.json",
-    ".claude-plugin/plugin.json",
-    ".claude-plugin/marketplace.json",
-    ".codex-plugin/plugin.json",
-    ".gitignore",
-    "AGENTS.md",
-    "docs/README.md",
-    "docs/dev-rules/README.md",
-    "docs/dev-rules/pre-release-security-scan/README.md",
-    "docs/dev-rules/real-uat-regression/README.md",
-    "docs/exec-plans/README.md",
+    "docs/roadmap/github-v1.1.1-release-roadmap.md",
     "docs/exec-plans/github-v1.1.1-release-plan.md",
     "docs/exec-plans/github-v1.1.1-release-progress.md",
     "docs/exec-plans/artifacts/github-v1.1.1-release-review-package.json",
-    "docs/roadmap/README.md",
-    "docs/roadmap/github-v1.1.1-release-roadmap.md"
+    "docs/dev-rules/version-release/README.md",
+    "docs/dev-rules/pre-release-security-scan/README.md",
+    "docs/dev-rules/README.md",
+    "AGENTS.md"
   ],
   "excluded_user_changes": [],
   "worker_verification": {
     "commands_run": [
-      "gitleaks dir --no-banner --redact .",
-      "gitleaks git --no-banner --redact --log-opts=--all .",
-      "python -m pytest tests/unit -q",
-      "python tools/release/validate-release-metadata.py"
+      "python tools/release/validate-release-metadata.py",
+      "python tools/release/validate-control-plane.py --mode bootstrap",
+      "gh release view v1.1.2"
     ],
     "results": [
-      "gitleaks dir/git exact commands: no leaks found PASS after .gitleaks.toml fixture allowlist",
-      "pytest 42 passed; metadata 1.1.1; tag v1.1.1 -> 8110153; Release published"
+      "metadata PASS 1.1.2; control-plane bootstrap PASS; v1.1.2 tag=19d8995 Release non-draft; plan clarifies post-tag main advance"
     ],
     "not_run": [
-      "real external marketplace install",
+      "marketplace install",
       "G5 real regression UAT"
     ],
-    "deviations": "First history evidence used --max-target-megabytes 5; Judge revise. Replaced with exact command + path allowlist for baseline fixtures in .gitleaks.toml."
+    "deviations": "Fourth Judge treated post-tag control-plane docs as misalignment; criteria clarified to tag-time alignment. Fifth knife adds version-release SOP."
   },
   "blocking_criteria": [
     "违反用户明确目标、验收项或审查包范围",
@@ -67,5 +53,5 @@
     "范围外发现",
     "不影响当前验收的历史问题"
   ],
-  "generated_at": "2026-07-14T10:25:47.857404+00:00"
+  "generated_at": "2026-07-14T10:38:15.233666+00:00"
 }

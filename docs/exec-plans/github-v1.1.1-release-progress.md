@@ -8,9 +8,9 @@
 
 | 字段 | 内容 |
 |---|---|
-| 阶段 | 第四轮 Judge revise：澄清 tag 后 main 可前移 |
-| 已完成 | v1.1.2 发布提交 `19d8995`；控制面文档在后续提交 |
-| 下一刀 | 提交完成条件澄清 → Judge |
+| 阶段 | 第五轮：version-release SOP 落地 + 独立 Judge 收口 |
+| 已完成 | v1.1.2 发布提交 `19d8995`；plan/roadmap 完成口径对齐；tag 钉发布提交、收口文档可前移 main 已写入 plan |
+| 下一刀 | 提交 version-release 规则 → 独立 Judge；pass 后 audit → completed |
 
 ## 记录
 
@@ -268,3 +268,28 @@
 **阻塞与下一刀**
 
 - 提交后最后一轮独立 Judge（第 5 次审查 / 修订轮次上限边缘；若再 revise 交用户）。
+
+### 2026-07-14 — version-release 总 SOP + 审查包对齐
+
+**实际完成**
+
+- 新增 [`docs/dev-rules/version-release/README.md`](../dev-rules/version-release/README.md)：公开版本发布总规则 / SOP / checklist（先扫→提交→tag/Release→Judge；纠正发版；tag 钉发布提交、收口文档可后推 main）。
+- 更新 `AGENTS.md`、`docs/dev-rules/README.md`、`pre-release-security-scan` 关联指向 version-release。
+- 审查包验收项与 plan 对齐 v1.1.2：打 tag 当刻对齐 `19d8995`，之后允许 main 前移。
+
+**Worker 验证（本刀）**
+
+- `python tools/release/validate-release-metadata.py` → PASS version=1.1.2
+- `python tools/release/validate-control-plane.py --mode bootstrap` → PASS
+- 远端：`v1.1.2^{}`=`19d8995`；`origin/main` 可前于 tag（当前 tip 含收口文档提交）；`gh release view v1.1.2` 非 draft
+- 未重跑 gitleaks（本刀仅文档/SOP；v1.1.2 打 tag 前扫描证据见上节）；收口后如再发版须按 version-release 全流程重扫
+
+**Boundary Check**
+
+- 本刀不改 analyzer 用户合同；不新建 tag。
+- 安全扫描 PASS / Judge pass ≠ 真实回归 UAT。
+
+**阻塞与下一刀**
+
+- 提交并 push 本刀后调度独立 Judge（第 5 轮；若再 revise 交用户决策）。
+
