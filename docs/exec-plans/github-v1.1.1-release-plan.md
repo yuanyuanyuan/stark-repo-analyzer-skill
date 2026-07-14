@@ -1,6 +1,6 @@
 # GitHub v1.1.1/v1.1.2 发布执行计划
 
-状态：`awaiting-judge`
+状态：`completed`
 
 - 质量门：完整门
 - 独立Judge：必须
@@ -10,7 +10,7 @@
 | 固定字段 | 内容 |
 |---|---|
 | 文档角色 | pre-release security scan 发布顺序与验证（完成口径 `v1.1.2`） |
-| 当前状态 | `awaiting-judge`；S0–S2 已完成，等待独立 Judge |
+| 当前状态 | `completed`；v1.1.2 纠正发布 + 独立 Judge pass |
 | 何时读取 | 执行本发布任一步前 |
 | 关联真源 | roadmap；VERSION；progress；pre-release-security-scan |
 
@@ -74,4 +74,4 @@
 ## 收口路径
 
 - CLOSE-J1：Worker 自验结束将 plan 标为 `awaiting-judge`，生成审查包
-- CLOSE-J2：独立 Judge `Verdict: pass` 后 audit，再 `completed`
+- CLOSE-J2：独立 Judge `Verdict: pass` 后 audit，再 `completed`（已完成）

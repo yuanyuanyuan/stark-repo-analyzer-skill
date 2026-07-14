@@ -1,13 +1,13 @@
 # GitHub v1.1.1/v1.1.2 发布路线图
 
-状态：`active`
+状态：`completed`
 
 执行计划：[github-v1.1.1-release-plan.md](../exec-plans/github-v1.1.1-release-plan.md)
 
 | 固定字段 | 内容 |
 |---|---|
 | 文档角色 | 定义 pre-release security scan 源码 Release（`v1.1.1` 初版 + `v1.1.2` 纠正）的目标、边界与完成口径 |
-| 当前状态 | `active`；完成口径以 **`v1.1.2` 纠正发布** 为准（`v1.1.1` 时序缺口已披露） |
+| 当前状态 | `completed`；完成口径 **`v1.1.2` 纠正发布**（`v1.1.1` 时序缺口已披露；独立 Judge pass） |
 | 当前结论/入口 | 可安装纠正版本为 `v1.1.2`（`main`/tag/Release 同提交；先扫后 tag） |
 | 何时读取 | 修改发布元数据、打标签或创建 GitHub Release 时 |
 | 何时更新 | 发布边界或版本号变化时 |

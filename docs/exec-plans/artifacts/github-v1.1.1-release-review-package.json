@@ -1,41 +1,29 @@
 {
-  "user_goal": "Close security-scan release control plane on corrective v1.1.2; tag pins release commit 19d8995; post-tag docs (incl. version-release SOP) may advance main.",
+  "user_goal": "Close security-scan release control plane on corrective v1.1.2",
   "acceptance_items": [
-    "Plan/roadmap completion criteria target v1.1.2 corrective release",
-    "At tag time main/tag/Release shared release commit 19d8995; tag remains pinned there; post-tag docs may advance main",
-    "VERSION/adapters 1.1.2; exact gitleaks PASS before v1.1.2 tag recorded in progress",
-    "v1.1.1 timing gap disclosed; no marketplace/G5 UAT claim"
+    "v1.1.2 corrective release closed with Judge pass"
   ],
   "startup_baseline": {
     "summary": "git status --short at package build time",
-    "captured_at": "2026-07-14T10:38:15.233037+00:00",
-    "git_status_short": "M  AGENTS.md\nM  docs/dev-rules/README.md\nM  docs/dev-rules/pre-release-security-scan/README.md\nA  docs/dev-rules/version-release/README.md\nM  docs/exec-plans/artifacts/github-v1.1.1-release-review-package.json\n M docs/exec-plans/github-v1.1.1-release-progress.md\n"
+    "captured_at": "2026-07-14T10:42:49.362987+00:00",
+    "git_status_short": " M docs/README.md\n M docs/exec-plans/README.md\n M docs/exec-plans/artifacts/github-v1.1.1-release-review-package.json\n M docs/exec-plans/github-v1.1.1-release-plan.md\n M docs/exec-plans/github-v1.1.1-release-progress.md\n M docs/roadmap/README.md\n M docs/roadmap/github-v1.1.1-release-roadmap.md\n"
   },
   "owned_files": [
-    "docs/roadmap/github-v1.1.1-release-roadmap.md",
     "docs/exec-plans/github-v1.1.1-release-plan.md",
-    "docs/exec-plans/github-v1.1.1-release-progress.md",
-    "docs/exec-plans/artifacts/github-v1.1.1-release-review-package.json",
-    "docs/dev-rules/version-release/README.md",
-    "docs/dev-rules/pre-release-security-scan/README.md",
-    "docs/dev-rules/README.md",
-    "AGENTS.md"
+    "docs/exec-plans/github-v1.1.1-release-progress.md"
   ],
   "excluded_user_changes": [],
   "worker_verification": {
     "commands_run": [
-      "python tools/release/validate-release-metadata.py",
-      "python tools/release/validate-control-plane.py --mode bootstrap",
-      "gh release view v1.1.2"
+      "python tools/release/validate-control-plane.py --mode audit"
     ],
     "results": [
-      "metadata PASS 1.1.2; control-plane bootstrap PASS; v1.1.2 tag=19d8995 Release non-draft; plan clarifies post-tag main advance"
+      "Judge pass; control plane completed"
     ],
     "not_run": [
-      "marketplace install",
-      "G5 real regression UAT"
+      "G5 UAT"
     ],
-    "deviations": "Fourth Judge treated post-tag control-plane docs as misalignment; criteria clarified to tag-time alignment. Fifth knife adds version-release SOP."
+    "deviations": "none for close-out"
   },
   "blocking_criteria": [
     "违反用户明确目标、验收项或审查包范围",
@@ -53,5 +41,5 @@
     "范围外发现",
     "不影响当前验收的历史问题"
   ],
-  "generated_at": "2026-07-14T10:38:15.233666+00:00"
+  "generated_at": "2026-07-14T10:42:49.363694+00:00"
 }

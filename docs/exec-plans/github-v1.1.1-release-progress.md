@@ -2,15 +2,15 @@
 
 文档类型：progress-log
 关联 plan：[github-v1.1.1-release-plan.md](github-v1.1.1-release-plan.md)
-继承状态：`awaiting-judge`
+继承状态：`completed`
 
 ## 当前快照
 
 | 字段 | 内容 |
 |---|---|
-| 阶段 | 第五轮：version-release SOP 落地 + 独立 Judge 收口 |
-| 已完成 | v1.1.2 发布提交 `19d8995`；plan/roadmap 完成口径对齐；tag 钉发布提交、收口文档可前移 main 已写入 plan |
-| 下一刀 | 提交 version-release 规则 → 独立 Judge；pass 后 audit → completed |
+| 阶段 | 已收口：`completed`（独立 Judge pass） |
+| 已完成 | v1.1.2 纠正发布；version-release SOP；Judge `Verdict: pass` |
+| 下一刀 | 无（发布控制面已完成） |
 
 ## 记录
 
@@ -293,3 +293,25 @@
 
 - 提交并 push 本刀后调度独立 Judge（第 5 轮；若再 revise 交用户决策）。
 
+### 2026-07-14 — 独立 Judge（第五轮 / 收口）
+
+### Judge Review
+- Verdict: pass
+- 刚性约束违规：无。
+- 问题（按严重级别）：无阻塞问题。
+- 缺失验证：无。marketplace 安装与 G5 真实回归 UAT 未执行，但已明确披露且未作通过声明。
+- 建议复查范围：无；收口时按协议运行 `python tools/release/validate-control-plane.py --mode audit` 后再标记 completed。
+- 独立执行的验证及结果：
+  - `python tools/release/validate-release-metadata.py`：PASS，version=`1.1.2`。
+  - `python tools/release/validate-control-plane.py --mode bootstrap`：PASS。
+  - `python -m pytest tests/unit -q -p no:cacheprovider --basetemp /tmp/judge-pytest`：PASS，42 passed。
+  - `gitleaks dir --no-banner --redact .` 与 `gitleaks git --no-banner --redact --log-opts="--all" .`：均 exit 0，`no leaks found`。
+  - `git diff --check`：PASS；`v1.1.2^{}` 与远端 tag 均为 `19d8995d27533eb4ba425d3e48cdbd57d5098a01`。
+  - `gh release view v1.1.2`：非 draft、tag 为 `v1.1.2`；Release notes 披露 v1.1.1 时序缺口，且未声称 marketplace/G5 UAT。远端 `main` 现为后续文档提交 `547e235`，符合“仅打 tag 当刻对齐、之后可前移”的完成条件。
+- 实际模型 / 推理等级：`gpt-5.6-terra` / `medium`
+
+### 收口
+
+- `python tools/release/validate-control-plane.py --mode audit` → PASS（本提交）
+- plan/roadmap 标记 `completed`；目录索引去掉活动发布主线。
+- Judge pass ≠ 真实回归 UAT / marketplace 通过。
