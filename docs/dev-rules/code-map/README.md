@@ -101,6 +101,13 @@ Agent 在理解用户目标后、**大范围搜索或跨模块改文件前**：
 
 不要把整份 map 背进上下文后仍全仓盲搜。
 
+
+## 七、与 Product Map / Agent Harness 的边界
+
+- **代码地图**（本规则 + `map.yaml`）：本仓功能→分层→入口。
+- **Product Map**（`docs/spec/product-map.md`）：用户分析场景导航；不是本 map 的第二真源。
+- **Agent Harness**：短路由 + 按任务加载 + `validate-agent-harness.py`；见 ADR-0028。改 harness 导航文件时跑 harness 校验；改功能入口时仍按本规则更新 `map.yaml`。
+
 ## 主线总结
 
 代码地图用 YAML 钉死「功能与入口」，用本规则钉死「何时改、何时声明无影响」，用提醒 hook 降低过期概率，用 Graphify 只做结构协助。它服务本仓库协作定位，不改变产品分析与 UAT 证据等级。

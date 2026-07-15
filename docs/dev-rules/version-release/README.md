@@ -9,6 +9,17 @@
 | 何时更新 | 发布顺序、检查项、元数据投影路径或失败模式变化时 |
 | 关联真源 | 密钥门 → [pre-release-security-scan](../pre-release-security-scan/README.md)；产品 UAT → [real-uat-regression](../real-uat-regression/README.md)；完整门/Judge → [task-quality-gates](../task-quality-gates/README.md) / [dual-agent-review](../dual-agent-review/README.md)；控制面 → [document-control](../document-control/README.md) |
 
+## 绿勾 ≠ ship（完成语义）
+
+| 绿勾 | 不等于 |
+|---|---|
+| Judge `pass` | 真实回归 UAT / 可宣称产品就绪 |
+| Harness 契约校验 `OK` | Judge pass / 真实回归 UAT / 可 ship |
+| 发布前安全扫描通过 | 真实回归 UAT / 功能验收 / 可宣称产品就绪 |
+| GitHub Release / tag 已公开 | 真实回归 UAT 已跑 / marketplace 已验 / 可宣称产品就绪 |
+
+本表只防误读；密钥门、UAT、Judge 细则仍以下文与关联真源为准。
+
 ## 一、要解决什么
 
 发版不是“改个版本号推上去”，而是一次**不可逆的公开声明**：tag 与 GitHub Release 会把某个提交钉成可安装身份。若安全扫描、元数据、控制面完成口径或 Judge 证据在 tag 之后才补齐，就会出现“版本已公开但证据追溯不上”的空洞。

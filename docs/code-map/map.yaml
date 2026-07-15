@@ -1,7 +1,7 @@
 # Semantic code map for this repository (not the analyzed target repo).
 # True source for feature → layer → entrypoints. See README.md and docs/dev-rules/code-map/.
 version: 1
-updated: "2026-07-14"
+updated: "2026-07-15"
 
 layers:
   - id: product-entry
@@ -323,6 +323,43 @@ features:
       - docs/dev-rules/code-map/
       - .codex/hooks/code_map_gate.py
       - AGENTS.md
+
+
+  - id: agent-harness-navigation
+    name: Agent Harness 导航脚手架
+    status: active
+    summary: Product Map、workflows、agent-boundaries、AGENTS 路由与 harness 契约校验；不进 Skill 核心包。
+    task_hints:
+      - 改 Agent 冷启动路由或渐进披露文档
+      - 改 product-map / workflows / agent-boundaries
+      - 改 validate-agent-harness 或 harness 必跑约定
+    layers:
+      product-entry:
+        entrypoints:
+          - AGENTS.md
+          - docs/spec/product-map.md
+      contracts:
+        entrypoints:
+          - docs/adr/0028-agent-harness-progressive-disclosure-without-parallel-ai-harness.md
+          - docs/dev-rules/agent-boundaries/README.md
+      runtime:
+        entrypoints:
+          - tools/release/validate-agent-harness.py
+      control-plane:
+        entrypoints:
+          - docs/dev-rules/workflows/README.md
+          - docs/roadmap/agent-harness-progressive-disclosure-roadmap.md
+          - docs/exec-plans/agent-harness-progressive-disclosure-plan.md
+      verification:
+        entrypoints:
+          - tests/unit/test_validate_agent_harness.py
+    watch_paths:
+      - AGENTS.md
+      - docs/spec/product-map.md
+      - docs/dev-rules/workflows/
+      - docs/dev-rules/agent-boundaries/
+      - tools/release/validate-agent-harness.py
+      - docs/code-map/
 
   - id: domain-language-context
     name: 领域语言与 CONTEXT

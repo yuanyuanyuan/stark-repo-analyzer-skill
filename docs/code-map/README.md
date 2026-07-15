@@ -43,6 +43,21 @@
 
 档 B：约 12 条 `active` feature，覆盖 Skill/gate/合同/分发、文档控制面、质量门与 Judge、UAT 规则、控制面 hook、代码地图自身、领域语言与文风。缺入口时先补 YAML，再改代码。
 
+
+## 常见任务 cheat sheet
+
+任务类型 → 优先命中的 feature（路径以 `map.yaml` 为准，本表不另建真源）：
+
+| 任务 | feature id | 先打开 |
+|---|---|---|
+| 改 Skill 触发/默认流程 | `repo-analysis-skill` | `skills/repo-analyzer/SKILL.md` |
+| 改 Graphify gate / 退出码 | `graphify-gate` | `skills/repo-analyzer/scripts/graphify_gate.py` |
+| 改输入输出合同 | `repo-analysis-skill` / contracts 层 | `docs/spec/input-output-contract.md` |
+| 改默认 Judge / 审查包 | （见 dual-agent 相关 feature） | `docs/dev-rules/dual-agent-review/README.md` |
+| 改代码地图 / hook | `code-map-navigation` | `docs/code-map/map.yaml` |
+| 改 Agent 导航脚手架 / product-map / harness 校验 | `agent-harness-navigation` | `docs/spec/product-map.md`、`docs/dev-rules/workflows/`、`tools/release/validate-agent-harness.py` |
+| 改发布 SOP / 安全扫描 | 见 version-release 相关入口 | `docs/dev-rules/version-release/README.md` |
+
 ## 主线总结
 
 `map.yaml` 是唯一语义真源；本 README 教人怎么用。先匹配 feature，再按五层打开 entrypoints，最后按规则决定是否更新地图。

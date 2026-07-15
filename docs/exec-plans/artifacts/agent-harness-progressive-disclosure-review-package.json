@@ -1,0 +1,72 @@
+{
+  "user_goal": "落地 Agent Harness 渐进披露：product-map、workflows、agent-boundaries、ADR-0028、validate-agent-harness、AGENTS/目录路由与 code-map feature；不平行 docs/ai-harness；不改 analyzer 用户分析行为。",
+  "acceptance_items": [
+    "validate-agent-harness.py exit 0",
+    "pytest tests/unit/test_validate_agent_harness.py 通过",
+    "AGENTS 可路由 product-map/workflows/agent-boundaries/校验命令",
+    "map.yaml 含 agent-harness-navigation；不写入 core-package-files",
+    "CONTEXT 含 Agent Harness / Product Map / Harness 契约校验",
+    "未改 skills/repo-analyzer 用户分析行为合同正文"
+  ],
+  "startup_baseline": {
+    "summary": "git status --short at package build time",
+    "captured_at": "2026-07-15T06:53:15.841828+00:00",
+    "git_status_short": " M AGENTS.md\n M CONTEXT.md\n M docs/README.md\n M docs/adr/README.md\n M docs/code-map/README.md\n M docs/code-map/map.yaml\n M docs/dev-rules/README.md\n M docs/dev-rules/code-map/README.md\n M docs/exec-plans/README.md\n M docs/roadmap/README.md\n M docs/spec/README.md\n?? docs/adr/0028-agent-harness-progressive-disclosure-without-parallel-ai-harness.md\n?? docs/dev-rules/agent-boundaries/\n?? docs/dev-rules/workflows/\n?? docs/exec-plans/agent-harness-progressive-disclosure-plan.md\n?? docs/exec-plans/agent-harness-progressive-disclosure-progress.md\n?? docs/exec-plans/artifacts/agent-harness-progressive-disclosure-review-package.json\n?? docs/roadmap/agent-harness-progressive-disclosure-roadmap.md\n?? docs/spec/product-map.md\n?? tests/unit/test_validate_agent_harness.py\n?? tools/release/validate-agent-harness.py\n"
+  },
+  "owned_files": [
+    "AGENTS.md",
+    "CONTEXT.md",
+    "docs/README.md",
+    "docs/adr/README.md",
+    "docs/adr/0028-agent-harness-progressive-disclosure-without-parallel-ai-harness.md",
+    "docs/code-map/README.md",
+    "docs/code-map/map.yaml",
+    "docs/dev-rules/README.md",
+    "docs/dev-rules/code-map/README.md",
+    "docs/dev-rules/workflows/README.md",
+    "docs/dev-rules/agent-boundaries/README.md",
+    "docs/exec-plans/README.md",
+    "docs/exec-plans/agent-harness-progressive-disclosure-plan.md",
+    "docs/exec-plans/agent-harness-progressive-disclosure-progress.md",
+    "docs/roadmap/README.md",
+    "docs/roadmap/agent-harness-progressive-disclosure-roadmap.md",
+    "docs/spec/README.md",
+    "docs/spec/product-map.md",
+    "tools/release/validate-agent-harness.py",
+    "tests/unit/test_validate_agent_harness.py"
+  ],
+  "excluded_user_changes": [],
+  "worker_verification": {
+    "commands_run": [
+      "python tools/release/validate-agent-harness.py",
+      "python -m pytest tests/unit/test_validate_agent_harness.py -q"
+    ],
+    "results": [
+      "OK exit 0",
+      "4 passed"
+    ],
+    "not_run": [
+      "真实回归 UAT",
+      "validate-control-plane.py --mode audit（待 Judge pass 后）",
+      "Graphify 全量重建"
+    ],
+    "deviations": "无"
+  },
+  "blocking_criteria": [
+    "违反用户明确目标、验收项或审查包范围",
+    "可复现功能错误、数据/安全风险、控制面状态错误",
+    "任务要求但缺失的验证证据",
+    "审查包缺字段或边界无法确认"
+  ],
+  "plan": "docs/exec-plans/agent-harness-progressive-disclosure-plan.md",
+  "progress": "docs/exec-plans/agent-harness-progressive-disclosure-progress.md",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "medium",
+  "non_blocking_hints": [
+    "风格偏好",
+    "可选重构",
+    "范围外发现",
+    "不影响当前验收的历史问题"
+  ],
+  "generated_at": "2026-07-15T06:53:15.842482+00:00"
+}
