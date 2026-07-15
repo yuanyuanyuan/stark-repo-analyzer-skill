@@ -124,12 +124,12 @@ gh release view "vX.Y.Z" --json tagName,isDraft,targetCommitish,url
 
 1. plan → `awaiting-judge`；progress 记 S0–S2 证据。
 2. 生成审查包：`python tools/release/judge_review_package.py --plan <plan> …`
-3. 独立 Judge（禁止 Worker 自过）：优先子代理，否则  
+3. 独立 Judge（禁止 Worker 自过）：优先子代理，否则
    `python tools/release/run-independent-judge.py --plan <plan>`
 4. **原样**追加 `### Judge Review`；仅 `Verdict: pass` 或结构化用户豁免可继续。
 5. `python tools/release/validate-control-plane.py --mode audit`
 6. plan/roadmap → `completed`；更新目录索引为无活动 / 最近完成。
-7. 收口文档提交**可以**推高 `main`；**版本 tag 仍钉在发布提交**（与 v1.0.0 / v1.1.0 模式一致）。  
+7. 收口文档提交**可以**推高 `main`；**版本 tag 仍钉在发布提交**（与 v1.0.0 / v1.1.0 模式一致）。
    验收表述写「打 tag 当刻对齐」，不要写「收口后永远 main==tag」。
 
 ### Phase 7 — 纠正发版（仅当已公开版本有证据缺口）

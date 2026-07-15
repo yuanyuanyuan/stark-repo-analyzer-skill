@@ -1,7 +1,7 @@
 # Spec: Harness 导航清晰度与完成语义防误读
 
-状态：`ready-for-agent`  
-本地 tracker：本目录；工单见同目录 `tickets.md`  
+状态：`ready-for-agent`
+本地 tracker：本目录；工单见同目录 `tickets.md`
 关联背景：Agent Harness 渐进披露已 `completed`（ADR-0028）；本 spec 修游走审查中的索引漂移与完成语义误读，不重做 harness P0。
 
 ## Problem Statement

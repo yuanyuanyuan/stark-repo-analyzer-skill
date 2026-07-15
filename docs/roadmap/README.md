@@ -7,7 +7,7 @@
 | 固定字段 | 当前内容 |
 |---|---|
 | 文档角色 | 定义方向、目标、非目标、阶段和完成口径 |
-| 当前状态 | 当前无 `active`；最近完成 [Agent Harness 渐进披露](agent-harness-progressive-disclosure-roadmap.md)、代码地图导航与 GitHub v1.1.x 发布 |
+| 当前状态 | 当前无 `active`；最近完成 [Harness 导航清晰度](harness-navigation-clarity-roadmap.md)、[Agent Harness 渐进披露](agent-harness-progressive-disclosure-roadmap.md)、代码地图导航与 GitHub v1.1.x 发布 |
 | 人类怎么读 | 先看“北极星目标、非目标、当前阶段、完成口径” |
 | Agent 怎么读 | 先解析生命周期；只有 `active` roadmap 才能授权沿链接执行，`completed` 只提供最近完成背景 |
 | 何时更新 | 目标、边界、阶段或阶段退出条件发生变化时 |

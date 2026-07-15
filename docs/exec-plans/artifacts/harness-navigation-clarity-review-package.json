@@ -1,0 +1,63 @@
+{
+  "user_goal": "Harness 导航清晰度完整门最终重审：r1–r3 均为 whitespace major 且已清（SPEC 尾随空白、progress EOF 空行、progress L3 尾随空白 + index 同步）。请独立重跑 harness/pytest 与 worktree+cached+相对 022d7b7 的 git diff --check。",
+  "acceptance_items": [
+    "validate-agent-harness.py exit 0",
+    "pytest tests/unit/test_validate_agent_harness.py 通过",
+    "git diff --check / --cached --check / --check 022d7b7 对 owned 均为 0",
+    "ADR 0025/0028 基线与绿勾≠ship 等 tickets 验收仍成立",
+    "未改 skills/repo-analyzer；未宣称真实回归 UAT"
+  ],
+  "startup_baseline": {
+    "summary": "git status --short at package build time",
+    "captured_at": "2026-07-15T08:26:45.416502+00:00",
+    "git_status_short": "M  .scratch/harness-navigation-clarity/SPEC.md\nM  docs/dev-rules/version-release/README.md\nM  docs/exec-plans/README.md\nA  docs/exec-plans/artifacts/harness-navigation-clarity-review-package.json\nA  docs/exec-plans/harness-navigation-clarity-plan.md\nA  docs/exec-plans/harness-navigation-clarity-progress.md\nM  docs/roadmap/README.md\nA  docs/roadmap/harness-navigation-clarity-roadmap.md\n"
+  },
+  "owned_files": [
+    "AGENTS.md",
+    "docs/adr/README.md",
+    "docs/dev-rules/version-release/README.md",
+    "docs/dev-rules/agent-boundaries/README.md",
+    "tools/release/validate-agent-harness.py",
+    "tests/unit/test_validate_agent_harness.py",
+    "docs/roadmap/harness-navigation-clarity-roadmap.md",
+    "docs/exec-plans/harness-navigation-clarity-plan.md",
+    "docs/exec-plans/harness-navigation-clarity-progress.md",
+    "docs/roadmap/README.md",
+    "docs/exec-plans/README.md",
+    ".scratch/harness-navigation-clarity/SPEC.md",
+    ".scratch/harness-navigation-clarity/tickets.md",
+    ".scratch/harness-navigation-clarity/LABELS.txt"
+  ],
+  "excluded_user_changes": [],
+  "worker_verification": {
+    "commands_run": [
+      "python tools/release/validate-agent-harness.py",
+      "python -m pytest tests/unit/test_validate_agent_harness.py -q",
+      "git diff --check / --cached --check / --check 022d7b7 owned"
+    ],
+    "results": [
+      "all three whitespace checks exit 0; harness OK; 7 passed"
+    ],
+    "not_run": [
+      "真实回归 UAT"
+    ],
+    "deviations": "r1-r3 whitespace revises fixed and staged"
+  },
+  "blocking_criteria": [
+    "违反用户明确目标、验收项或审查包范围",
+    "可复现功能错误、数据/安全风险、控制面状态错误",
+    "任务要求但缺失的验证证据",
+    "审查包缺字段或边界无法确认"
+  ],
+  "plan": "docs/exec-plans/harness-navigation-clarity-plan.md",
+  "progress": "docs/exec-plans/harness-navigation-clarity-progress.md",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "medium",
+  "non_blocking_hints": [
+    "风格偏好",
+    "可选重构",
+    "范围外发现",
+    "不影响当前验收的历史问题"
+  ],
+  "generated_at": "2026-07-15T08:26:45.417209+00:00"
+}
